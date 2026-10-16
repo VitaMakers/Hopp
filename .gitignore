@@ -44,3 +44,7 @@ next-env.d.ts
 
 # supabase cli
 /supabase/.temp/
+
+# e2e output
+/e2e/shots/*.png
+/e2e/last-run.json

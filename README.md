@@ -56,6 +56,7 @@ VitaMakers/Test-rea.
 | `npm test` | testes (Vitest) |
 | `npm run typecheck` | checagem de tipos |
 | `npm run lint` | ESLint |
+| `npm run e2e` | teste de ponta a ponta no navegador (com o app rodando em `localhost:3000`); capturas em `e2e/shots/` |
 
 ## Próximos passos
 
