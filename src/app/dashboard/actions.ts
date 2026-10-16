@@ -11,11 +11,13 @@ export async function saveDraft(input: unknown): Promise<ActionResult> {
   const parsed = pageDocSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "A página tem campos inválidos." };
   const { supabase, profile } = await getOwner();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("pages")
     .update({ draft: parsed.data, updated_at: new Date().toISOString() })
-    .eq("owner_id", profile.id);
-  return error ? { ok: false, error: "Não foi possível salvar." } : { ok: true };
+    .eq("owner_id", profile.id)
+    .select("id");
+  // No error and no row means nothing was saved, so report it.
+  return error || !data?.length ? { ok: false, error: "Não foi possível salvar." } : { ok: true };
 }
 
 export async function publish(input: unknown): Promise<ActionResult> {

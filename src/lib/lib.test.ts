@@ -108,6 +108,7 @@ describe("summarize", () => {
     block_id: null,
     short_link_id: null,
     target: null,
+    visit_id: null,
     created_at,
     ...extra,
   });
@@ -115,27 +116,45 @@ describe("summarize", () => {
   it("counts views, clicks and groups them", () => {
     const summary = summarize(
       [
-        event("page_view", "2026-10-16T10:00:00Z"),
-        event("page_view", "2026-10-15T10:00:00Z"),
-        event("block_click", "2026-10-16T10:01:00Z", { block_id: "b1" }),
-        event("block_click", "2026-10-16T10:02:00Z", { block_id: "b1" }),
-        event("social_click", "2026-10-16T10:03:00Z", { target: "instagram" }),
+        event("page_view", "2026-10-16T10:00:00Z", { visit_id: "v1" }),
+        event("page_view", "2026-10-15T10:00:00Z", { visit_id: "v2" }),
+        event("block_click", "2026-10-16T10:01:00Z", { block_id: "b1", visit_id: "v1" }),
+        event("block_click", "2026-10-16T10:02:00Z", { block_id: "b1", visit_id: "v1" }),
+        event("social_click", "2026-10-16T10:03:00Z", { target: "instagram", visit_id: "v1" }),
         event("short_link_click", "2026-10-14T10:00:00Z", { short_link_id: "s1" }),
       ],
       3,
       now,
     );
     expect(summary.views).toBe(2);
-    expect(summary.clicks).toBe(4);
-    expect(summary.clickRate).toBe(2);
+    expect(summary.clicks).toBe(3);
+    // Three clicks, but only one of the two visits clicked.
+    expect(summary.clickRate).toBe(0.5);
     expect(summary.byBlock.get("b1")).toBe(2);
     expect(summary.bySocial.get("instagram")).toBe(1);
     expect(summary.byShortLink.get("s1")).toBe(1);
     expect(summary.daily).toEqual([
-      { day: "2026-10-14", views: 0, clicks: 1 },
+      { day: "2026-10-14", views: 0, clicks: 0 },
       { day: "2026-10-15", views: 1, clicks: 0 },
       { day: "2026-10-16", views: 1, clicks: 3 },
     ]);
+  });
+
+  it("keeps the click rate within 100%", () => {
+    const summary = summarize(
+      [
+        event("page_view", "2026-10-16T10:00:00Z", { visit_id: "v1" }),
+        event("block_click", "2026-10-16T10:01:00Z", { block_id: "b1", visit_id: "v1" }),
+        event("social_click", "2026-10-16T10:02:00Z", { target: "instagram", visit_id: "v1" }),
+        // Clicks from a visit outside the window, or with no visit id, don't count.
+        event("block_click", "2026-10-16T10:03:00Z", { block_id: "b1", visit_id: "old" }),
+        event("block_click", "2026-10-16T10:04:00Z", { block_id: "b1" }),
+      ],
+      3,
+      now,
+    );
+    expect(summary.clicks).toBe(4);
+    expect(summary.clickRate).toBe(1);
   });
 
   it("handles no traffic", () => {

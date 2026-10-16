@@ -1,6 +1,9 @@
 import { deleteContact } from "../actions";
 import { getOwner } from "../context";
 
+// Rendered on the server, which runs in UTC; show the creator's local time.
+const TIME_ZONE = "America/Sao_Paulo";
+
 export default async function ContactsPage() {
   const { supabase, profile } = await getOwner();
   const { data: contacts } = await supabase
@@ -38,7 +41,7 @@ export default async function ContactsPage() {
               <tr key={contact.id} className="border-t border-stone-100">
                 <td className="p-3">{contact.email}</td>
                 <td className="p-3">{contact.phone ?? "—"}</td>
-                <td className="p-3 text-stone-600">{new Date(contact.created_at).toLocaleString("pt-BR")}</td>
+                <td className="p-3 text-stone-600">{new Date(contact.created_at).toLocaleString("pt-BR", { timeZone: TIME_ZONE })}</td>
                 <td className="p-3 text-right">
                   <form action={deleteContact.bind(null, contact.id)}>
                     <button type="submit" className="text-red-600">

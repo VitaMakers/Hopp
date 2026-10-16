@@ -3,12 +3,14 @@ export type EventRow = {
   block_id: string | null;
   short_link_id: string | null;
   target: string | null;
+  visit_id: string | null;
   created_at: string;
 };
 
 export type Summary = {
   views: number;
   clicks: number;
+  // Share of visits with at least one click on the page, from 0 to 1.
   clickRate: number;
   daily: { day: string; views: number; clicks: number }[];
   byBlock: Map<string, number>;
@@ -33,24 +35,34 @@ export function summarize(events: EventRow[], days: number, now = new Date()): S
 
   let views = 0;
   let clicks = 0;
+  const viewIds = new Set<string>();
+  const clickedIds = new Set<string>();
   for (const event of events) {
     const bucket = daily.get(event.created_at.slice(0, 10));
     if (event.kind === "page_view") {
       views++;
       if (bucket) bucket.views++;
+      if (event.visit_id) viewIds.add(event.visit_id);
+      continue;
+    }
+    // Short links are opened outside the page, so they don't count toward
+    // the page's clicks or click rate.
+    if (event.kind === "short_link_click") {
+      bump(byShortLink, event.short_link_id);
       continue;
     }
     clicks++;
     if (bucket) bucket.clicks++;
+    if (event.visit_id) clickedIds.add(event.visit_id);
     if (event.kind === "block_click") bump(byBlock, event.block_id);
     if (event.kind === "social_click") bump(bySocial, event.target);
-    if (event.kind === "short_link_click") bump(byShortLink, event.short_link_id);
   }
 
   return {
     views,
     clicks,
-    clickRate: views ? clicks / views : 0,
+    // Only clicks whose view is in the window count, so it stays within 100%.
+    clickRate: views ? [...clickedIds].filter((id) => viewIds.has(id)).length / views : 0,
     daily: [...daily].map(([day, counts]) => ({ day, ...counts })),
     byBlock,
     bySocial,
