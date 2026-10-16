@@ -6,11 +6,12 @@ import { createAdminClient } from "@/lib/supabase/server";
 export async function GET(request: NextRequest, { params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
   const admin = createAdminClient();
-  const { data: link } = await admin
+  const { data: link, error } = await admin
     .from("short_links")
     .select("id, owner_id, target_url")
     .eq("code", code)
     .maybeSingle();
+  if (error) throw new Error(`Supabase (service role): ${error.message}`);
   const target = link ? safeHttpUrl(link.target_url) : null;
   if (!link || !target) {
     return NextResponse.redirect(new URL("/", request.url));

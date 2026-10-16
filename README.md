@@ -36,8 +36,16 @@ VitaMakers/Test-rea.
    `supabase/migrations/0001_init.sql` no SQL Editor.
 2. Em Authentication → URL Configuration, adicione
    `http://localhost:3000/auth/callback` às URLs de redirecionamento.
-3. Copie `.env.example` para `.env.local` e preencha.
-4. `npm install` e `npm run dev`.
+3. Copie `.env.example` para `.env.local` e preencha. A
+   `SUPABASE_SERVICE_ROLE_KEY` é a chave **secret** (`sb_secret_...`) ou a
+   `service_role` (começa com `eyJ`), em Project Settings → API Keys. Sem
+   ela a página pública, os links curtos, as estatísticas e a captação não
+   funcionam. A `STRIPE_SECRET_KEY` começa com `sk_test_` ou `sk_live_`.
+4. Confirmação de e-mail: o envio padrão do Supabase manda poucos e-mails
+   por hora. Para testar, desligue "Confirm email" em Authentication →
+   Sign In / Providers → Email. Em produção, configure um SMTP próprio em
+   Authentication → Emails → SMTP Settings.
+5. `npm install` e `npm run dev`.
 
 ## Comandos
 
