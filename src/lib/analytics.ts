@@ -40,11 +40,16 @@ export function summarize(events: EventRow[], days: number, now = new Date()): S
       if (bucket) bucket.views++;
       continue;
     }
+    // Short links are opened outside the page, so they don't count toward
+    // the page's clicks or click rate (which could otherwise exceed 100%).
+    if (event.kind === "short_link_click") {
+      bump(byShortLink, event.short_link_id);
+      continue;
+    }
     clicks++;
     if (bucket) bucket.clicks++;
     if (event.kind === "block_click") bump(byBlock, event.block_id);
     if (event.kind === "social_click") bump(bySocial, event.target);
-    if (event.kind === "short_link_click") bump(byShortLink, event.short_link_id);
   }
 
   return {

@@ -126,13 +126,13 @@ describe("summarize", () => {
       now,
     );
     expect(summary.views).toBe(2);
-    expect(summary.clicks).toBe(4);
-    expect(summary.clickRate).toBe(2);
+    expect(summary.clicks).toBe(3);
+    expect(summary.clickRate).toBe(1.5);
     expect(summary.byBlock.get("b1")).toBe(2);
     expect(summary.bySocial.get("instagram")).toBe(1);
     expect(summary.byShortLink.get("s1")).toBe(1);
     expect(summary.daily).toEqual([
-      { day: "2026-10-14", views: 0, clicks: 1 },
+      { day: "2026-10-14", views: 0, clicks: 0 },
       { day: "2026-10-15", views: 1, clicks: 0 },
       { day: "2026-10-16", views: 1, clicks: 3 },
     ]);
