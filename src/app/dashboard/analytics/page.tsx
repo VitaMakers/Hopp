@@ -13,7 +13,7 @@ export default async function AnalyticsPage() {
   const [{ data: events }, { data: page }, { data: links }] = await Promise.all([
     supabase
       .from("events")
-      .select("kind, block_id, short_link_id, target, created_at")
+      .select("kind, block_id, short_link_id, target, visit_id, created_at")
       .eq("owner_id", profile.id)
       .gte("created_at", since)
       .order("created_at", { ascending: false })
@@ -39,7 +39,11 @@ export default async function AnalyticsPage() {
       <div className="grid gap-3 sm:grid-cols-3">
         <Stat label="Visitas" value={summary.views.toLocaleString("pt-BR")} />
         <Stat label="Cliques" value={summary.clicks.toLocaleString("pt-BR")} />
-        <Stat label="Taxa de clique" value={`${(summary.clickRate * 100).toFixed(1).replace(".", ",")}%`} />
+        <Stat
+          label="Taxa de clique"
+          value={`${(summary.clickRate * 100).toFixed(1).replace(".", ",")}%`}
+          hint="Visitas com pelo menos um clique"
+        />
       </div>
 
       <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
@@ -77,11 +81,12 @@ export default async function AnalyticsPage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
       <p className="text-sm text-stone-500">{label}</p>
       <p className="mt-1 text-3xl font-bold tabular-nums">{value}</p>
+      {hint ? <p className="mt-1 text-xs text-stone-500">{hint}</p> : null}
     </div>
   );
 }

@@ -32,8 +32,8 @@ VitaMakers/Test-rea.
 
 ## Rodar localmente
 
-1. Crie um projeto no [Supabase](https://supabase.com) e rode
-   `supabase/migrations/0001_init.sql` no SQL Editor.
+1. Crie um projeto no [Supabase](https://supabase.com) e rode, em ordem,
+   os arquivos de `supabase/migrations/` no SQL Editor.
 2. Em Authentication → URL Configuration, adicione
    `http://localhost:3000/auth/callback` às URLs de redirecionamento.
 3. Copie `.env.example` para `.env.local` e preencha. A

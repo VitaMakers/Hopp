@@ -9,12 +9,13 @@ const bodySchema = z.object({
   blockId: z.string().max(64).optional(),
   target: z.string().max(500).optional(),
   referrer: z.string().max(500).optional(),
+  visitId: z.uuid().optional(),
 });
 
 export async function POST(request: Request) {
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ ok: false }, { status: 400 });
-  const { handle, kind, blockId, target, referrer } = parsed.data;
+  const { handle, kind, blockId, target, referrer, visitId } = parsed.data;
   const ownerId = await ownerIdForHandle(handle);
   if (!ownerId) return NextResponse.json({ ok: false }, { status: 404 });
   await createAdminClient()
@@ -25,6 +26,7 @@ export async function POST(request: Request) {
       block_id: blockId ?? null,
       target: target ?? null,
       referrer: referrer || null,
+      visit_id: visitId ?? null,
     });
   return NextResponse.json({ ok: true });
 }

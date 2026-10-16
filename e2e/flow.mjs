@@ -1,6 +1,8 @@
 // End-to-end walk through the app in a real browser. Run `npm run build`,
 // `npm start`, then `npm run e2e`. E2E_ADMIN_CREATE=1 creates the account
 // already confirmed (needs SUPABASE_SERVICE_ROLE_KEY) instead of signing up.
+// The test account is deleted at the end (E2E_KEEP=1 keeps it), and a failed
+// run exits with code 1.
 import { chromium } from "playwright";
 import { writeFileSync } from "node:fs";
 
@@ -18,6 +20,14 @@ const adminHeaders = { apikey: srk, Authorization: `Bearer ${srk}`, "content-typ
 async function rest(path) {
   const r = await fetch(`${supa}/rest/v1/${path}`, { headers: adminHeaders });
   return r.json();
+}
+// Deleting the auth user removes its profile, page, events and contacts too.
+async function deleteTestUser() {
+  const users = await (await fetch(`${supa}/auth/v1/admin/users?per_page=1000`, { headers: adminHeaders })).json();
+  const u = users.users?.find((x) => x.email === EMAIL);
+  if (!u) return log("usuário de teste não encontrado para apagar");
+  const r = await fetch(`${supa}/auth/v1/admin/users/${u.id}`, { method: "DELETE", headers: adminHeaders });
+  log("usuário de teste apagado:", r.status);
 }
 
 const browser = await chromium.launch({ executablePath: process.env.E2E_CHROMIUM });
@@ -163,9 +173,11 @@ try {
   writeFileSync(new URL("./last-run.json", import.meta.url), JSON.stringify({ EMAIL, HANDLE, RUN, ownerId: owner.id }));
 } catch (e) {
   log("FALHOU:", e.message.split("\n")[0], "em", page.url());
+  process.exitCode = 1;
   await shot("99-falha").catch(() => {});
   writeFileSync(new URL("./last-run.json", import.meta.url), JSON.stringify({ EMAIL, HANDLE, RUN }));
 } finally {
   if (errors.length) log("erros no navegador:\n  " + errors.join("\n  "));
   await browser.close();
+  if (process.env.E2E_KEEP !== "1") await deleteTestUser().catch((e) => log("não apagou o usuário:", e.message));
 }
