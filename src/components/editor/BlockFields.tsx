@@ -19,6 +19,15 @@ export function BlockFields({ block, onChange }: { block: Block; onChange: (bloc
         <div className="flex flex-col gap-3">
           <TextField label="Texto do botão" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
           <TextField label="Endereço" type="url" value={block.url} maxLength={2000} placeholder="https://..." onChange={(url) => onChange({ ...block, url })} />
+          <TextField
+            label="Miniatura (link da imagem, opcional)"
+            type="url"
+            value={block.imageUrl}
+            maxLength={1000}
+            placeholder="https://..."
+            onChange={(imageUrl) => onChange({ ...block, imageUrl })}
+          />
+          <Toggle label="Destacar (o botão balança de tempos em tempos)" checked={block.highlight} onChange={(highlight) => onChange({ ...block, highlight })} />
         </div>
       );
     case "heading":
@@ -103,6 +112,57 @@ export function BlockFields({ block, onChange }: { block: Block; onChange: (bloc
           />
           <Toggle label="Pedir também o WhatsApp" checked={block.collectPhone} onChange={(collectPhone) => onChange({ ...block, collectPhone })} />
           <p className="text-xs text-stone-500">Os contatos aparecem em Contatos, no menu do painel.</p>
+        </div>
+      );
+    case "whatsapp":
+      return (
+        <div className="flex flex-col gap-3">
+          <TextField label="Número com DDD" type="tel" value={block.phone} maxLength={30} placeholder="(11) 99999-9999" onChange={(phone) => onChange({ ...block, phone })} />
+          <TextArea label="Mensagem que já vem escrita" value={block.message} maxLength={500} onChange={(message) => onChange({ ...block, message })} />
+          <TextField label="Texto do botão" value={block.buttonText} maxLength={60} onChange={(buttonText) => onChange({ ...block, buttonText })} />
+        </div>
+      );
+    case "image":
+      return (
+        <div className="flex flex-col gap-3">
+          <TextField label="Imagem (link)" type="url" value={block.imageUrl} maxLength={1000} placeholder="https://..." onChange={(imageUrl) => onChange({ ...block, imageUrl })} />
+          <TextField label="Descrição da imagem" value={block.alt} maxLength={200} onChange={(alt) => onChange({ ...block, alt })} />
+          <TextField label="Abrir este link ao clicar (opcional)" type="url" value={block.url} maxLength={2000} placeholder="https://..." onChange={(url) => onChange({ ...block, url })} />
+        </div>
+      );
+    case "product":
+      return (
+        <div className="flex flex-col gap-3">
+          <TextField label="Nome do produto" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
+          <TextField label="Preço" value={block.price} maxLength={40} placeholder="R$ 49,90" onChange={(price) => onChange({ ...block, price })} />
+          <TextArea label="Descrição" value={block.description} maxLength={500} onChange={(description) => onChange({ ...block, description })} />
+          <TextField label="Foto (link da imagem)" type="url" value={block.imageUrl} maxLength={1000} placeholder="https://..." onChange={(imageUrl) => onChange({ ...block, imageUrl })} />
+          <TextField label="Texto do botão" value={block.buttonText} maxLength={40} onChange={(buttonText) => onChange({ ...block, buttonText })} />
+          <TextField
+            label="Link de pagamento"
+            type="url"
+            value={block.url}
+            maxLength={2000}
+            placeholder="https://... (Mercado Pago, Hotmart, Stripe...)"
+            onChange={(url) => onChange({ ...block, url })}
+          />
+        </div>
+      );
+    case "map":
+      return (
+        <div className="flex flex-col gap-3">
+          <TextField label="Título" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
+          <TextField label="Endereço" value={block.address} maxLength={300} placeholder="Av. Paulista, 1000 - São Paulo" onChange={(address) => onChange({ ...block, address })} />
+        </div>
+      );
+    case "contact":
+      return (
+        <div className="flex flex-col gap-3">
+          <TextField label="Nome" value={block.name} maxLength={80} onChange={(name) => onChange({ ...block, name })} />
+          <TextField label="Empresa (opcional)" value={block.company} maxLength={80} onChange={(company) => onChange({ ...block, company })} />
+          <TextField label="Telefone" type="tel" value={block.phone} maxLength={30} placeholder="+55 11 99999-9999" onChange={(phone) => onChange({ ...block, phone })} />
+          <TextField label="E-mail" type="email" value={block.email} maxLength={120} onChange={(email) => onChange({ ...block, email })} />
+          <TextField label="Texto do botão" value={block.buttonText} maxLength={40} onChange={(buttonText) => onChange({ ...block, buttonText })} />
         </div>
       );
   }

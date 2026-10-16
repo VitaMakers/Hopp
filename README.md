@@ -1,8 +1,10 @@
 # Linkbio (nome provisório)
 
 Página de link na bio no estilo do Hopp: cada pessoa monta uma página com
-blocos (links, vídeos, música, perguntas frequentes, contagem regressiva,
-captação de contatos), escolhe o visual e acompanha visitas e cliques.
+blocos (links, WhatsApp, produtos, imagens, mapa, salvar contato, vídeos,
+música, perguntas frequentes, contagem regressiva, captação de contatos),
+escolhe o visual (layouts, temas, degradê ou imagem de fundo, ícones das
+redes) e acompanha visitas e cliques.
 
 A análise do produto de referência está em `analises/hopp/` no repositório
 VitaMakers/Test-rea.

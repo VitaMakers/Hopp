@@ -10,6 +10,11 @@ export const BLOCK_CATALOG: Record<BlockType, { label: string; description: stri
   faq: { label: "Perguntas frequentes", description: "Perguntas que abrem e fecham" },
   countdown: { label: "Contagem regressiva", description: "Conta o tempo até uma data" },
   subscribe: { label: "Captar contatos", description: "Formulário de e-mail e telefone" },
+  whatsapp: { label: "WhatsApp", description: "Botão que abre uma conversa com mensagem pronta" },
+  image: { label: "Imagem", description: "Foto ou banner, com link opcional" },
+  product: { label: "Produto", description: "Foto, preço e botão de compra" },
+  map: { label: "Mapa", description: "Endereço no mapa e botão de rota" },
+  contact: { label: "Salvar contato", description: "Visitante salva seu contato no celular" },
 };
 
 export const SOCIAL_LABELS: Record<SocialPlatform, string> = {
@@ -32,7 +37,7 @@ export function createBlock(type: BlockType): Block {
   const base = { id: nanoid(10), enabled: true };
   switch (type) {
     case "link":
-      return { ...base, type, title: "Meu link", url: "https://" };
+      return { ...base, type, title: "Meu link", url: "https://", imageUrl: "", highlight: false };
     case "heading":
       return { ...base, type, text: "Nova seção" };
     case "text":
@@ -61,28 +66,51 @@ export function createBlock(type: BlockType): Block {
         collectPhone: false,
         thankYouMessage: "Pronto! Você está na lista.",
       };
+    case "whatsapp":
+      return { ...base, type, phone: "", message: "Olá! Vim pela sua página.", buttonText: "Falar no WhatsApp" };
+    case "image":
+      return { ...base, type, imageUrl: "", alt: "", url: "" };
+    case "product":
+      return {
+        ...base,
+        type,
+        title: "Meu produto",
+        description: "",
+        price: "R$ 0,00",
+        imageUrl: "",
+        buttonText: "Comprar",
+        url: "https://",
+      };
+    case "map":
+      return { ...base, type, title: "Onde estamos", address: "" };
+    case "contact":
+      return { ...base, type, name: "", company: "", phone: "", email: "", buttonText: "Salvar contato" };
   }
 }
+
+// Options the presets don't set, so each preset only lists what makes it distinct.
+const THEME_BASE = {
+  layout: "classic",
+  font: "sans",
+  buttonShape: "rounded",
+  buttonStyle: "fill",
+  buttonShadow: false,
+  backgroundType: "solid",
+  background2: "#d6d3d1",
+  backgroundImageUrl: "",
+  avatarShape: "circle",
+  socialStyle: "icons",
+} as const satisfies Partial<Theme>;
 
 export const THEME_PRESETS: { name: string; theme: Theme }[] = [
   {
     name: "Claro",
-    theme: {
-      layout: "classic",
-      font: "sans",
-      background: "#f7f7f5",
-      text: "#1c1c1c",
-      buttonBackground: "#1c1c1c",
-      buttonText: "#ffffff",
-      buttonShape: "rounded",
-      buttonStyle: "fill",
-    },
+    theme: { ...THEME_BASE, background: "#f7f7f5", text: "#1c1c1c", buttonBackground: "#1c1c1c", buttonText: "#ffffff" },
   },
   {
     name: "Noite",
     theme: {
-      layout: "classic",
-      font: "sans",
+      ...THEME_BASE,
       background: "#121417",
       text: "#f2f2f2",
       buttonBackground: "#f2f2f2",
@@ -94,6 +122,7 @@ export const THEME_PRESETS: { name: string; theme: Theme }[] = [
   {
     name: "Areia",
     theme: {
+      ...THEME_BASE,
       layout: "cover",
       font: "serif",
       background: "#efe6da",
@@ -101,13 +130,12 @@ export const THEME_PRESETS: { name: string; theme: Theme }[] = [
       buttonBackground: "#3b2f25",
       buttonText: "#efe6da",
       buttonShape: "square",
-      buttonStyle: "fill",
     },
   },
   {
     name: "Menta",
     theme: {
-      layout: "classic",
+      ...THEME_BASE,
       font: "rounded",
       background: "#e3f4ee",
       text: "#0f3d33",
@@ -117,15 +145,99 @@ export const THEME_PRESETS: { name: string; theme: Theme }[] = [
       buttonStyle: "soft",
     },
   },
+  {
+    name: "Pôr do sol",
+    theme: {
+      ...THEME_BASE,
+      backgroundType: "gradient",
+      background: "#ff7e5f",
+      background2: "#7b2ff7",
+      text: "#ffffff",
+      buttonBackground: "#ffffff",
+      buttonText: "#3a1c5c",
+      buttonShape: "pill",
+      buttonShadow: true,
+    },
+  },
+  {
+    name: "Oceano",
+    theme: {
+      ...THEME_BASE,
+      layout: "card",
+      backgroundType: "gradient",
+      background: "#0f4c81",
+      background2: "#38bdf8",
+      text: "#0b2540",
+      buttonBackground: "#0f4c81",
+      buttonText: "#ffffff",
+      buttonShadow: true,
+    },
+  },
+  {
+    name: "Editorial",
+    theme: {
+      ...THEME_BASE,
+      layout: "hero",
+      font: "serif",
+      background: "#fbfaf7",
+      text: "#171717",
+      buttonBackground: "#171717",
+      buttonText: "#fbfaf7",
+      buttonShape: "square",
+      buttonStyle: "outline",
+      avatarShape: "square",
+    },
+  },
+  {
+    name: "Rosa",
+    theme: {
+      ...THEME_BASE,
+      font: "rounded",
+      backgroundType: "gradient",
+      background: "#ffe4ec",
+      background2: "#ffd1dc",
+      text: "#5b1a33",
+      buttonBackground: "#e0457b",
+      buttonText: "#ffffff",
+      buttonShape: "pill",
+      buttonShadow: true,
+      avatarShape: "rounded",
+    },
+  },
 ];
 
 export function defaultPageDoc(name: string): PageDoc {
   return {
     version: 1,
-    profile: { name, bio: "", avatarUrl: "", coverUrl: "" },
+    profile: { name, bio: "", avatarUrl: "", coverUrl: "", verified: false },
     socials: [],
     blocks: [createBlock("link")],
     theme: THEME_PRESETS[0].theme,
     seo: { title: "", description: "" },
   };
+}
+
+// One line that identifies a block in the editor list and in the analytics.
+export function blockSummary(block: Block): string {
+  switch (block.type) {
+    case "link":
+      return block.title || block.url;
+    case "heading":
+    case "text":
+      return block.text;
+    case "youtube":
+    case "spotify":
+      return block.url || "Sem endereço";
+    case "faq":
+    case "countdown":
+    case "subscribe":
+    case "product":
+    case "map":
+      return block.title;
+    case "whatsapp":
+    case "contact":
+      return block.buttonText;
+    case "image":
+      return block.alt || block.imageUrl || "Sem imagem";
+  }
 }

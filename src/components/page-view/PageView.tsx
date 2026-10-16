@@ -2,10 +2,12 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import type { Block, PageDoc } from "@/lib/page/schema";
+import { safeHttpUrl } from "@/lib/handles";
 import { SOCIAL_LABELS } from "@/lib/page/catalog";
 import { spotifyEmbedUrl, youtubeEmbedUrl } from "@/lib/page/embed";
-import { linkHref, socialHref } from "@/lib/page/links";
-import { buttonClass, themeVars } from "./theme";
+import { linkHref, mapsDirectionsUrl, mapsEmbedUrl, socialHref, vCard, whatsappHref } from "@/lib/page/links";
+import { SocialIcon } from "./SocialIcon";
+import { AVATAR_RADII, buttonClass, themeVars } from "./theme";
 
 type Props = {
   doc: PageDoc;
@@ -38,7 +40,7 @@ function track(handle: string | undefined, body: Record<string, string>) {
 }
 
 export function PageView({ doc, handle, footer }: Props) {
-  const { profile, theme } = doc;
+  const { theme } = doc;
   const blocks = doc.blocks.filter((block) => block.enabled);
 
   useEffect(() => {
@@ -46,46 +48,109 @@ export function PageView({ doc, handle, footer }: Props) {
     track(handle, { kind: "page_view", referrer: document.referrer });
   }, [handle]);
 
+  const content = (
+    <>
+      <Header doc={doc} />
+      <Socials doc={doc} handle={handle} />
+      <div className="mt-7 flex w-full flex-col gap-3.5">
+        {blocks.map((block) => (
+          <BlockView key={block.id} block={block} doc={doc} handle={handle} />
+        ))}
+      </div>
+      {footer}
+    </>
+  );
+
   return (
     <div style={themeVars(theme)} className="min-h-full bg-[var(--page-bg)] text-[var(--page-text)]">
-      {theme.layout === "cover" && profile.coverUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={profile.coverUrl} alt="" className="h-44 w-full object-cover" />
-      ) : null}
-      <main
-        className={`mx-auto flex w-full max-w-[580px] flex-col items-center px-5 pb-10 ${
-          theme.layout === "cover" && profile.coverUrl ? "-mt-14" : "pt-12"
-        }`}
-      >
-        {profile.avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={profile.avatarUrl}
-            alt={profile.name}
-            className="h-24 w-24 rounded-full border-4 border-[var(--page-bg)] object-cover"
-          />
-        ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[var(--btn-bg)] text-3xl font-semibold text-[var(--btn-text)]">
-            {profile.name.trim().charAt(0).toUpperCase() || "?"}
+      {theme.layout === "card" ? (
+        <main className="mx-auto w-full max-w-[580px] px-4 py-10">
+          <div className="flex flex-col items-center rounded-[28px] bg-white/90 px-5 pb-8 pt-10 shadow-2xl backdrop-blur">
+            {content}
           </div>
-        )}
-        <h1 className="mt-4 text-center text-xl font-bold">{profile.name}</h1>
-        {profile.bio ? (
-          <p className="mt-2 max-w-md whitespace-pre-line text-center text-[15px] opacity-80">
-            {profile.bio}
-          </p>
-        ) : null}
-
-        <Socials doc={doc} handle={handle} />
-
-        <div className="mt-7 flex w-full flex-col gap-3.5">
-          {blocks.map((block) => (
-            <BlockView key={block.id} block={block} doc={doc} handle={handle} />
-          ))}
-        </div>
-        {footer}
-      </main>
+        </main>
+      ) : (
+        <main className="mx-auto flex w-full max-w-[580px] flex-col items-center px-5 pb-10">{content}</main>
+      )}
     </div>
+  );
+}
+
+function Avatar({ doc, size }: { doc: PageDoc; size: string }) {
+  const { profile, theme } = doc;
+  const src = safeHttpUrl(profile.avatarUrl);
+  const shape = AVATAR_RADII[theme.avatarShape];
+  if (src) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt={profile.name} className={`${size} ${shape} border-4 border-[var(--page-bg)] object-cover`} />;
+  }
+  return (
+    <div className={`${size} ${shape} flex items-center justify-center bg-[var(--btn-bg)] text-3xl font-semibold text-[var(--btn-text)]`}>
+      {profile.name.trim().charAt(0).toUpperCase() || "?"}
+    </div>
+  );
+}
+
+function Name({ doc }: { doc: PageDoc }) {
+  return (
+    <h1 className="flex items-center justify-center gap-1.5 text-center text-xl font-bold">
+      {doc.profile.name}
+      {doc.profile.verified ? (
+        <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" role="img" aria-label="Verificado">
+          <path
+            fill="#1d9bf0"
+            d="M12 1.5l2.6 1.9 3.2-.1 1 3 2.6 1.9-1 3.1 1 3.1-2.6 1.9-1 3-3.2-.1L12 22.5l-2.6-1.9-3.2.1-1-3-2.6-1.9 1-3.1-1-3.1 2.6-1.9 1-3 3.2.1z"
+          />
+          <path fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" d="M7.8 12.3l2.8 2.8 5.6-5.8" />
+        </svg>
+      ) : null}
+    </h1>
+  );
+}
+
+function Bio({ doc }: { doc: PageDoc }) {
+  if (!doc.profile.bio) return null;
+  return <p className="mt-2 max-w-md whitespace-pre-line text-center text-[15px] opacity-80">{doc.profile.bio}</p>;
+}
+
+function Header({ doc }: { doc: PageDoc }) {
+  const { profile, theme } = doc;
+  const cover = theme.layout === "cover" ? safeHttpUrl(profile.coverUrl) : null;
+  const hero = theme.layout === "hero" ? safeHttpUrl(profile.avatarUrl) : null;
+
+  if (hero) {
+    // Big photo across the top that fades into the page background.
+    return (
+      <div className="-mx-5 flex w-[calc(100%+2.5rem)] flex-col items-center">
+        <div className="relative w-full">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={hero} alt={profile.name} className="aspect-[4/5] max-h-[460px] w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent from-55% to-[var(--page-bg)]" />
+          <div className="absolute inset-x-0 bottom-2 px-5">
+            <Name doc={doc} />
+          </div>
+        </div>
+        <div className="px-5">
+          <Bio doc={doc} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {cover ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={cover} alt="" className="-mx-5 h-44 w-[calc(100%+2.5rem)] max-w-none object-cover sm:rounded-b-3xl" />
+      ) : null}
+      <div className={`flex flex-col items-center ${cover ? "-mt-12" : theme.layout === "card" ? "" : "pt-12"}`}>
+        <Avatar doc={doc} size="h-24 w-24" />
+        <div className="mt-4">
+          <Name doc={doc} />
+        </div>
+        <Bio doc={doc} />
+      </div>
+    </>
   );
 }
 
@@ -94,42 +159,58 @@ function Socials({ doc, handle }: { doc: PageDoc; handle?: string }) {
     .map((social) => ({ social, href: socialHref(social) }))
     .filter((item): item is { social: (typeof doc.socials)[number]; href: string } => !!item.href);
   if (links.length === 0) return null;
+  const icons = doc.theme.socialStyle === "icons";
   return (
-    <nav className="mt-4 flex flex-wrap justify-center gap-2">
+    <nav className={`mt-4 flex flex-wrap justify-center ${icons ? "gap-1" : "gap-2"}`}>
       {links.map(({ social, href }) => (
         <a
           key={`${social.platform}-${href}`}
           href={href}
           target="_blank"
           rel="noopener noreferrer"
+          aria-label={SOCIAL_LABELS[social.platform]}
           onClick={() => track(handle, { kind: "social_click", target: social.platform })}
-          className="rounded-full border border-current/25 px-3 py-1 text-sm opacity-85 hover:opacity-100"
+          className={
+            icons
+              ? "flex h-11 w-11 items-center justify-center rounded-full opacity-85 transition hover:scale-110 hover:opacity-100"
+              : "rounded-full border border-current/25 px-3 py-1 text-sm opacity-85 hover:opacity-100"
+          }
         >
-          {SOCIAL_LABELS[social.platform]}
+          {icons ? <SocialIcon platform={social.platform} className="h-[22px] w-[22px]" /> : SOCIAL_LABELS[social.platform]}
         </a>
       ))}
     </nav>
   );
 }
 
+// Shown dimmed in the editor preview while a block is missing what it needs;
+// visitors never see it.
+function Placeholder({ handle, className, children }: { handle?: string; className: string; children: React.ReactNode }) {
+  return handle ? null : <span className={`${className} opacity-40`}>{children}</span>;
+}
+
+const softBox = "rounded-[var(--box-radius)] bg-[color-mix(in_srgb,var(--page-text)_7%,transparent)]";
+
 function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?: string }) {
-  const btn = buttonClass(doc.theme.buttonStyle);
+  const btn = buttonClass(doc.theme);
+  const click = (target: string) => track(handle, { kind: "block_click", blockId: block.id, target });
   switch (block.type) {
     case "link": {
       const href = linkHref(block.url);
-      if (!href) {
-        // In the editor preview, show it dimmed so a new link doesn't vanish
-        // before its address is filled in. Visitors never see it.
-        return handle ? null : <span className={`${btn} opacity-40`}>{block.title || "Link sem endereço"}</span>;
-      }
+      if (!href) return <Placeholder handle={handle} className={btn}>{block.title || "Link sem endereço"}</Placeholder>;
+      const thumb = safeHttpUrl(block.imageUrl);
       return (
         <a
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className={btn}
-          onClick={() => track(handle, { kind: "block_click", blockId: block.id, target: href })}
+          className={`${btn} relative ${thumb ? "px-16" : ""} ${block.highlight ? "btn-highlight" : ""}`}
+          onClick={() => click(href)}
         >
+          {thumb ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={thumb} alt="" className="absolute left-1.5 top-1/2 h-10 w-10 -translate-y-1/2 rounded-[calc(var(--btn-radius)*0.8)] object-cover" />
+          ) : null}
           {block.title || href}
         </a>
       );
@@ -145,7 +226,7 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
         <iframe
           src={src}
           title="Vídeo do YouTube"
-          className="aspect-video w-full rounded-[var(--btn-radius)]"
+          className="aspect-video w-full rounded-[var(--box-radius)]"
           allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           loading="lazy"
@@ -171,10 +252,7 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
           {block.title ? <h2 className="mb-2 text-center font-semibold">{block.title}</h2> : null}
           <div className="flex flex-col gap-2">
             {block.items.map((item, index) => (
-              <details
-                key={index}
-                className="rounded-[var(--btn-radius)] bg-[color-mix(in_srgb,var(--page-text)_7%,transparent)] px-4 py-3"
-              >
+              <details key={index} className={`${softBox} px-4 py-3`}>
                 <summary className="cursor-pointer font-medium">{item.question}</summary>
                 <p className="mt-2 whitespace-pre-line text-[15px] opacity-85">{item.answer}</p>
               </details>
@@ -186,6 +264,99 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
       return <Countdown title={block.title} endsAt={block.endsAt} />;
     case "subscribe":
       return <SubscribeForm block={block} handle={handle} buttonClassName={btn} />;
+    case "whatsapp": {
+      const href = whatsappHref(block.phone, block.message);
+      const label = (
+        <span className="flex items-center justify-center gap-2">
+          <SocialIcon platform="whatsapp" className="h-5 w-5" />
+          {block.buttonText || "WhatsApp"}
+        </span>
+      );
+      if (!href) return <Placeholder handle={handle} className={btn}>{label}</Placeholder>;
+      return (
+        <a href={href} target="_blank" rel="noopener noreferrer" className={btn} onClick={() => click("whatsapp")}>
+          {label}
+        </a>
+      );
+    }
+    case "image": {
+      const src = safeHttpUrl(block.imageUrl);
+      if (!src) return <Placeholder handle={handle} className={`${softBox} block w-full py-10 text-center`}>Imagem sem endereço</Placeholder>;
+      // eslint-disable-next-line @next/next/no-img-element
+      const img = <img src={src} alt={block.alt} className="w-full rounded-[var(--box-radius)] object-cover" loading="lazy" />;
+      const href = linkHref(block.url);
+      if (!href) return img;
+      return (
+        <a href={href} target="_blank" rel="noopener noreferrer" className="block transition-transform hover:scale-[1.01]" onClick={() => click(href)}>
+          {img}
+        </a>
+      );
+    }
+    case "product": {
+      const src = safeHttpUrl(block.imageUrl);
+      const href = linkHref(block.url);
+      return (
+        <section className={`${softBox} w-full overflow-hidden`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {src ? <img src={src} alt={block.title} className="aspect-[4/3] w-full object-cover" loading="lazy" /> : null}
+          <div className="flex flex-col gap-1.5 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="font-semibold">{block.title}</h2>
+              {block.price ? <span className="shrink-0 font-bold">{block.price}</span> : null}
+            </div>
+            {block.description ? <p className="whitespace-pre-line text-[15px] opacity-80">{block.description}</p> : null}
+            {href ? (
+              <a href={href} target="_blank" rel="noopener noreferrer" className={`${btn} mt-2`} onClick={() => click(href)}>
+                {block.buttonText || "Comprar"}
+              </a>
+            ) : (
+              <Placeholder handle={handle} className={`${btn} mt-2`}>{block.buttonText || "Comprar"}</Placeholder>
+            )}
+          </div>
+        </section>
+      );
+    }
+    case "map": {
+      const address = block.address.trim();
+      if (!address) return <Placeholder handle={handle} className={`${softBox} block w-full py-10 text-center`}>Mapa sem endereço</Placeholder>;
+      return (
+        <section className="flex w-full flex-col gap-2.5">
+          {block.title ? <h2 className="text-center font-semibold">{block.title}</h2> : null}
+          <iframe
+            src={mapsEmbedUrl(address)}
+            title={`Mapa: ${address}`}
+            className="h-56 w-full rounded-[var(--box-radius)]"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+          <p className="text-center text-sm opacity-75">{address}</p>
+          <a href={mapsDirectionsUrl(address)} target="_blank" rel="noopener noreferrer" className={btn} onClick={() => click("maps")}>
+            Como chegar
+          </a>
+        </section>
+      );
+    }
+    case "contact": {
+      const ready = block.name.trim() && (block.phone.trim() || block.email.trim());
+      if (!ready) return <Placeholder handle={handle} className={btn}>{block.buttonText || "Salvar contato"}</Placeholder>;
+      return (
+        <button
+          type="button"
+          className={btn}
+          onClick={() => {
+            click("vcard");
+            const url = URL.createObjectURL(new Blob([vCard(block)], { type: "text/vcard" }));
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${block.name.trim() || "contato"}.vcf`;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+          }}
+        >
+          {block.buttonText || "Salvar contato"}
+        </button>
+      );
+    }
   }
 }
 
@@ -211,7 +382,7 @@ function Countdown({ title, endsAt }: { title: string; endsAt: string }) {
           ["seg", Math.floor(left / 1000) % 60],
         ];
   return (
-    <section className="w-full rounded-[var(--btn-radius)] bg-[color-mix(in_srgb,var(--page-text)_7%,transparent)] p-4 text-center">
+    <section className="w-full rounded-[var(--box-radius)] bg-[color-mix(in_srgb,var(--page-text)_7%,transparent)] p-4 text-center">
       <p className="font-medium">{title}</p>
       <div className="mt-2 flex justify-center gap-4 tabular-nums">
         {(parts ?? []).map(([label, value]) => (

@@ -4,7 +4,7 @@ import { toCsv } from "./csv";
 import { handleError, normalizeHandle, safeHttpUrl, shortCodeError } from "./handles";
 import { BLOCK_CATALOG, createBlock, defaultPageDoc, THEME_PRESETS } from "./page/catalog";
 import { spotifyEmbedUrl, youtubeEmbedUrl } from "./page/embed";
-import { linkHref, socialHref } from "./page/links";
+import { linkHref, socialHref, vCard, whatsappHref } from "./page/links";
 import { pageDocSchema, type BlockType } from "./page/schema";
 
 describe("youtubeEmbedUrl", () => {
@@ -81,7 +81,50 @@ describe("links", () => {
   });
 });
 
+describe("whatsappHref", () => {
+  it("adds Brazil's code to local numbers and encodes the message", () => {
+    expect(whatsappHref("(11) 99999-0000", "Olá, tudo bem?")).toBe("https://wa.me/5511999990000?text=Ol%C3%A1%2C%20tudo%20bem%3F");
+    expect(whatsappHref("+55 11 99999-0000", "")).toBe("https://wa.me/5511999990000");
+    expect(whatsappHref("+1 415 555 0100", "")).toBe("https://wa.me/14155550100");
+    expect(whatsappHref("123", "oi")).toBeNull();
+  });
+});
+
+describe("vCard", () => {
+  it("escapes separators and skips empty fields", () => {
+    expect(vCard({ name: "Ana; Silva", company: "", phone: "+55 (11) 99999-0000", email: "" })).toBe(
+      "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ana\\; Silva\r\nN:Ana\\; Silva;;;;\r\nTEL;TYPE=CELL:+5511999990000\r\nEND:VCARD\r\n",
+    );
+  });
+});
+
 describe("page document", () => {
+  it("fills new fields with defaults on pages saved before them", () => {
+    const doc = defaultPageDoc("Ana");
+    const oldProfile: Partial<typeof doc.profile> = { ...doc.profile };
+    delete oldProfile.verified;
+    const oldTheme = {
+      layout: "classic",
+      font: "sans",
+      background: "#ffffff",
+      text: "#000000",
+      buttonBackground: "#000000",
+      buttonText: "#ffffff",
+      buttonShape: "pill",
+      buttonStyle: "fill",
+    };
+    const parsed = pageDocSchema.parse({
+      ...doc,
+      profile: oldProfile,
+      theme: oldTheme,
+      blocks: [{ id: "a", enabled: true, type: "link", title: "Site", url: "https://exemplo.com" }],
+    });
+    expect(parsed.profile.verified).toBe(false);
+    expect(parsed.theme.backgroundType).toBe("solid");
+    expect(parsed.theme.socialStyle).toBe("icons");
+    expect(parsed.blocks[0]).toMatchObject({ imageUrl: "", highlight: false });
+  });
+
   it("default page and every new block pass the schema", () => {
     const doc = defaultPageDoc("Ana");
     doc.blocks = (Object.keys(BLOCK_CATALOG) as BlockType[]).map(createBlock);
