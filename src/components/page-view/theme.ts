@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { imageSrc } from "@/lib/page/links";
 import type { Theme } from "@/lib/page/schema";
 
 const FONT_STACKS: Record<Theme["font"], string> = {
@@ -6,12 +7,29 @@ const FONT_STACKS: Record<Theme["font"], string> = {
   serif: 'ui-serif, Georgia, "Times New Roman", serif',
   mono: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
   rounded: 'ui-rounded, "SF Pro Rounded", "Nunito", system-ui, sans-serif',
+  elegant: '"Playfair Display", ui-serif, Georgia, serif',
+  condensed: '"Oswald", "Arial Narrow", ui-sans-serif, sans-serif',
+  tech: '"Space Mono", ui-monospace, Menlo, monospace',
 };
 
 const RADII: Record<Theme["buttonShape"], string> = {
   square: "4px",
   rounded: "14px",
   pill: "999px",
+};
+
+// Cards, images and embeds follow the button shape, but a pill-shaped card
+// would turn into an oval, so they stop at a moderate rounding.
+const BOX_RADII: Record<Theme["buttonShape"], string> = {
+  square: "4px",
+  rounded: "14px",
+  pill: "24px",
+};
+
+export const AVATAR_RADII: Record<Theme["avatarShape"], string> = {
+  circle: "rounded-full",
+  rounded: "rounded-3xl",
+  square: "rounded-md",
 };
 
 export function themeVars(theme: Theme): CSSProperties {
@@ -21,19 +39,35 @@ export function themeVars(theme: Theme): CSSProperties {
     "--btn-bg": theme.buttonBackground,
     "--btn-text": theme.buttonText,
     "--btn-radius": RADII[theme.buttonShape],
+    "--box-radius": BOX_RADII[theme.buttonShape],
+    "--page-accent": theme.accent,
+    "--heading-font": FONT_STACKS[theme.headingFont === "same" ? theme.font : theme.headingFont],
     fontFamily: FONT_STACKS[theme.font],
+    ...pageBackground(theme),
   } as CSSProperties;
 }
 
-export function buttonClass(style: Theme["buttonStyle"]): string {
+// The solid colour always stays as the fallback under a gradient or image.
+function pageBackground(theme: Theme): CSSProperties {
+  if (theme.backgroundType === "gradient") {
+    return { backgroundImage: `linear-gradient(160deg, ${theme.background}, ${theme.background2})` };
+  }
+  const image = theme.backgroundType === "image" ? imageSrc(theme.backgroundImageUrl) : null;
+  // imageSrc returns a serialised URL (quotes percent-encoded) or a fixed local path.
+  if (image) return { backgroundImage: `url("${image}")`, backgroundSize: "cover", backgroundPosition: "center" };
+  return {};
+}
+
+export function buttonClass(theme: Theme): string {
   const base =
     "block w-full px-5 py-3.5 text-center font-medium rounded-[var(--btn-radius)] transition-transform hover:scale-[1.015] active:scale-[0.99]";
-  switch (style) {
+  const shadow = theme.buttonShadow ? " shadow-[0_6px_18px_-6px_rgba(0,0,0,0.35)]" : "";
+  switch (theme.buttonStyle) {
     case "fill":
-      return `${base} bg-[var(--btn-bg)] text-[var(--btn-text)]`;
+      return `${base}${shadow} bg-[var(--btn-bg)] text-[var(--btn-text)]`;
     case "outline":
-      return `${base} border-2 border-[var(--btn-bg)] text-[var(--page-text)]`;
+      return `${base}${shadow} border-2 border-[var(--btn-bg)] text-[var(--page-text)]`;
     case "soft":
-      return `${base} bg-[color-mix(in_srgb,var(--btn-bg)_16%,transparent)] text-[var(--page-text)]`;
+      return `${base}${shadow} bg-[color-mix(in_srgb,var(--btn-bg)_16%,transparent)] text-[var(--page-text)]`;
   }
 }

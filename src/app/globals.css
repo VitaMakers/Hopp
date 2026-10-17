@@ -17,3 +17,20 @@ body {
     @apply rounded-lg bg-stone-900 px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-stone-700 disabled:opacity-50;
   }
 }
+
+/* "Destacar" on a link block: a short nudge every few seconds. */
+@keyframes nudge {
+  0%, 82%, 100% { transform: translateX(0); }
+  85% { transform: translateX(-4px) rotate(-1deg); }
+  88% { transform: translateX(4px) rotate(1deg); }
+  91% { transform: translateX(-3px); }
+  94% { transform: translateX(2px); }
+}
+.btn-highlight {
+  animation: nudge 3.5s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-highlight {
+    animation: none;
+  }
+}

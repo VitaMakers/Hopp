@@ -7,9 +7,11 @@ import type { PageDoc } from "@/lib/page/schema";
 import { BlocksPanel } from "./BlocksPanel";
 import { ProfilePanel } from "./ProfilePanel";
 import { SeoPanel } from "./SeoPanel";
+import { TemplatesPanel } from "./TemplatesPanel";
 import { ThemePanel } from "./ThemePanel";
 
 const TABS = [
+  { id: "templates", label: "Modelos" },
   { id: "blocks", label: "Blocos" },
   { id: "profile", label: "Perfil" },
   { id: "theme", label: "Aparência" },
@@ -102,6 +104,7 @@ export function Editor({
         </div>
         {message ? <p className="mb-3 text-sm text-stone-700">{message}</p> : null}
 
+        {tab === "templates" ? <TemplatesPanel doc={doc} onChange={setDoc} /> : null}
         {tab === "blocks" ? <BlocksPanel doc={doc} onChange={setDoc} /> : null}
         {tab === "profile" ? <ProfilePanel doc={doc} onChange={setDoc} /> : null}
         {tab === "theme" ? <ThemePanel doc={doc} onChange={setDoc} /> : null}

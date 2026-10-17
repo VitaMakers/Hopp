@@ -18,7 +18,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { BLOCK_CATALOG, createBlock } from "@/lib/page/catalog";
+import { BLOCK_CATALOG, blockSummary, createBlock } from "@/lib/page/catalog";
 import type { Block, BlockType, PageDoc } from "@/lib/page/schema";
 import { BlockFields } from "./BlockFields";
 
@@ -91,23 +91,6 @@ export function BlocksPanel({ doc, onChange }: PanelProps) {
       </DndContext>
     </div>
   );
-}
-
-function blockSummary(block: Block): string {
-  switch (block.type) {
-    case "link":
-      return block.title || block.url;
-    case "heading":
-    case "text":
-      return block.text;
-    case "youtube":
-    case "spotify":
-      return block.url || "Sem endereço";
-    case "faq":
-    case "countdown":
-    case "subscribe":
-      return block.title;
-  }
 }
 
 function SortableBlock({

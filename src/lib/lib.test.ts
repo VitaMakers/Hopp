@@ -1,10 +1,12 @@
+import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { summarize, type EventRow } from "./analytics";
 import { toCsv } from "./csv";
 import { handleError, normalizeHandle, safeHttpUrl, shortCodeError } from "./handles";
 import { BLOCK_CATALOG, createBlock, defaultPageDoc, THEME_PRESETS } from "./page/catalog";
 import { spotifyEmbedUrl, youtubeEmbedUrl } from "./page/embed";
-import { linkHref, socialHref } from "./page/links";
+import { imageSrc, linkHref, socialHref, vCard, whatsappHref } from "./page/links";
+import { TEMPLATES } from "./page/templates";
 import { pageDocSchema, type BlockType } from "./page/schema";
 
 describe("youtubeEmbedUrl", () => {
@@ -81,7 +83,69 @@ describe("links", () => {
   });
 });
 
+describe("whatsappHref", () => {
+  it("adds Brazil's code to local numbers and encodes the message", () => {
+    expect(whatsappHref("(11) 99999-0000", "Olá, tudo bem?")).toBe("https://wa.me/5511999990000?text=Ol%C3%A1%2C%20tudo%20bem%3F");
+    expect(whatsappHref("+55 11 99999-0000", "")).toBe("https://wa.me/5511999990000");
+    expect(whatsappHref("+1 415 555 0100", "")).toBe("https://wa.me/14155550100");
+    expect(whatsappHref("123", "oi")).toBeNull();
+  });
+});
+
+describe("templates", () => {
+  it("every template builds a valid page with its sample images", () => {
+    for (const template of TEMPLATES) {
+      const doc = template.build("Ana");
+      expect(pageDocSchema.safeParse(doc).success, template.id).toBe(true);
+      expect(new Set(doc.blocks.map((block) => block.id)).size).toBe(doc.blocks.length);
+      const images = JSON.stringify(doc).match(/\/templates\/[\w-]+\.jpg/g) ?? [];
+      for (const path of images) expect(existsSync(`public${path}`), path).toBe(true);
+    }
+  });
+
+  it("only lets template sample paths through as local images", () => {
+    expect(imageSrc("/templates/mesa.jpg")).toBe("/templates/mesa.jpg");
+    expect(imageSrc("/templates/../etc/passwd")).toBeNull();
+    expect(imageSrc("/outra/coisa.jpg")).toBeNull();
+    expect(imageSrc("javascript:alert(1)")).toBeNull();
+  });
+});
+
+describe("vCard", () => {
+  it("escapes separators and skips empty fields", () => {
+    expect(vCard({ name: "Ana; Silva", company: "", phone: "+55 (11) 99999-0000", email: "" })).toBe(
+      "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ana\\; Silva\r\nN:Ana\\; Silva;;;;\r\nTEL;TYPE=CELL:+5511999990000\r\nEND:VCARD\r\n",
+    );
+  });
+});
+
 describe("page document", () => {
+  it("fills new fields with defaults on pages saved before them", () => {
+    const doc = defaultPageDoc("Ana");
+    const oldProfile: Partial<typeof doc.profile> = { ...doc.profile };
+    delete oldProfile.verified;
+    const oldTheme = {
+      layout: "classic",
+      font: "sans",
+      background: "#ffffff",
+      text: "#000000",
+      buttonBackground: "#000000",
+      buttonText: "#ffffff",
+      buttonShape: "pill",
+      buttonStyle: "fill",
+    };
+    const parsed = pageDocSchema.parse({
+      ...doc,
+      profile: oldProfile,
+      theme: oldTheme,
+      blocks: [{ id: "a", enabled: true, type: "link", title: "Site", url: "https://exemplo.com" }],
+    });
+    expect(parsed.profile.verified).toBe(false);
+    expect(parsed.theme.backgroundType).toBe("solid");
+    expect(parsed.theme.socialStyle).toBe("icons");
+    expect(parsed.blocks[0]).toMatchObject({ imageUrl: "", highlight: false });
+  });
+
   it("default page and every new block pass the schema", () => {
     const doc = defaultPageDoc("Ana");
     doc.blocks = (Object.keys(BLOCK_CATALOG) as BlockType[]).map(createBlock);

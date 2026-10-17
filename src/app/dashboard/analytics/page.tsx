@@ -1,5 +1,5 @@
 import { summarize, type EventRow } from "@/lib/analytics";
-import { SOCIAL_LABELS } from "@/lib/page/catalog";
+import { BLOCK_CATALOG, SOCIAL_LABELS, blockSummary } from "@/lib/page/catalog";
 import { pageDocSchema, type SocialPlatform } from "@/lib/page/schema";
 import { getOwner } from "../context";
 
@@ -27,7 +27,7 @@ export default async function AnalyticsPage() {
   const blockNames = new Map<string, string>();
   if (doc.success) {
     for (const block of doc.data.blocks) {
-      blockNames.set(block.id, block.type === "link" ? block.title || block.url : block.type);
+      blockNames.set(block.id, blockSummary(block) || BLOCK_CATALOG[block.type].label);
     }
   }
   const linkNames = new Map((links ?? []).map((link) => [link.id, link.title || `/l/${link.code}`]));

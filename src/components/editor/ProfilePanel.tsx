@@ -2,7 +2,7 @@
 
 import { SOCIAL_LABELS } from "@/lib/page/catalog";
 import { SOCIAL_PLATFORMS, type PageDoc, type SocialPlatform } from "@/lib/page/schema";
-import { Card, TextArea, TextField } from "./fields";
+import { Card, TextArea, TextField, Toggle } from "./fields";
 
 type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void };
 
@@ -16,6 +16,15 @@ export function ProfilePanel({ doc, onChange }: PanelProps) {
     <div className="flex flex-col gap-4">
       <Card title="Perfil">
         <TextField label="Nome" value={doc.profile.name} maxLength={80} onChange={(name) => setProfile({ name })} />
+        <Toggle label="Mostrar selo de verificado" checked={doc.profile.verified} onChange={(verified) => setProfile({ verified })} />
+        <TextField
+          label="WhatsApp flutuante (número com DDD, opcional)"
+          type="tel"
+          value={doc.profile.floatingWhatsapp}
+          maxLength={30}
+          placeholder="(11) 99999-9999"
+          onChange={(floatingWhatsapp) => setProfile({ floatingWhatsapp })}
+        />
         <TextArea label="Bio" value={doc.profile.bio} maxLength={300} onChange={(bio) => setProfile({ bio })} />
         <TextField
           label="Foto (link da imagem)"
@@ -25,7 +34,7 @@ export function ProfilePanel({ doc, onChange }: PanelProps) {
           onChange={(avatarUrl) => setProfile({ avatarUrl })}
         />
         <TextField
-          label="Capa (link da imagem, usada no layout com capa)"
+          label="Capa (link da imagem, usada no layout Com capa)"
           type="url"
           value={doc.profile.coverUrl}
           placeholder="https://..."
