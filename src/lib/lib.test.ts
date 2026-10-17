@@ -1,10 +1,12 @@
+import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { summarize, type EventRow } from "./analytics";
 import { toCsv } from "./csv";
 import { handleError, normalizeHandle, safeHttpUrl, shortCodeError } from "./handles";
 import { BLOCK_CATALOG, createBlock, defaultPageDoc, THEME_PRESETS } from "./page/catalog";
 import { spotifyEmbedUrl, youtubeEmbedUrl } from "./page/embed";
-import { linkHref, socialHref, vCard, whatsappHref } from "./page/links";
+import { imageSrc, linkHref, socialHref, vCard, whatsappHref } from "./page/links";
+import { TEMPLATES } from "./page/templates";
 import { pageDocSchema, type BlockType } from "./page/schema";
 
 describe("youtubeEmbedUrl", () => {
@@ -87,6 +89,25 @@ describe("whatsappHref", () => {
     expect(whatsappHref("+55 11 99999-0000", "")).toBe("https://wa.me/5511999990000");
     expect(whatsappHref("+1 415 555 0100", "")).toBe("https://wa.me/14155550100");
     expect(whatsappHref("123", "oi")).toBeNull();
+  });
+});
+
+describe("templates", () => {
+  it("every template builds a valid page with its sample images", () => {
+    for (const template of TEMPLATES) {
+      const doc = template.build("Ana");
+      expect(pageDocSchema.safeParse(doc).success, template.id).toBe(true);
+      expect(new Set(doc.blocks.map((block) => block.id)).size).toBe(doc.blocks.length);
+      const images = JSON.stringify(doc).match(/\/templates\/[\w-]+\.jpg/g) ?? [];
+      for (const path of images) expect(existsSync(`public${path}`), path).toBe(true);
+    }
+  });
+
+  it("only lets template sample paths through as local images", () => {
+    expect(imageSrc("/templates/mesa.jpg")).toBe("/templates/mesa.jpg");
+    expect(imageSrc("/templates/../etc/passwd")).toBeNull();
+    expect(imageSrc("/outra/coisa.jpg")).toBeNull();
+    expect(imageSrc("javascript:alert(1)")).toBeNull();
   });
 });
 

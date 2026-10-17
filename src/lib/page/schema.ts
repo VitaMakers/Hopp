@@ -30,6 +30,14 @@ const blockBase = {
   enabled: z.boolean(),
 };
 
+const color = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+// Empty means "use the theme's accent".
+const optionalColor = z.union([color, z.literal("")]).default("");
+
+export const LINK_DISPLAYS = ["button", "banner", "card"] as const;
+export const HEADING_STYLES = ["plain", "divider", "section", "display", "badge"] as const;
+export const TEXT_STYLES = ["plain", "quote", "footer"] as const;
+
 export const linkBlockSchema = z.object({
   ...blockBase,
   type: z.literal("link"),
@@ -37,18 +45,33 @@ export const linkBlockSchema = z.object({
   url: z.string().max(2000),
   imageUrl: z.string().max(1000).default(""),
   highlight: z.boolean().default(false),
+  // Banner: image behind the text. Card: label, title, subtitle and an arrow.
+  display: z.enum(LINK_DISPLAYS).default("button"),
+  label: z.string().max(40).default(""),
+  subtitle: z.string().max(200).default(""),
+  buttonText: z.string().max(40).default(""),
+  accent: optionalColor,
 });
 
 export const headingBlockSchema = z.object({
   ...blockBase,
   type: z.literal("heading"),
   text: z.string().max(120),
+  style: z.enum(HEADING_STYLES).default("plain"),
 });
 
 export const textBlockSchema = z.object({
   ...blockBase,
   type: z.literal("text"),
   text: z.string().max(4000),
+  style: z.enum(TEXT_STYLES).default("plain"),
+  title: z.string().max(200).default(""),
+});
+
+export const statsBlockSchema = z.object({
+  ...blockBase,
+  type: z.literal("stats"),
+  items: z.array(z.object({ value: z.string().max(20), label: z.string().max(60) })).max(6),
 });
 
 export const youtubeBlockSchema = z.object({
@@ -107,6 +130,7 @@ export const imageBlockSchema = z.object({
 export const productBlockSchema = z.object({
   ...blockBase,
   type: z.literal("product"),
+  label: z.string().max(40).default(""),
   title: z.string().max(120),
   description: z.string().max(500),
   price: z.string().max(40),
@@ -146,17 +170,16 @@ export const blockSchema = z.discriminatedUnion("type", [
   productBlockSchema,
   mapBlockSchema,
   contactBlockSchema,
+  statsBlockSchema,
 ]);
 
 export const BUTTON_SHAPES = ["square", "rounded", "pill"] as const;
 export const BUTTON_STYLES = ["fill", "outline", "soft"] as const;
-export const FONTS = ["sans", "serif", "mono", "rounded"] as const;
-export const LAYOUTS = ["classic", "cover", "card", "hero"] as const;
+export const FONTS = ["sans", "serif", "mono", "rounded", "elegant", "condensed", "tech"] as const;
+export const LAYOUTS = ["classic", "cover", "card", "hero", "name", "poster", "blank"] as const;
 export const BACKGROUND_TYPES = ["solid", "gradient", "image"] as const;
 export const AVATAR_SHAPES = ["circle", "rounded", "square"] as const;
 export const SOCIAL_STYLES = ["icons", "pills"] as const;
-
-const color = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 
 export const themeSchema = z.object({
   layout: z.enum(LAYOUTS),
@@ -173,6 +196,9 @@ export const themeSchema = z.object({
   backgroundImageUrl: z.string().max(1000).default(""),
   avatarShape: z.enum(AVATAR_SHAPES).default("circle"),
   socialStyle: z.enum(SOCIAL_STYLES).default("icons"),
+  // Highlights: banner labels, stats, section titles. Headings can use their own font.
+  accent: color.default("#3b6ef5"),
+  headingFont: z.enum(["same", ...FONTS]).default("same"),
 });
 
 export const pageDocSchema = z.object({
@@ -183,6 +209,8 @@ export const pageDocSchema = z.object({
     avatarUrl: z.string().max(1000),
     coverUrl: z.string().max(1000),
     verified: z.boolean().default(false),
+    // A WhatsApp number shown as a floating button on the public page.
+    floatingWhatsapp: z.string().max(30).default(""),
   }),
   socials: z.array(socialLinkSchema).max(20),
   blocks: z.array(blockSchema).max(100),

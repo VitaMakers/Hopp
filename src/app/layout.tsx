@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
 import { APP_NAME, env } from "@/lib/env";
+// Self-hosted display fonts used by the page themes ("Elegante", "Impacto", "Técnica").
+import "@fontsource/playfair-display/latin-400.css";
+import "@fontsource/playfair-display/latin-700.css";
+import "@fontsource/oswald/latin-500.css";
+import "@fontsource/oswald/latin-700.css";
+import "@fontsource/space-mono/latin-400.css";
+import "@fontsource/space-mono/latin-700.css";
 import "./globals.css";
 
 export const metadata: Metadata = {

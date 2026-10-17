@@ -11,6 +11,9 @@ const LAYOUT_LABELS: Record<Theme["layout"], string> = {
   cover: "Com capa",
   card: "Cartão",
   hero: "Foto grande",
+  name: "Só o nome",
+  poster: "Capa com nome",
+  blank: "Sem cabeçalho",
 };
 const BACKGROUND_LABELS: Record<Theme["backgroundType"], string> = { solid: "Cor", gradient: "Degradê", image: "Imagem" };
 const AVATAR_LABELS: Record<Theme["avatarShape"], string> = { circle: "Redonda", rounded: "Arredondada", square: "Quadrada" };
@@ -20,6 +23,9 @@ const FONT_LABELS: Record<Theme["font"], string> = {
   serif: "Clássica",
   mono: "Máquina",
   rounded: "Arredondada",
+  elegant: "Elegante",
+  condensed: "Impacto",
+  tech: "Técnica",
 };
 const SHAPE_LABELS: Record<Theme["buttonShape"], string> = { square: "Reto", rounded: "Arredondado", pill: "Pílula" };
 const STYLE_LABELS: Record<Theme["buttonStyle"], string> = { fill: "Preenchido", outline: "Contorno", soft: "Suave" };
@@ -29,6 +35,7 @@ const COLOR_LABELS = {
   text: "Texto",
   buttonBackground: "Botão",
   buttonText: "Texto do botão",
+  accent: "Destaque",
 } as const;
 
 function Choice<T extends string>({
@@ -109,6 +116,12 @@ export function ThemePanel({ doc, onChange }: PanelProps) {
           />
         ) : null}
         <Choice label="Fonte" value={doc.theme.font} options={FONT_LABELS} onChange={(font) => setTheme({ font })} />
+        <Choice
+          label="Fonte dos títulos"
+          value={doc.theme.headingFont}
+          options={{ same: "Igual ao texto", ...FONT_LABELS }}
+          onChange={(headingFont) => setTheme({ headingFont })}
+        />
         <Choice label="Formato do botão" value={doc.theme.buttonShape} options={SHAPE_LABELS} onChange={(buttonShape) => setTheme({ buttonShape })} />
         <Choice label="Estilo do botão" value={doc.theme.buttonStyle} options={STYLE_LABELS} onChange={(buttonStyle) => setTheme({ buttonStyle })} />
         <Toggle label="Sombra nos botões" checked={doc.theme.buttonShadow} onChange={(buttonShadow) => setTheme({ buttonShadow })} />

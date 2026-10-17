@@ -5,6 +5,7 @@ const RESERVED = new Set([
   "app",
   "auth",
   "dashboard",
+  "templates",
   "entrar",
   "help",
   "l",

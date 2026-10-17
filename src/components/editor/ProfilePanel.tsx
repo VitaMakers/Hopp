@@ -17,6 +17,14 @@ export function ProfilePanel({ doc, onChange }: PanelProps) {
       <Card title="Perfil">
         <TextField label="Nome" value={doc.profile.name} maxLength={80} onChange={(name) => setProfile({ name })} />
         <Toggle label="Mostrar selo de verificado" checked={doc.profile.verified} onChange={(verified) => setProfile({ verified })} />
+        <TextField
+          label="WhatsApp flutuante (número com DDD, opcional)"
+          type="tel"
+          value={doc.profile.floatingWhatsapp}
+          maxLength={30}
+          placeholder="(11) 99999-9999"
+          onChange={(floatingWhatsapp) => setProfile({ floatingWhatsapp })}
+        />
         <TextArea label="Bio" value={doc.profile.bio} maxLength={300} onChange={(bio) => setProfile({ bio })} />
         <TextField
           label="Foto (link da imagem)"

@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { safeHttpUrl } from "@/lib/handles";
+import { imageSrc } from "@/lib/page/links";
 import type { Theme } from "@/lib/page/schema";
 
 const FONT_STACKS: Record<Theme["font"], string> = {
@@ -7,6 +7,9 @@ const FONT_STACKS: Record<Theme["font"], string> = {
   serif: 'ui-serif, Georgia, "Times New Roman", serif',
   mono: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
   rounded: 'ui-rounded, "SF Pro Rounded", "Nunito", system-ui, sans-serif',
+  elegant: '"Playfair Display", ui-serif, Georgia, serif',
+  condensed: '"Oswald", "Arial Narrow", ui-sans-serif, sans-serif',
+  tech: '"Space Mono", ui-monospace, Menlo, monospace',
 };
 
 const RADII: Record<Theme["buttonShape"], string> = {
@@ -37,6 +40,8 @@ export function themeVars(theme: Theme): CSSProperties {
     "--btn-text": theme.buttonText,
     "--btn-radius": RADII[theme.buttonShape],
     "--box-radius": BOX_RADII[theme.buttonShape],
+    "--page-accent": theme.accent,
+    "--heading-font": FONT_STACKS[theme.headingFont === "same" ? theme.font : theme.headingFont],
     fontFamily: FONT_STACKS[theme.font],
     ...pageBackground(theme),
   } as CSSProperties;
@@ -47,8 +52,8 @@ function pageBackground(theme: Theme): CSSProperties {
   if (theme.backgroundType === "gradient") {
     return { backgroundImage: `linear-gradient(160deg, ${theme.background}, ${theme.background2})` };
   }
-  const image = theme.backgroundType === "image" ? safeHttpUrl(theme.backgroundImageUrl) : null;
-  // safeHttpUrl returns a serialised URL, where quotes are percent-encoded.
+  const image = theme.backgroundType === "image" ? imageSrc(theme.backgroundImageUrl) : null;
+  // imageSrc returns a serialised URL (quotes percent-encoded) or a fixed local path.
   if (image) return { backgroundImage: `url("${image}")`, backgroundSize: "cover", backgroundPosition: "center" };
   return {};
 }

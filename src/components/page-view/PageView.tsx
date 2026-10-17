@@ -2,10 +2,9 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import type { Block, PageDoc } from "@/lib/page/schema";
-import { safeHttpUrl } from "@/lib/handles";
 import { SOCIAL_LABELS } from "@/lib/page/catalog";
 import { spotifyEmbedUrl, youtubeEmbedUrl } from "@/lib/page/embed";
-import { linkHref, mapsDirectionsUrl, mapsEmbedUrl, socialHref, vCard, whatsappHref } from "@/lib/page/links";
+import { imageSrc, linkHref, mapsDirectionsUrl, mapsEmbedUrl, socialHref, vCard, whatsappHref } from "@/lib/page/links";
 import { SocialIcon } from "./SocialIcon";
 import { AVATAR_RADII, buttonClass, themeVars } from "./theme";
 
@@ -58,6 +57,7 @@ export function PageView({ doc, handle, footer }: Props) {
         ))}
       </div>
       {footer}
+      <FloatingWhatsapp doc={doc} handle={handle} />
     </>
   );
 
@@ -78,7 +78,7 @@ export function PageView({ doc, handle, footer }: Props) {
 
 function Avatar({ doc, size }: { doc: PageDoc; size: string }) {
   const { profile, theme } = doc;
-  const src = safeHttpUrl(profile.avatarUrl);
+  const src = imageSrc(profile.avatarUrl);
   const shape = AVATAR_RADII[theme.avatarShape];
   if (src) {
     // eslint-disable-next-line @next/next/no-img-element
@@ -91,9 +91,9 @@ function Avatar({ doc, size }: { doc: PageDoc; size: string }) {
   );
 }
 
-function Name({ doc }: { doc: PageDoc }) {
+function Name({ doc, big = false }: { doc: PageDoc; big?: boolean }) {
   return (
-    <h1 className="flex items-center justify-center gap-1.5 text-center text-xl font-bold">
+    <h1 className={`flex items-center justify-center gap-1.5 text-center font-bold [font-family:var(--heading-font)] ${big ? "text-4xl leading-tight tracking-tight" : "text-xl"}`}>
       {doc.profile.name}
       {doc.profile.verified ? (
         <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" role="img" aria-label="Verificado">
@@ -115,8 +115,39 @@ function Bio({ doc }: { doc: PageDoc }) {
 
 function Header({ doc }: { doc: PageDoc }) {
   const { profile, theme } = doc;
-  const cover = theme.layout === "cover" ? safeHttpUrl(profile.coverUrl) : null;
-  const hero = theme.layout === "hero" ? safeHttpUrl(profile.avatarUrl) : null;
+  const cover = theme.layout === "cover" ? imageSrc(profile.coverUrl) : null;
+  const hero = theme.layout === "hero" ? imageSrc(profile.avatarUrl) : null;
+  const poster = theme.layout === "poster" ? imageSrc(profile.coverUrl) ?? imageSrc(profile.avatarUrl) : null;
+
+  // The page starts straight with its blocks (a title block usually opens it).
+  if (theme.layout === "blank") return <div className="pt-10" />;
+
+  if (theme.layout === "name") {
+    // Text-only header: the name set large in the heading font.
+    return (
+      <div className="flex flex-col items-center pt-14">
+        <Name doc={doc} big />
+        <Bio doc={doc} />
+      </div>
+    );
+  }
+
+  if (poster) {
+    // Full-width photo with the name over its darkened bottom edge.
+    return (
+      <div className="relative -mx-5 w-[calc(100%+2.5rem)]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={poster} alt={profile.name} className="aspect-[4/5] max-h-[520px] w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent from-40% via-black/40 to-[var(--page-bg)]" />
+        <div className="absolute inset-x-0 bottom-4 px-6 text-center">
+          <div className="uppercase">
+            <Name doc={doc} big />
+          </div>
+          <Bio doc={doc} />
+        </div>
+      </div>
+    );
+  }
 
   if (hero) {
     // Big photo across the top that fades into the page background.
@@ -127,7 +158,7 @@ function Header({ doc }: { doc: PageDoc }) {
           <img src={hero} alt={profile.name} className="aspect-[4/5] max-h-[460px] w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent from-55% to-[var(--page-bg)]" />
           <div className="absolute inset-x-0 bottom-2 px-5">
-            <Name doc={doc} />
+            <Name doc={doc} big />
           </div>
         </div>
         <div className="px-5">
@@ -183,6 +214,51 @@ function Socials({ doc, handle }: { doc: PageDoc; handle?: string }) {
   );
 }
 
+function Heading({ text, style }: { text: string; style: Extract<Block, { type: "heading" }>["style"] }) {
+  switch (style) {
+    case "divider":
+      return (
+        <div className="mt-3 flex w-full items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] opacity-70">
+          <span className="h-px flex-1 bg-current opacity-40" />
+          {text}
+          <span className="h-px flex-1 bg-current opacity-40" />
+        </div>
+      );
+    case "section":
+      return <h2 className="mt-4 text-center text-xs font-bold uppercase tracking-[0.25em] text-[var(--page-accent)]">{text}</h2>;
+    case "display":
+      return <h2 className="mt-2 text-center text-3xl font-bold leading-tight [font-family:var(--heading-font)]">{text}</h2>;
+    case "badge":
+      return (
+        <span className="mt-2 self-center rounded-full border border-[var(--page-accent)] px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[var(--page-accent)]">
+          {text}
+        </span>
+      );
+    default:
+      return <h2 className="mt-3 text-center text-base font-semibold [font-family:var(--heading-font)]">{text}</h2>;
+  }
+}
+
+function FloatingWhatsapp({ doc, handle }: { doc: PageDoc; handle?: string }) {
+  const href = whatsappHref(doc.profile.floatingWhatsapp, "");
+  if (!href) return null;
+  // Sticky rather than fixed, so it stays inside the editor's phone preview too.
+  return (
+    <div className="pointer-events-none sticky bottom-4 z-10 -mb-14 mt-4 flex w-full justify-end">
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Falar no WhatsApp"
+        onClick={() => track(handle, { kind: "social_click", target: "whatsapp" })}
+        className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition hover:scale-105"
+      >
+        <SocialIcon platform="whatsapp" className="h-7 w-7" />
+      </a>
+    </div>
+  );
+}
+
 // Shown dimmed in the editor preview while a block is missing what it needs;
 // visitors never see it.
 function Placeholder({ handle, className, children }: { handle?: string; className: string; children: React.ReactNode }) {
@@ -198,7 +274,66 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
     case "link": {
       const href = linkHref(block.url);
       if (!href) return <Placeholder handle={handle} className={btn}>{block.title || "Link sem endereço"}</Placeholder>;
-      const thumb = safeHttpUrl(block.imageUrl);
+      const thumb = imageSrc(block.imageUrl);
+      const accent = block.accent || "var(--page-accent)";
+      if (block.display === "banner") {
+        return (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => click(href)}
+            className={`relative flex min-h-[168px] w-full flex-col items-start justify-end overflow-hidden rounded-[var(--box-radius)] p-5 text-left text-white transition-transform hover:scale-[1.01] ${block.highlight ? "btn-highlight" : ""}`}
+            style={{ background: `linear-gradient(135deg, ${accent}, #0b0b12)` }}
+          >
+            {thumb ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={thumb} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+            ) : null}
+            <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/5" />
+            <span className="relative flex flex-col items-start gap-2">
+              {block.label ? (
+                <span className="rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider" style={{ background: accent }}>
+                  {block.label}
+                </span>
+              ) : null}
+              <span className="text-xl font-bold leading-tight [font-family:var(--heading-font)]">{block.title}</span>
+              {block.subtitle ? <span className="text-sm opacity-85">{block.subtitle}</span> : null}
+              {block.buttonText ? (
+                <span className="mt-1 rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-black">{block.buttonText} →</span>
+              ) : null}
+            </span>
+          </a>
+        );
+      }
+      if (block.display === "card") {
+        return (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => click(href)}
+            className={`${softBox} flex w-full items-center gap-3 p-4 text-left transition-transform hover:scale-[1.01] ${block.highlight ? "btn-highlight" : ""}`}
+          >
+            {thumb ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={thumb} alt="" className="h-14 w-14 shrink-0 rounded-[calc(var(--box-radius)*0.7)] object-cover" />
+            ) : null}
+            <span className="flex min-w-0 flex-1 flex-col">
+              {block.label ? (
+                <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: accent }}>
+                  {block.label}
+                </span>
+              ) : null}
+              <span className="font-semibold leading-snug">{block.title}</span>
+              {block.subtitle ? <span className="text-sm opacity-70">{block.subtitle}</span> : null}
+            </span>
+            <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg" style={{ background: accent, color: "#fff" }}>
+              ↗
+            </span>
+          </a>
+        );
+      }
       return (
         <a
           href={href}
@@ -216,9 +351,31 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
       );
     }
     case "heading":
-      return <h2 className="mt-3 text-center text-base font-semibold">{block.text}</h2>;
+      return <Heading text={block.text} style={block.style} />;
     case "text":
+      if (block.style === "footer") return <p className="mt-4 whitespace-pre-line text-center text-xs opacity-60">{block.text}</p>;
+      if (block.style === "quote") {
+        return (
+          <section className={`${softBox} w-full p-5 text-center`}>
+            {block.title ? (
+              <p className="text-xl font-bold uppercase leading-tight [font-family:var(--heading-font)]">{block.title}</p>
+            ) : null}
+            <p className="mt-3 whitespace-pre-line text-[15px] opacity-80">{block.text}</p>
+          </section>
+        );
+      }
       return <p className="whitespace-pre-line text-center text-[15px] opacity-85">{block.text}</p>;
+    case "stats":
+      return (
+        <section className={`grid w-full gap-2.5 ${block.items.length >= 3 ? "grid-cols-3" : block.items.length === 2 ? "grid-cols-2" : "grid-cols-1"}`}>
+          {block.items.map((item, index) => (
+            <div key={index} className={`${softBox} px-2 py-4 text-center`}>
+              <div className="text-2xl font-bold text-[var(--page-accent)] [font-family:var(--heading-font)]">{item.value}</div>
+              <div className="mt-1 text-xs leading-snug opacity-75">{item.label}</div>
+            </div>
+          ))}
+        </section>
+      );
     case "youtube": {
       const src = youtubeEmbedUrl(block.url);
       if (!src) return null;
@@ -280,7 +437,7 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
       );
     }
     case "image": {
-      const src = safeHttpUrl(block.imageUrl);
+      const src = imageSrc(block.imageUrl);
       if (!src) return <Placeholder handle={handle} className={`${softBox} block w-full py-10 text-center`}>Imagem sem endereço</Placeholder>;
       // eslint-disable-next-line @next/next/no-img-element
       const img = <img src={src} alt={block.alt} className="w-full rounded-[var(--box-radius)] object-cover" loading="lazy" />;
@@ -293,13 +450,18 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
       );
     }
     case "product": {
-      const src = safeHttpUrl(block.imageUrl);
+      const src = imageSrc(block.imageUrl);
       const href = linkHref(block.url);
       return (
         <section className={`${softBox} w-full overflow-hidden`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           {src ? <img src={src} alt={block.title} className="aspect-[4/3] w-full object-cover" loading="lazy" /> : null}
           <div className="flex flex-col gap-1.5 p-4">
+            {block.label ? (
+              <span className="self-start rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white" style={{ background: "var(--page-accent)" }}>
+                {block.label}
+              </span>
+            ) : null}
             <div className="flex items-start justify-between gap-3">
               <h2 className="font-semibold">{block.title}</h2>
               {block.price ? <span className="shrink-0 font-bold">{block.price}</span> : null}

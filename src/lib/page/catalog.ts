@@ -15,6 +15,7 @@ export const BLOCK_CATALOG: Record<BlockType, { label: string; description: stri
   product: { label: "Produto", description: "Foto, preço e botão de compra" },
   map: { label: "Mapa", description: "Endereço no mapa e botão de rota" },
   contact: { label: "Salvar contato", description: "Visitante salva seu contato no celular" },
+  stats: { label: "Números", description: "Destaques como \"10+ anos\" e \"500+ clientes\"" },
 };
 
 export const SOCIAL_LABELS: Record<SocialPlatform, string> = {
@@ -37,11 +38,23 @@ export function createBlock(type: BlockType): Block {
   const base = { id: nanoid(10), enabled: true };
   switch (type) {
     case "link":
-      return { ...base, type, title: "Meu link", url: "https://", imageUrl: "", highlight: false };
+      return {
+        ...base,
+        type,
+        title: "Meu link",
+        url: "https://",
+        imageUrl: "",
+        highlight: false,
+        display: "button",
+        label: "",
+        subtitle: "",
+        buttonText: "",
+        accent: "",
+      };
     case "heading":
-      return { ...base, type, text: "Nova seção" };
+      return { ...base, type, text: "Nova seção", style: "plain" };
     case "text":
-      return { ...base, type, text: "Escreva algo sobre você." };
+      return { ...base, type, text: "Escreva algo sobre você.", style: "plain", title: "" };
     case "youtube":
       return { ...base, type, url: "" };
     case "spotify":
@@ -74,6 +87,7 @@ export function createBlock(type: BlockType): Block {
       return {
         ...base,
         type,
+        label: "",
         title: "Meu produto",
         description: "",
         price: "R$ 0,00",
@@ -85,6 +99,16 @@ export function createBlock(type: BlockType): Block {
       return { ...base, type, title: "Onde estamos", address: "" };
     case "contact":
       return { ...base, type, name: "", company: "", phone: "", email: "", buttonText: "Salvar contato" };
+    case "stats":
+      return {
+        ...base,
+        type,
+        items: [
+          { value: "10+", label: "anos de experiência" },
+          { value: "500+", label: "clientes atendidos" },
+          { value: "TOP 3", label: "na sua especialidade" },
+        ],
+      };
   }
 }
 
@@ -100,9 +124,11 @@ const THEME_BASE = {
   backgroundImageUrl: "",
   avatarShape: "circle",
   socialStyle: "icons",
+  accent: "#3b6ef5",
+  headingFont: "same",
 } as const satisfies Partial<Theme>;
 
-export const THEME_PRESETS: { name: string; theme: Theme }[] = [
+const PRESETS: { name: string; theme: Theme }[] = [
   {
     name: "Claro",
     theme: { ...THEME_BASE, background: "#f7f7f5", text: "#1c1c1c", buttonBackground: "#1c1c1c", buttonText: "#ffffff" },
@@ -206,10 +232,13 @@ export const THEME_PRESETS: { name: string; theme: Theme }[] = [
   },
 ];
 
+// Each preset's accent follows its button colour.
+export const THEME_PRESETS = PRESETS.map(({ name, theme }) => ({ name, theme: { ...theme, accent: theme.buttonBackground } }));
+
 export function defaultPageDoc(name: string): PageDoc {
   return {
     version: 1,
-    profile: { name, bio: "", avatarUrl: "", coverUrl: "", verified: false },
+    profile: { name, bio: "", avatarUrl: "", coverUrl: "", verified: false, floatingWhatsapp: "" },
     socials: [],
     blocks: [createBlock("link")],
     theme: THEME_PRESETS[0].theme,
@@ -239,5 +268,7 @@ export function blockSummary(block: Block): string {
       return block.buttonText;
     case "image":
       return block.alt || block.imageUrl || "Sem imagem";
+    case "stats":
+      return block.items.map((item) => item.value).join(" · ") || "Números";
   }
 }

@@ -1,6 +1,27 @@
 "use client";
 
 import type { Block } from "@/lib/page/schema";
+
+// Small inline choice used by the block style pickers.
+function Options<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: Record<T, string>; onChange: (value: T) => void }) {
+  return (
+    <div>
+      <p className="mb-1.5 text-sm font-medium text-stone-700">{label}</p>
+      <div className="flex flex-wrap gap-2">
+        {(Object.keys(options) as T[]).map((option) => (
+          <button
+            key={option}
+            type="button"
+            onClick={() => onChange(option)}
+            className={`rounded-lg px-3 py-1.5 text-sm ring-1 ${value === option ? "bg-stone-900 text-white ring-stone-900" : "ring-stone-300"}`}
+          >
+            {options[option]}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 import { TextArea, TextField, Toggle } from "./fields";
 
 // datetime-local works in local time without seconds or zone; the document
@@ -17,10 +38,41 @@ export function BlockFields({ block, onChange }: { block: Block; onChange: (bloc
     case "link":
       return (
         <div className="flex flex-col gap-3">
-          <TextField label="Texto do botão" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
+          <Options
+            label="Aparência"
+            value={block.display}
+            options={{ button: "Botão", banner: "Banner com imagem", card: "Cartão" }}
+            onChange={(display) => onChange({ ...block, display })}
+          />
+          <TextField label={block.display === "button" ? "Texto do botão" : "Título"} value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
+          {block.display !== "button" ? (
+            <>
+              <TextField label="Etiqueta (ex.: CURSOS)" value={block.label} maxLength={40} onChange={(label) => onChange({ ...block, label })} />
+              <TextField label="Subtítulo" value={block.subtitle} maxLength={200} onChange={(subtitle) => onChange({ ...block, subtitle })} />
+            </>
+          ) : null}
+          {block.display === "banner" ? (
+            <TextField label="Texto do botão do banner" value={block.buttonText} maxLength={40} placeholder="Saiba mais" onChange={(buttonText) => onChange({ ...block, buttonText })} />
+          ) : null}
+          {block.display !== "button" ? (
+            <label className="flex items-center gap-2 text-sm font-medium text-stone-700">
+              Cor da etiqueta
+              <input
+                type="color"
+                value={block.accent || "#3b6ef5"}
+                onChange={(event) => onChange({ ...block, accent: event.target.value })}
+                className="h-8 w-14 cursor-pointer rounded ring-1 ring-stone-300"
+              />
+              {block.accent ? (
+                <button type="button" onClick={() => onChange({ ...block, accent: "" })} className="text-xs text-stone-500 underline">
+                  usar a cor de destaque
+                </button>
+              ) : null}
+            </label>
+          ) : null}
           <TextField label="Endereço" type="url" value={block.url} maxLength={2000} placeholder="https://..." onChange={(url) => onChange({ ...block, url })} />
           <TextField
-            label="Miniatura (link da imagem, opcional)"
+            label={block.display === "banner" ? "Imagem de fundo do banner (link)" : "Miniatura (link da imagem, opcional)"}
             type="url"
             value={block.imageUrl}
             maxLength={1000}
@@ -31,9 +83,67 @@ export function BlockFields({ block, onChange }: { block: Block; onChange: (bloc
         </div>
       );
     case "heading":
-      return <TextField label="Título" value={block.text} maxLength={120} onChange={(text) => onChange({ ...block, text })} />;
+      return (
+        <div className="flex flex-col gap-3">
+          <TextField label="Título" value={block.text} maxLength={120} onChange={(text) => onChange({ ...block, text })} />
+          <Options
+            label="Estilo"
+            value={block.style}
+            options={{ plain: "Simples", divider: "Com linhas", section: "Seção", display: "Grande", badge: "Selo" }}
+            onChange={(style) => onChange({ ...block, style })}
+          />
+        </div>
+      );
     case "text":
-      return <TextArea label="Texto" value={block.text} maxLength={4000} onChange={(text) => onChange({ ...block, text })} />;
+      return (
+        <div className="flex flex-col gap-3">
+          <Options
+            label="Estilo"
+            value={block.style}
+            options={{ plain: "Parágrafo", quote: "Destaque", footer: "Rodapé" }}
+            onChange={(style) => onChange({ ...block, style })}
+          />
+          {block.style === "quote" ? (
+            <TextField label="Frase em destaque" value={block.title} maxLength={200} onChange={(title) => onChange({ ...block, title })} />
+          ) : null}
+          <TextArea label="Texto" value={block.text} maxLength={4000} onChange={(text) => onChange({ ...block, text })} />
+        </div>
+      );
+    case "stats":
+      return (
+        <div className="flex flex-col gap-3">
+          {block.items.map((item, index) => {
+            const setItem = (patch: Partial<typeof item>) =>
+              onChange({ ...block, items: block.items.map((it, i) => (i === index ? { ...it, ...patch } : it)) });
+            return (
+              <div key={index} className="flex items-end gap-2">
+                <div className="w-28">
+                  <TextField label="Número" value={item.value} maxLength={20} onChange={(value) => setItem({ value })} />
+                </div>
+                <div className="flex-1">
+                  <TextField label="Descrição" value={item.label} maxLength={60} onChange={(label) => setItem({ label })} />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onChange({ ...block, items: block.items.filter((_, i) => i !== index) })}
+                  className="pb-2.5 text-xs text-red-600"
+                >
+                  Remover
+                </button>
+              </div>
+            );
+          })}
+          {block.items.length < 6 ? (
+            <button
+              type="button"
+              onClick={() => onChange({ ...block, items: [...block.items, { value: "", label: "" }] })}
+              className="self-start text-sm underline"
+            >
+              + Adicionar número
+            </button>
+          ) : null}
+        </div>
+      );
     case "youtube":
       return (
         <TextField
@@ -133,6 +243,7 @@ export function BlockFields({ block, onChange }: { block: Block; onChange: (bloc
     case "product":
       return (
         <div className="flex flex-col gap-3">
+          <TextField label="Etiqueta (opcional, ex.: CURSO)" value={block.label} maxLength={40} onChange={(label) => onChange({ ...block, label })} />
           <TextField label="Nome do produto" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
           <TextField label="Preço" value={block.price} maxLength={40} placeholder="R$ 49,90" onChange={(price) => onChange({ ...block, price })} />
           <TextArea label="Descrição" value={block.description} maxLength={500} onChange={(description) => onChange({ ...block, description })} />
