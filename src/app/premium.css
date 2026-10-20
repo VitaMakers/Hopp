@@ -442,21 +442,23 @@
 }
 .ecosystem-card a:hover { background: #ffffff05; }
 .ecosystem-card a:focus-visible { outline: 2px solid var(--eco-accent, #ff3469); outline-offset: -4px; }
-.premium-ecosystem .ecosystem-featured { margin-top: 25px; background: radial-gradient(ellipse at top right, #ff346922, transparent 75%), #151517; }
+.premium-ecosystem .ecosystem-featured { margin-top: 25px; background: var(--eco-accent); color: #0b0b0b; }
 .premium-ecosystem .ecosystem-featured > a { display: flex; flex-direction: column; align-items: flex-start; padding: 26px; gap: 16px; }
-.ecosystem-feature-label { font-size: 10px; letter-spacing: 2px; font-weight: 700; color: var(--eco-accent); }
-.ecosystem-featured a > strong { font: 700 29px/1.1 Impact, "Arial Narrow", sans-serif; text-transform: uppercase; text-align: left; }
-.ecosystem-featured a > p { font-size: 13px; line-height: 1.5; color: #bbb; margin: 0; }
-.ecosystem-feature-cta { padding: 11px 16px; border-radius: 24px; background: var(--eco-accent); font-size: 12px; color: white; font-weight: 700; }
+.ecosystem-feature-label { font-size: 10px; letter-spacing: 2px; font-weight: 700; color: #0b0b0b; opacity: 0.65; }
+.ecosystem-featured a > strong { font: 700 29px/1.1 Impact, "Arial Narrow", sans-serif; text-transform: uppercase; text-align: left; color: #0b0b0b; }
+.ecosystem-featured a > p { font-size: 13px; line-height: 1.5; color: #0b0b0b; opacity: 0.75; margin: 0; }
+.ecosystem-feature-cta { display: inline-flex; align-items: center; gap: 12px; padding: 13px 20px; border-radius: 999px; background: #0b0b0b; font-size: 13px; color: #fff; font-weight: 700; }
 .premium-ecosystem .ecosystem-site { margin-top: 18px; }
 .ecosystem-site > a > span:first-child { flex: 1; display: flex; flex-direction: column; gap: 6px; }
 .ecosystem-site strong { font-size: 14px; }
 .ecosystem-site small { font-size: 12px; color: #aaa; }
-.ecosystem-closing { text-align: center; margin: 40px 0 0; }
-.ecosystem-quote { font: 700 28px/1.2 Impact, "Arial Narrow", sans-serif; text-transform: uppercase; color: #eee; margin: 0 0 18px; }
+.ecosystem-closing { text-align: left; margin: 44px 0 0; }
+.ecosystem-quote-mark { display: block; font: 700 54px/0.6 Georgia, serif; color: var(--eco-accent); }
+.ecosystem-quote { font: 700 30px/1.15 Impact, "Arial Narrow", sans-serif; text-transform: uppercase; color: #f4f4f4; margin: 10px 0 18px; }
 .ecosystem-closing > p:not(.ecosystem-quote) { font-size: 13px; line-height: 1.7; color: #aaa; margin: 0; }
 .ecosystem-footer { text-align: center; padding-top: 48px; }
 .ecosystem-footer > strong { font: italic 700 27px Georgia, serif; color: #ddd; }
+.ecosystem-footer > img { display: block; height: 54px; width: auto; max-width: 180px; margin: 0 auto; object-fit: contain; }
 .ecosystem-footer > p { font-size: 10px; line-height: 1.5; color: #888; margin: 14px 0 0; }
 @container vita-page (max-width: 480px) {
   .premium-ecosystem { padding: 12px 18px 28px; }
