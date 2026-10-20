@@ -146,7 +146,7 @@ export const TEMPLATES: PageTemplate[] = [
     build: (name) =>
       page(name, {
         profile: { bio: "@suamarca" },
-        theme: { premium: "authority", background: "#080f1c", text: "#f5f6fa", accent: "#3565ed" },
+        theme: { premium: "authority", background: "#080f1c", text: "#f5f6fa", accent: "#20c879" },
         blocks: [
           link({ display: "banner", label: "AGÊNCIA", title: "Conheça nossos serviços", buttonText: "Ver mais", accent: "#3565ed", url: "https://example.com/servicos", imageUrl: unsplash("1519389950473-47ba0277781c", 1000) }),
           link({ display: "banner", label: "TREINAMENTO", title: "Cursos para empreendedores", buttonText: "Ver cursos", accent: "#18ba69", url: "https://example.com/cursos", imageUrl: unsplash("1516321318423-f06f85e504b3", 1000) }),
