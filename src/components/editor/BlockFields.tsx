@@ -33,7 +33,9 @@ function toLocalInput(iso: string): string {
   return local.toISOString().slice(0, 16);
 }
 
-export function BlockFields({ block, onChange }: { block: Block; onChange: (block: Block) => void }) {
+// Premium designs read the label, subtitle and button text of every link,
+// whatever its display; the regular theme only uses them on banners and cards.
+export function BlockFields({ block, premium = "", onChange }: { block: Block; premium?: string; onChange: (block: Block) => void }) {
   switch (block.type) {
     case "link":
       return (
@@ -45,16 +47,16 @@ export function BlockFields({ block, onChange }: { block: Block; onChange: (bloc
             onChange={(display) => onChange({ ...block, display })}
           />
           <TextField label={block.display === "button" ? "Texto do botão" : "Título"} value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
-          {block.display !== "button" ? (
+          {block.display !== "button" || premium ? (
             <>
               <TextField label="Etiqueta (ex.: CURSOS)" value={block.label} maxLength={40} onChange={(label) => onChange({ ...block, label })} />
               <TextField label="Subtítulo" value={block.subtitle} maxLength={200} onChange={(subtitle) => onChange({ ...block, subtitle })} />
             </>
           ) : null}
-          {block.display === "banner" ? (
+          {block.display === "banner" || premium ? (
             <TextField label="Texto do botão do banner" value={block.buttonText} maxLength={40} placeholder="Saiba mais" onChange={(buttonText) => onChange({ ...block, buttonText })} />
           ) : null}
-          {block.display !== "button" ? (
+          {block.display !== "button" || premium ? (
             <label className="flex items-center gap-2 text-sm font-medium text-stone-700">
               Cor da etiqueta
               <input

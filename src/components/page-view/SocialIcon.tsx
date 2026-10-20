@@ -12,13 +12,13 @@ export function SocialIcon({ platform, className }: { platform: SocialPlatform; 
   }
   if (platform === "linkedin") {
     return (
+      // The letters are cut out of the square, so the icon works on any background.
       <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-        <rect x="2" y="2" width="20" height="20" rx="4" fill="currentColor" />
-        <g fill="var(--page-bg, #fff)">
-          <rect x="6" y="10" width="2.6" height="8" />
-          <circle cx="7.3" cy="6.9" r="1.5" />
-          <path d="M10.6 10h2.5v1.2c.5-.8 1.5-1.4 2.8-1.4 2.2 0 3.1 1.4 3.1 3.6V18h-2.6v-4.2c0-1.1-.3-1.9-1.4-1.9s-1.8.8-1.8 2V18h-2.6z" />
-        </g>
+        <path
+          fill="currentColor"
+          fillRule="evenodd"
+          d="M6 2h12a4 4 0 0 1 4 4v12a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4zM6 10v8h2.6v-8zM7.3 5.4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM10.6 10v8h2.6v-4.2c0-1.2.6-2 1.8-2s1.4.8 1.4 1.9V18H19v-4.6c0-2.2-.9-3.6-3.1-3.6-1.3 0-2.3.6-2.8 1.4V10z"
+        />
       </svg>
     );
   }

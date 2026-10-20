@@ -2,7 +2,7 @@
 
 import { THEME_PRESETS } from "@/lib/page/catalog";
 import type { PageDoc, Theme } from "@/lib/page/schema";
-import { Card, TextField, Toggle } from "./fields";
+import { Card, TextArea, TextField, Toggle } from "./fields";
 
 type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void };
 
@@ -68,8 +68,97 @@ function Choice<T extends string>({
   );
 }
 
+const PREMIUM_NAMES: Record<Exclude<Theme["premium"], "">, string> = {
+  authority: "Autoridade",
+  spotlight: "Presença",
+  ecosystem: "Ecossistema",
+  catalog: "Vitrine",
+};
+
+function PremiumPanel({ doc, onChange }: PanelProps) {
+  const design = doc.theme.premium as Exclude<Theme["premium"], "">;
+  const setTheme = (patch: Partial<Theme>) => onChange({ ...doc, theme: { ...doc.theme, ...patch } });
+  const setPremium = (patch: Partial<PageDoc["premium"]>) => onChange({ ...doc, premium: { ...doc.premium, ...patch } });
+  const colors: [keyof Theme, string][] = [
+    ["background", "Fundo"],
+    ["text", "Texto"],
+    ["accent", "Destaque"],
+  ];
+  return (
+    <div className="flex flex-col gap-4">
+      <Card title={`Modelo premium: ${PREMIUM_NAMES[design]}`}>
+        <p className="-mt-2 text-sm text-stone-500">
+          Este modelo tem visual próprio. Os links, produtos e números ficam na aba Blocos; o nome, a bio e a foto de capa, na aba
+          Perfil.
+        </p>
+        <div className="grid grid-cols-3 gap-3">
+          {colors
+            .filter(([key]) => design !== "authority" || key !== "accent")
+            .map(([key, label]) => (
+              <label key={key} className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+                {label}
+                <input
+                  type="color"
+                  value={String(doc.theme[key])}
+                  onChange={(event) => setTheme({ [key]: event.target.value })}
+                  className="h-10 w-full cursor-pointer rounded-lg ring-1 ring-stone-300"
+                />
+              </label>
+            ))}
+        </div>
+        {design === "authority" ? (
+          <TextField label="Nome no rodapé (opcional)" value={doc.premium.footer} maxLength={80} onChange={(footer) => setPremium({ footer })} />
+        ) : null}
+        {design === "spotlight" ? (
+          <>
+            <TextField label="Texto do botão do site" value={doc.premium.siteLabel} maxLength={40} onChange={(siteLabel) => setPremium({ siteLabel })} />
+            <TextField label="Endereço do botão do site" type="url" value={doc.premium.siteUrl} maxLength={2000} onChange={(siteUrl) => setPremium({ siteUrl })} />
+            <TextField label="Link da Política de Privacidade" type="url" value={doc.premium.privacyUrl} maxLength={2000} onChange={(privacyUrl) => setPremium({ privacyUrl })} />
+            <TextField label="Link dos Termos de Uso" type="url" value={doc.premium.termsUrl} maxLength={2000} onChange={(termsUrl) => setPremium({ termsUrl })} />
+          </>
+        ) : null}
+        {design === "spotlight" || design === "ecosystem" ? (
+          <div className="grid grid-cols-2 gap-3">
+            <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+              Posição da foto (horizontal)
+              <input type="range" min={0} max={100} value={doc.premium.coverX} onChange={(event) => setPremium({ coverX: Number(event.target.value) })} />
+            </label>
+            <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+              Posição da foto (vertical)
+              <input type="range" min={0} max={100} value={doc.premium.coverY} onChange={(event) => setPremium({ coverY: Number(event.target.value) })} />
+            </label>
+          </div>
+        ) : null}
+        {design === "ecosystem" ? (
+          <>
+            <TextField label="Título da seção" value={doc.premium.sectionTitle} maxLength={60} onChange={(sectionTitle) => setPremium({ sectionTitle })} />
+            <TextArea label="Frase de destaque" value={doc.premium.quote} maxLength={200} onChange={(quote) => setPremium({ quote })} />
+            <TextArea label="Texto sobre você" value={doc.premium.about} maxLength={1000} onChange={(about) => setPremium({ about })} />
+            <p className="text-xs text-stone-500">
+              Na aba Blocos: o bloco Números vira os indicadores; links em Cartão viram projetos, em Banner viram a chamada em destaque e em
+              Botão viram o link do site.
+            </p>
+          </>
+        ) : null}
+        {design === "catalog" ? (
+          <>
+            <TextArea label="Título principal (uma linha por trecho; a última fica em destaque)" value={doc.premium.heading} maxLength={240} onChange={(heading) => setPremium({ heading })} />
+            <TextField label="Texto do contato" value={doc.premium.contactLabel} maxLength={60} onChange={(contactLabel) => setPremium({ contactLabel })} />
+            <TextField label="E-mail de contato (opcional)" type="email" value={doc.premium.email} maxLength={120} onChange={(email) => setPremium({ email })} />
+            <p className="text-xs text-stone-500">O número do WhatsApp fica em Perfil → WhatsApp flutuante.</p>
+          </>
+        ) : null}
+        <button type="button" onClick={() => setTheme({ premium: "" })} className="self-start text-sm text-stone-500 underline">
+          Sair do modelo e usar o visual normal
+        </button>
+      </Card>
+    </div>
+  );
+}
+
 export function ThemePanel({ doc, onChange }: PanelProps) {
   const setTheme = (patch: Partial<Theme>) => onChange({ ...doc, theme: { ...doc.theme, ...patch } });
+  if (doc.theme.premium) return <PremiumPanel doc={doc} onChange={onChange} />;
   return (
     <div className="flex flex-col gap-4">
       <Card title="Temas prontos">
