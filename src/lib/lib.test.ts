@@ -101,8 +101,10 @@ describe("templates", () => {
     }
   });
 
-  it("only accepts http(s) images", () => {
+  it("accepts http(s) images and bundled /assets paths, nothing else", () => {
     expect(imageSrc(" https://images.unsplash.com/photo-1?w=1 ")).toBe("https://images.unsplash.com/photo-1?w=1");
+    expect(imageSrc("/assets/logo-exemplo.svg")).toBe("/assets/logo-exemplo.svg");
+    expect(imageSrc("/assets/../etc/passwd")).toBeNull();
     expect(imageSrc("/outra/coisa.jpg")).toBeNull();
     expect(imageSrc("javascript:alert(1)")).toBeNull();
   });
