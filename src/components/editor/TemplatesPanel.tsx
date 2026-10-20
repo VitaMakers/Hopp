@@ -4,6 +4,7 @@ import { useState } from "react";
 import { defaultPageDoc } from "@/lib/page/catalog";
 import type { PageDoc } from "@/lib/page/schema";
 import { TEMPLATES, TEMPLATE_COLLECTIONS, TEMPLATE_TABS, collectionModels } from "@/lib/page/templates";
+import { ModelThumb } from "@/components/page-view/ModelThumb";
 import { Card } from "./fields";
 
 type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void; onGoToBlocks?: () => void };
@@ -65,23 +66,20 @@ export function TemplatesPanel({ doc, onChange, onGoToBlocks }: PanelProps) {
           {collectionModels(open).length === 0 ? (
             <p className="rounded-xl border border-dashed border-stone-300 p-6 text-center text-sm text-stone-500">Novos modelos em breve.</p>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-3">
               {collectionModels(open).map((template) => (
-                <button key={template.id} type="button" onClick={() => apply(template.id)} aria-label={`Usar o modelo ${template.name}`} className="overflow-hidden rounded-xl text-left ring-1 ring-stone-200 transition hover:ring-stone-400">
-                  <div className="flex h-24 flex-col items-center justify-center gap-2 p-3" style={{ background: template.swatch.background }}>
-                    <span className="text-sm font-bold tracking-wide" style={{ color: template.swatch.text }}>
-                      {template.name}
-                    </span>
-                    <span className="h-2 w-2/3 rounded-full" style={{ background: template.swatch.accent }} />
-                    <span className="h-2 w-1/2 rounded-full opacity-60" style={{ background: template.swatch.accent }} />
-                  </div>
-                  <div className="flex flex-col gap-1 px-3 py-2.5">
-                    <span className="flex items-center gap-2">
-                      <span className="font-medium">{template.name}</span>
-                      {current.plan ? <span className="ml-auto rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">{current.plan}</span> : null}
-                    </span>
-                    <span className="text-xs text-stone-500">{template.description}</span>
-                  </div>
+                <button
+                  key={template.id}
+                  type="button"
+                  onClick={() => apply(template.id)}
+                  aria-label={`Usar o modelo ${template.name}`}
+                  className="flex flex-col items-center gap-2 rounded-xl p-2 ring-1 ring-stone-200 transition hover:ring-stone-400"
+                >
+                  <ModelThumb doc={template.build(doc.profile.name || "Sua Marca")} />
+                  <span className="flex items-center gap-2">
+                    <span className="text-sm font-medium">{template.name}</span>
+                    {current.plan ? <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">{current.plan}</span> : null}
+                  </span>
                 </button>
               ))}
             </div>
