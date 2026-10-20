@@ -6,11 +6,31 @@ import { PREMIUM_DEFAULTS, type Block, type PageDoc, type SocialLink, type Theme
 
 export type TemplatePlan = "basic" | "premium";
 
+// Tabs in the model gallery. "models" tabs list ready-made models (a model
+// shows under the tab its `tab` field names); the "scratch" tab starts a blank
+// page the person builds in the editor, with the live preview beside it.
+export type TemplateTab = {
+  id: string;
+  label: string;
+  kind: "models" | "scratch";
+  // Plan that unlocks these models, shown on the tab (models tabs only).
+  plan?: string;
+  note: string;
+};
+
+export const TEMPLATE_TABS: TemplateTab[] = [
+  { id: "essencial", label: "Modelos Essenciais", kind: "models", plan: "Essencial", note: "Modelos do plano Essencial. Novos modelos em breve." },
+  { id: "premium", label: "Modelos Premium", kind: "models", plan: "Profissional", note: "Modelos do plano Profissional." },
+  { id: "criar", label: "Criar Meu Modelo", kind: "scratch", note: "Comece com uma página em branco e monte do seu jeito — a prévia aparece ao lado enquanto você edita." },
+];
+
 export type PageTemplate = {
   id: string;
   name: string;
   category: string;
   plan: TemplatePlan;
+  // Which gallery tab (TEMPLATE_TABS id) this model appears under.
+  tab: string;
   description: string;
   // Small preview colours for the picker card.
   swatch: { background: string; accent: string; text: string };
@@ -90,6 +110,7 @@ export const TEMPLATES: PageTemplate[] = [
     name: "Autoridade",
     category: "Profissional",
     plan: "premium",
+    tab: "premium",
     description: "Banners editáveis para serviços, cursos, palestras e conteúdo.",
     swatch: { background: "#080f1c", accent: "#3565ed", text: "#f5f6fa" },
     build: (name) =>
@@ -109,6 +130,7 @@ export const TEMPLATES: PageTemplate[] = [
     name: "Presença",
     category: "Profissional",
     plan: "premium",
+    tab: "premium",
     description: "Capa com foto, redes sociais e banners de projetos editáveis.",
     swatch: { background: "#000000", accent: "#d6ae58", text: "#ffffff" },
     build: (name) =>
@@ -136,6 +158,7 @@ export const TEMPLATES: PageTemplate[] = [
     name: "Ecossistema",
     category: "Profissional",
     plan: "premium",
+    tab: "premium",
     description: "Retrato, indicadores ilustrativos e cartões de projetos. Edite com seus próprios dados.",
     swatch: { background: "#030303", accent: "#ff3469", text: "#f7f7f7" },
     build: (name) =>
@@ -182,6 +205,7 @@ export const TEMPLATES: PageTemplate[] = [
     name: "Vitrine",
     category: "Profissional",
     plan: "premium",
+    tab: "premium",
     description: "Catálogo de produtos com imagens, descrições, botões e contato editáveis.",
     swatch: { background: "#111d1f", accent: "#e6ff35", text: "#e7e9e8" },
     build: (name) =>
