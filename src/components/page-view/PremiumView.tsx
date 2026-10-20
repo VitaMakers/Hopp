@@ -69,7 +69,7 @@ function Authority({ doc, handle }: Props) {
   return (
     <div
       className="vita-premium premium-authority"
-      style={{ "--premium-bg": theme.background, "--premium-text": theme.text } as React.CSSProperties}
+      style={{ "--premium-bg": theme.background, "--premium-text": theme.text, "--premium-accent": theme.accent } as React.CSSProperties}
     >
       <header className="premium-profile">
         <h1>{profile.name}</h1>
@@ -124,7 +124,7 @@ function Spotlight({ doc, handle }: Props) {
   return (
     <div
       className="vita-premium premium-spotlight"
-      style={{ "--spotlight-bg": theme.background, "--spotlight-cover-x": `${premium.coverX}%` } as React.CSSProperties}
+      style={{ "--spotlight-bg": theme.background, "--spotlight-text": theme.text, "--spotlight-accent": theme.accent, "--spotlight-cover-x": `${premium.coverX}%` } as React.CSSProperties}
     >
       <header className="spotlight-hero">
         {cover ? (
@@ -211,7 +211,7 @@ function Ecosystem({ doc, handle }: Props) {
   const logo = imageSrc(profile.logo);
   const stats = visible(doc, "stats")[0]?.items.slice(0, 3) ?? [];
   return (
-    <div className="vita-premium premium-ecosystem" style={{ "--eco-bg": theme.background } as React.CSSProperties}>
+    <div className="vita-premium premium-ecosystem" style={{ "--eco-bg": theme.background, "--eco-text": theme.text, "--eco-accent": theme.accent } as React.CSSProperties}>
       <div className="ecosystem-inner">
         <header className="ecosystem-profile">
           <div className="ecosystem-portrait">
