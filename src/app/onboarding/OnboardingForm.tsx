@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { handleError, normalizeHandle } from "@/lib/handles";
 import { TEMPLATE_COLLECTIONS, TEMPLATE_TABS, collectionModels } from "@/lib/page/templates";
+import { ModelThumb } from "@/components/page-view/ModelThumb";
 import { createProfile, type OnboardingState } from "./actions";
 
 export function OnboardingForm({ host }: { host: string }) {
@@ -57,21 +58,18 @@ export function OnboardingForm({ host }: { host: string }) {
             {collectionModels(open).length === 0 ? (
               <p className="rounded-xl border border-dashed border-stone-300 p-6 text-center text-sm text-stone-500">Novos modelos em breve.</p>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-2 gap-3">
                 {collectionModels(open).map((t) => (
-                  <label key={t.id} className={`cursor-pointer overflow-hidden rounded-xl text-left ring-1 transition ${template === t.id ? "ring-2 ring-stone-900" : "ring-stone-200 hover:ring-stone-400"}`}>
+                  <label
+                    key={t.id}
+                    className={`flex cursor-pointer flex-col items-center gap-2 rounded-xl p-2 ring-1 transition ${template === t.id ? "ring-2 ring-stone-900" : "ring-stone-200 hover:ring-stone-400"}`}
+                  >
                     <input type="radio" name="templateId" value={t.id} checked={template === t.id} onChange={() => setTemplate(t.id)} className="sr-only" />
-                    <div className="flex h-16 flex-col items-center justify-center gap-1.5 p-3" style={{ background: t.swatch.background }}>
-                      <span className="text-xs font-bold" style={{ color: t.swatch.text }}>
-                        {t.name}
-                      </span>
-                      <span className="h-1.5 w-2/3 rounded-full" style={{ background: t.swatch.accent }} />
-                    </div>
-                    <div className="flex items-center gap-2 px-3 py-2">
+                    <ModelThumb doc={t.build("Seu Nome")} />
+                    <span className="flex items-center gap-2">
                       <span className="text-sm font-medium">{t.name}</span>
                       {current.plan ? <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">{current.plan}</span> : null}
-                    </div>
-                    <p className="px-3 pb-3 text-xs text-stone-500">{t.description}</p>
+                    </span>
                   </label>
                 ))}
               </div>
