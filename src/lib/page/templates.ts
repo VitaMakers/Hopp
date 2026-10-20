@@ -6,11 +6,28 @@ import { PREMIUM_DEFAULTS, type Block, type PageDoc, type SocialLink, type Theme
 
 export type TemplatePlan = "basic" | "premium";
 
+// Tabs in the model gallery. Each tab belongs to a plan tier; a model shows
+// under the tab named by its `tab` field.
+export type TemplateTab = {
+  id: string;
+  label: string;
+  // Plan that unlocks these models, shown on the tab.
+  plan: string;
+  note: string;
+};
+
+export const TEMPLATE_TABS: TemplateTab[] = [
+  { id: "premium", label: "Premium", plan: "Profissional", note: "Modelos do plano Profissional." },
+  { id: "essencial", label: "Essencial", plan: "Essencial", note: "Modelos do plano Essencial. Novos modelos em breve." },
+];
+
 export type PageTemplate = {
   id: string;
   name: string;
   category: string;
   plan: TemplatePlan;
+  // Which gallery tab (TEMPLATE_TABS id) this model appears under.
+  tab: string;
   description: string;
   // Small preview colours for the picker card.
   swatch: { background: string; accent: string; text: string };
@@ -90,6 +107,7 @@ export const TEMPLATES: PageTemplate[] = [
     name: "Autoridade",
     category: "Profissional",
     plan: "premium",
+    tab: "premium",
     description: "Banners editáveis para serviços, cursos, palestras e conteúdo.",
     swatch: { background: "#080f1c", accent: "#3565ed", text: "#f5f6fa" },
     build: (name) =>
@@ -109,6 +127,7 @@ export const TEMPLATES: PageTemplate[] = [
     name: "Presença",
     category: "Profissional",
     plan: "premium",
+    tab: "premium",
     description: "Capa com foto, redes sociais e banners de projetos editáveis.",
     swatch: { background: "#000000", accent: "#d6ae58", text: "#ffffff" },
     build: (name) =>
@@ -136,6 +155,7 @@ export const TEMPLATES: PageTemplate[] = [
     name: "Ecossistema",
     category: "Profissional",
     plan: "premium",
+    tab: "premium",
     description: "Retrato, indicadores ilustrativos e cartões de projetos. Edite com seus próprios dados.",
     swatch: { background: "#030303", accent: "#ff3469", text: "#f7f7f7" },
     build: (name) =>
@@ -182,6 +202,7 @@ export const TEMPLATES: PageTemplate[] = [
     name: "Vitrine",
     category: "Profissional",
     plan: "premium",
+    tab: "premium",
     description: "Catálogo de produtos com imagens, descrições, botões e contato editáveis.",
     swatch: { background: "#111d1f", accent: "#e6ff35", text: "#e7e9e8" },
     build: (name) =>
