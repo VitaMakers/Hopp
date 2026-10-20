@@ -133,8 +133,12 @@ function Spotlight({ doc, handle }: Props) {
         ) : null}
         <div className="spotlight-hero-shade" />
         <div className="spotlight-identity">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          {logo ? <img className="spotlight-logo" src={logo} alt={profile.name} /> : <h1>{profile.name}</h1>}
+          {premium.header === "none" ? null : premium.header === "logo" && logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="spotlight-logo" src={logo} alt={profile.name} />
+          ) : (
+            <h1>{profile.name}</h1>
+          )}
           <div className="spotlight-actions">
             <nav aria-label="Redes sociais">
               {socials.map(({ social, href }) => (
@@ -218,8 +222,12 @@ function Ecosystem({ doc, handle }: Props) {
             <div className="ecosystem-photo-shade" />
           </div>
           <div className="ecosystem-identity">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            {logo ? <img src={logo} alt={profile.name} /> : <h1>{profile.name}</h1>}
+            {premium.header === "none" ? null : premium.header === "logo" && logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logo} alt={profile.name} />
+            ) : (
+              <h1>{profile.name}</h1>
+            )}
             {profile.bio ? <p>{profile.bio}</p> : null}
           </div>
         </header>

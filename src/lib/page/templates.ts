@@ -193,7 +193,7 @@ export const TEMPLATES: PageTemplate[] = [
     swatch: { background: "#030303", accent: "#ff3469", text: "#f7f7f7" },
     build: (name) =>
       page(name, {
-        profile: { bio: "Empreendedor, especialista e mentor", coverUrl: unsplash("1560250097-0b93528c311a", 1000) },
+        profile: { bio: "Empreendedor, especialista e mentor", coverUrl: unsplash("1560250097-0b93528c311a", 1000), logo: "/assets/logo-exemplo.svg" },
         theme: { premium: "ecosystem", background: "#030303", text: "#f7f7f7", accent: "#ff3469" },
         premium: {
           coverX: 50,

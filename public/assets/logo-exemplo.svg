@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 110" role="img" aria-label="Sua Marca">
+  <g fill="#ffffff">
+    <path d="M16 14h40L34 60H16z"/>
+    <path d="M26 58h40L44 104H26z"/>
+    <text x="92" y="52" font-family="Arial, sans-serif" font-size="40" font-weight="800" letter-spacing="-1">SUA</text>
+    <text x="92" y="98" font-family="Arial, sans-serif" font-size="40" font-weight="800" letter-spacing="-1">MARCA</text>
+  </g>
+</svg>

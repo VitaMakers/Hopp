@@ -52,5 +52,8 @@ export function vCard(contact: { name: string; company: string; phone: string; e
 }
 
 export function imageSrc(url: string): string | null {
-  return safeHttpUrl(url.trim());
+  const value = url.trim();
+  // Example images shipped with the app (placeholder logos, etc.).
+  if (/^\/assets\/[A-Za-z0-9._-]+$/.test(value)) return value;
+  return safeHttpUrl(value);
 }

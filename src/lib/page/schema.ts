@@ -207,6 +207,8 @@ export const themeSchema = z.object({
 
 // Page texts only the premium designs use.
 export const premiumFieldsSchema = z.object({
+  // Top of the Presença/Ecossistema header: show the logo, the name, or nothing.
+  header: z.enum(["logo", "name", "none"]).default("logo"),
   siteLabel: z.string().max(40).default("MEU SITE"),
   siteUrl: z.string().max(2000).default(""),
   coverX: z.number().min(0).max(100).default(65),

@@ -109,6 +109,23 @@ function PremiumPanel({ doc, onChange }: PanelProps) {
         {design === "authority" ? (
           <TextField label="Nome no rodapé (opcional)" value={doc.premium.footer} maxLength={80} onChange={(footer) => setPremium({ footer })} />
         ) : null}
+        {design === "spotlight" || design === "ecosystem" ? (
+          <>
+            <Choice
+              label="Topo da página"
+              value={doc.premium.header}
+              options={{ logo: "Logo", name: "Nome", none: "Nada" }}
+              onChange={(header) => setPremium({ header })}
+            />
+            <TextField
+              label="Logo (link da imagem) — use no modo Logo"
+              type="url"
+              value={doc.profile.logo}
+              placeholder="https://..."
+              onChange={(logo) => onChange({ ...doc, profile: { ...doc.profile, logo } })}
+            />
+          </>
+        ) : null}
         {design === "spotlight" ? (
           <>
             <TextField label="Texto do botão do site" value={doc.premium.siteLabel} maxLength={40} onChange={(siteLabel) => setPremium({ siteLabel })} />
