@@ -292,11 +292,19 @@ function Ecosystem({ doc, handle }: Props) {
           })}
         </section>
         <section className="ecosystem-closing">
-          {premium.quote ? <p className="ecosystem-quote">{premium.quote}</p> : null}
+          {premium.quote ? (
+            <>
+              <span className="ecosystem-quote-mark" aria-hidden="true">
+                &ldquo;
+              </span>
+              <p className="ecosystem-quote">{premium.quote}</p>
+            </>
+          ) : null}
           {premium.about ? <p>{premium.about}</p> : null}
         </section>
         <footer className="ecosystem-footer">
-          <strong>{profile.name}</strong>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {premium.header !== "none" && logo ? <img src={logo} alt={profile.name} /> : <strong>{profile.name}</strong>}
           <p>
             © {year} {profile.name}. Todos os direitos reservados.
           </p>
