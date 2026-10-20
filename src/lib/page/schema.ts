@@ -180,6 +180,9 @@ export const LAYOUTS = ["classic", "cover", "card", "hero", "name", "poster", "b
 export const BACKGROUND_TYPES = ["solid", "gradient", "image"] as const;
 export const AVATAR_SHAPES = ["circle", "rounded", "square"] as const;
 export const SOCIAL_STYLES = ["icons", "pills"] as const;
+// Vita premium designs: when set, the page is drawn by that template's own
+// layout (src/components/page-view/PremiumView.tsx) instead of the theme.
+export const PREMIUM_DESIGNS = ["", "authority", "spotlight", "ecosystem", "catalog"] as const;
 
 export const themeSchema = z.object({
   layout: z.enum(LAYOUTS),
@@ -199,7 +202,27 @@ export const themeSchema = z.object({
   // Highlights: banner labels, stats, section titles. Headings can use their own font.
   accent: color.default("#3b6ef5"),
   headingFont: z.enum(["same", ...FONTS]).default("same"),
+  premium: z.enum(PREMIUM_DESIGNS).default(""),
 });
+
+// Page texts only the premium designs use.
+export const premiumFieldsSchema = z.object({
+  siteLabel: z.string().max(40).default("MEU SITE"),
+  siteUrl: z.string().max(2000).default(""),
+  coverX: z.number().min(0).max(100).default(65),
+  coverY: z.number().min(0).max(100).default(50),
+  sectionTitle: z.string().max(60).default("ECOSSISTEMA"),
+  quote: z.string().max(200).default(""),
+  about: z.string().max(1000).default(""),
+  heading: z.string().max(240).default(""),
+  contactLabel: z.string().max(60).default("Fale comigo"),
+  email: z.string().max(120).default(""),
+  footer: z.string().max(80).default(""),
+  privacyUrl: z.string().max(2000).default(""),
+  termsUrl: z.string().max(2000).default(""),
+});
+
+export const PREMIUM_DEFAULTS = premiumFieldsSchema.parse({});
 
 export const pageDocSchema = z.object({
   version: z.literal(1),
@@ -208,6 +231,8 @@ export const pageDocSchema = z.object({
     bio: z.string().max(300),
     avatarUrl: z.string().max(1000),
     coverUrl: z.string().max(1000),
+    // Shown in the Presença/Ecossistema header in place of the name text.
+    logo: z.string().max(1000).default(""),
     verified: z.boolean().default(false),
     // A WhatsApp number shown as a floating button on the public page.
     floatingWhatsapp: z.string().max(30).default(""),
@@ -215,6 +240,7 @@ export const pageDocSchema = z.object({
   socials: z.array(socialLinkSchema).max(20),
   blocks: z.array(blockSchema).max(100),
   theme: themeSchema,
+  premium: premiumFieldsSchema.default(PREMIUM_DEFAULTS),
   seo: z.object({
     title: z.string().max(70),
     description: z.string().max(160),

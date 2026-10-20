@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { summarize, type EventRow } from "./analytics";
 import { toCsv } from "./csv";
@@ -93,19 +92,17 @@ describe("whatsappHref", () => {
 });
 
 describe("templates", () => {
-  it("every template builds a valid page with its sample images", () => {
+  it("every template builds a valid premium page", () => {
     for (const template of TEMPLATES) {
       const doc = template.build("Ana");
       expect(pageDocSchema.safeParse(doc).success, template.id).toBe(true);
+      expect(doc.theme.premium, template.id).not.toBe("");
       expect(new Set(doc.blocks.map((block) => block.id)).size).toBe(doc.blocks.length);
-      const images = JSON.stringify(doc).match(/\/templates\/[\w-]+\.jpg/g) ?? [];
-      for (const path of images) expect(existsSync(`public${path}`), path).toBe(true);
     }
   });
 
-  it("only lets template sample paths through as local images", () => {
-    expect(imageSrc("/templates/mesa.jpg")).toBe("/templates/mesa.jpg");
-    expect(imageSrc("/templates/../etc/passwd")).toBeNull();
+  it("only accepts http(s) images", () => {
+    expect(imageSrc(" https://images.unsplash.com/photo-1?w=1 ")).toBe("https://images.unsplash.com/photo-1?w=1");
     expect(imageSrc("/outra/coisa.jpg")).toBeNull();
     expect(imageSrc("javascript:alert(1)")).toBeNull();
   });
@@ -143,6 +140,8 @@ describe("page document", () => {
     expect(parsed.profile.verified).toBe(false);
     expect(parsed.theme.backgroundType).toBe("solid");
     expect(parsed.theme.socialStyle).toBe("icons");
+    expect(parsed.theme.premium).toBe("");
+    expect(parsed.premium.siteLabel).toBe("MEU SITE");
     expect(parsed.blocks[0]).toMatchObject({ imageUrl: "", highlight: false });
   });
 

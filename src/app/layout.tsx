@@ -8,6 +8,7 @@ import "@fontsource/oswald/latin-700.css";
 import "@fontsource/space-mono/latin-400.css";
 import "@fontsource/space-mono/latin-700.css";
 import "./globals.css";
+import "./premium.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.siteUrl()),

@@ -81,6 +81,7 @@ export function BlocksPanel({ doc, onChange }: PanelProps) {
             <SortableBlock
               key={block.id}
               block={block}
+              premium={doc.theme.premium}
               open={openId === block.id}
               onToggleOpen={() => setOpenId(openId === block.id ? null : block.id)}
               onChange={(next) => setBlocks(doc.blocks.map((item) => (item.id === next.id ? next : item)))}
@@ -95,12 +96,14 @@ export function BlocksPanel({ doc, onChange }: PanelProps) {
 
 function SortableBlock({
   block,
+  premium,
   open,
   onToggleOpen,
   onChange,
   onRemove,
 }: {
   block: Block;
+  premium: PageDoc["theme"]["premium"];
   open: boolean;
   onToggleOpen: () => void;
   onChange: (block: Block) => void;
@@ -144,7 +147,7 @@ function SortableBlock({
       </div>
       {open ? (
         <div className="border-t border-stone-100 p-4">
-          <BlockFields block={block} onChange={onChange} />
+          <BlockFields block={block} premium={premium} onChange={onChange} />
           <button type="button" onClick={onRemove} className="mt-4 text-sm text-red-600">
             Excluir bloco
           </button>

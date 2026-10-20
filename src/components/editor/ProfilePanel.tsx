@@ -33,6 +33,15 @@ export function ProfilePanel({ doc, onChange }: PanelProps) {
           placeholder="https://..."
           onChange={(avatarUrl) => setProfile({ avatarUrl })}
         />
+        {doc.theme.premium === "spotlight" || doc.theme.premium === "ecosystem" ? (
+          <TextField
+            label="Logo (link da imagem) — aparece no topo no lugar do nome"
+            type="url"
+            value={doc.profile.logo}
+            placeholder="https://..."
+            onChange={(logo) => setProfile({ logo })}
+          />
+        ) : null}
         <TextField
           label="Capa (link da imagem, usada no layout Com capa)"
           type="url"

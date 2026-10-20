@@ -51,9 +51,6 @@ export function vCard(contact: { name: string; company: string; phone: string; e
   return lines.join("\r\n") + "\r\n";
 }
 
-// Images: http(s) URLs, or the sample images shipped with the templates.
 export function imageSrc(url: string): string | null {
-  const value = url.trim();
-  if (/^\/templates\/[\w-]+\.(jpg|png|webp)$/.test(value)) return value;
-  return safeHttpUrl(value);
+  return safeHttpUrl(url.trim());
 }

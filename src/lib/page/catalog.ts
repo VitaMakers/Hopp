@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import type { Block, BlockType, PageDoc, SocialPlatform, Theme } from "./schema";
+import { PREMIUM_DEFAULTS, type Block, type BlockType, type PageDoc, type SocialPlatform, type Theme } from "./schema";
 
 export const BLOCK_CATALOG: Record<BlockType, { label: string; description: string }> = {
   link: { label: "Link", description: "Botão que leva a qualquer endereço" },
@@ -126,6 +126,7 @@ const THEME_BASE = {
   socialStyle: "icons",
   accent: "#3b6ef5",
   headingFont: "same",
+  premium: "",
 } as const satisfies Partial<Theme>;
 
 const PRESETS: { name: string; theme: Theme }[] = [
@@ -238,10 +239,11 @@ export const THEME_PRESETS = PRESETS.map(({ name, theme }) => ({ name, theme: { 
 export function defaultPageDoc(name: string): PageDoc {
   return {
     version: 1,
-    profile: { name, bio: "", avatarUrl: "", coverUrl: "", verified: false, floatingWhatsapp: "" },
+    profile: { name, bio: "", avatarUrl: "", coverUrl: "", logo: "", verified: false, floatingWhatsapp: "" },
     socials: [],
     blocks: [createBlock("link")],
     theme: THEME_PRESETS[0].theme,
+    premium: PREMIUM_DEFAULTS,
     seo: { title: "", description: "" },
   };
 }

@@ -5,7 +5,9 @@ import type { Block, PageDoc } from "@/lib/page/schema";
 import { SOCIAL_LABELS } from "@/lib/page/catalog";
 import { spotifyEmbedUrl, youtubeEmbedUrl } from "@/lib/page/embed";
 import { imageSrc, linkHref, mapsDirectionsUrl, mapsEmbedUrl, socialHref, vCard, whatsappHref } from "@/lib/page/links";
+import { PremiumView } from "./PremiumView";
 import { SocialIcon } from "./SocialIcon";
+import { startVisit, track } from "./track";
 import { AVATAR_RADII, buttonClass, themeVars } from "./theme";
 
 type Props = {
@@ -16,36 +18,16 @@ type Props = {
   footer?: React.ReactNode;
 };
 
-// One id per page load, sent with the view and every click after it, so the
-// click rate counts visits with a click instead of raw clicks.
-let visitId: string | undefined;
-
-function newVisitId(): string {
-  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
-  // randomUUID needs a secure context; build a v4 UUID by hand otherwise.
-  const b = crypto.getRandomValues(new Uint8Array(16));
-  b[6] = (b[6] & 0x0f) | 0x40;
-  b[8] = (b[8] & 0x3f) | 0x80;
-  const h = [...b].map((x) => x.toString(16).padStart(2, "0")).join("");
-  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
-}
-
-function track(handle: string | undefined, body: Record<string, string>) {
-  if (!handle) return;
-  const payload = JSON.stringify({ handle, visitId, ...body });
-  if (!navigator.sendBeacon?.("/api/track", new Blob([payload], { type: "application/json" }))) {
-    void fetch("/api/track", { method: "POST", body: payload, keepalive: true });
-  }
-}
-
 export function PageView({ doc, handle, footer }: Props) {
   const { theme } = doc;
   const blocks = doc.blocks.filter((block) => block.enabled);
 
   useEffect(() => {
-    visitId = newVisitId();
+    startVisit();
     track(handle, { kind: "page_view", referrer: document.referrer });
   }, [handle]);
+
+  if (theme.premium) return <PremiumView doc={doc} handle={handle} />;
 
   const content = (
     <>
