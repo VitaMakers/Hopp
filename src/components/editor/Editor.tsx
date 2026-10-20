@@ -104,7 +104,7 @@ export function Editor({
         </div>
         {message ? <p className="mb-3 text-sm text-stone-700">{message}</p> : null}
 
-        {tab === "templates" ? <TemplatesPanel doc={doc} onChange={setDoc} /> : null}
+        {tab === "templates" ? <TemplatesPanel doc={doc} onChange={setDoc} onGoToBlocks={() => setTab("blocks")} /> : null}
         {tab === "blocks" ? <BlocksPanel doc={doc} onChange={setDoc} /> : null}
         {tab === "profile" ? <ProfilePanel doc={doc} onChange={setDoc} /> : null}
         {tab === "theme" ? <ThemePanel doc={doc} onChange={setDoc} /> : null}

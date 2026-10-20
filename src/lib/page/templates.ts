@@ -6,19 +6,22 @@ import { PREMIUM_DEFAULTS, type Block, type PageDoc, type SocialLink, type Theme
 
 export type TemplatePlan = "basic" | "premium";
 
-// Tabs in the model gallery. Each tab belongs to a plan tier; a model shows
-// under the tab named by its `tab` field.
+// Tabs in the model gallery. "models" tabs list ready-made models (a model
+// shows under the tab its `tab` field names); the "scratch" tab starts a blank
+// page the person builds in the editor, with the live preview beside it.
 export type TemplateTab = {
   id: string;
   label: string;
-  // Plan that unlocks these models, shown on the tab.
-  plan: string;
+  kind: "models" | "scratch";
+  // Plan that unlocks these models, shown on the tab (models tabs only).
+  plan?: string;
   note: string;
 };
 
 export const TEMPLATE_TABS: TemplateTab[] = [
-  { id: "premium", label: "Premium", plan: "Profissional", note: "Modelos do plano Profissional." },
-  { id: "essencial", label: "Essencial", plan: "Essencial", note: "Modelos do plano Essencial. Novos modelos em breve." },
+  { id: "essencial", label: "Modelos Essenciais", kind: "models", plan: "Essencial", note: "Modelos do plano Essencial. Novos modelos em breve." },
+  { id: "premium", label: "Modelos Premium", kind: "models", plan: "Profissional", note: "Modelos do plano Profissional." },
+  { id: "criar", label: "Criar Meu Modelo", kind: "scratch", note: "Comece com uma página em branco e monte do seu jeito — a prévia aparece ao lado enquanto você edita." },
 ];
 
 export type PageTemplate = {
