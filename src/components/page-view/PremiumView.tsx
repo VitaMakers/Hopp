@@ -115,6 +115,7 @@ function Spotlight({ doc, handle }: Props) {
   const { profile, theme, premium } = doc;
   const cover = imageSrc(profile.coverUrl);
   const site = linkHref(premium.siteUrl);
+  const logo = imageSrc(profile.logo);
   const privacy = linkHref(premium.privacyUrl);
   const terms = linkHref(premium.termsUrl);
   const socials = doc.socials
@@ -132,7 +133,8 @@ function Spotlight({ doc, handle }: Props) {
         ) : null}
         <div className="spotlight-hero-shade" />
         <div className="spotlight-identity">
-          <h1>{profile.name}</h1>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {logo ? <img className="spotlight-logo" src={logo} alt={profile.name} /> : <h1>{profile.name}</h1>}
           <div className="spotlight-actions">
             <nav aria-label="Redes sociais">
               {socials.map(({ social, href }) => (
@@ -202,6 +204,7 @@ function Spotlight({ doc, handle }: Props) {
 function Ecosystem({ doc, handle }: Props) {
   const { profile, theme, premium } = doc;
   const cover = imageSrc(profile.coverUrl);
+  const logo = imageSrc(profile.logo);
   const stats = visible(doc, "stats")[0]?.items.slice(0, 3) ?? [];
   return (
     <div className="vita-premium premium-ecosystem" style={{ "--eco-bg": theme.background } as React.CSSProperties}>
@@ -215,7 +218,8 @@ function Ecosystem({ doc, handle }: Props) {
             <div className="ecosystem-photo-shade" />
           </div>
           <div className="ecosystem-identity">
-            <h1>{profile.name}</h1>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {logo ? <img src={logo} alt={profile.name} /> : <h1>{profile.name}</h1>}
             {profile.bio ? <p>{profile.bio}</p> : null}
           </div>
         </header>

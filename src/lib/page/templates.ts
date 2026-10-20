@@ -73,7 +73,7 @@ function page(
 ): PageDoc {
   return {
     version: 1,
-    profile: { name, bio: "", avatarUrl: "", coverUrl: "", verified: false, floatingWhatsapp: "", ...parts.profile },
+    profile: { name, bio: "", avatarUrl: "", coverUrl: "", logo: "", verified: false, floatingWhatsapp: "", ...parts.profile },
     socials: parts.socials ?? [],
     blocks: parts.blocks,
     theme: { ...baseTheme, ...parts.theme },

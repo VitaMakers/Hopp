@@ -231,6 +231,8 @@ export const pageDocSchema = z.object({
     bio: z.string().max(300),
     avatarUrl: z.string().max(1000),
     coverUrl: z.string().max(1000),
+    // Shown in the Presença/Ecossistema header in place of the name text.
+    logo: z.string().max(1000).default(""),
     verified: z.boolean().default(false),
     // A WhatsApp number shown as a floating button on the public page.
     floatingWhatsapp: z.string().max(30).default(""),

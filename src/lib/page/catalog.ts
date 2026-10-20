@@ -239,7 +239,7 @@ export const THEME_PRESETS = PRESETS.map(({ name, theme }) => ({ name, theme: { 
 export function defaultPageDoc(name: string): PageDoc {
   return {
     version: 1,
-    profile: { name, bio: "", avatarUrl: "", coverUrl: "", verified: false, floatingWhatsapp: "" },
+    profile: { name, bio: "", avatarUrl: "", coverUrl: "", logo: "", verified: false, floatingWhatsapp: "" },
     socials: [],
     blocks: [createBlock("link")],
     theme: THEME_PRESETS[0].theme,
