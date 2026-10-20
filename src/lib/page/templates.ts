@@ -18,6 +18,36 @@ export type TemplateTab = {
   note: string;
 };
 
+// A collection is a named folder inside a tab. The person opens a collection
+// to see the models in it. Empty collections are placeholders ("em breve").
+export type TemplateCollection = {
+  id: string;
+  tab: string;
+  name: string;
+  description: string;
+  swatch: { background: string; accent: string; text: string };
+  templateIds: string[];
+};
+
+export const TEMPLATE_COLLECTIONS: TemplateCollection[] = [
+  {
+    id: "autoridade",
+    tab: "premium",
+    name: "Autoridade",
+    description: "Modelos para marca pessoal e autoridade.",
+    swatch: { background: "#080f1c", accent: "#3565ed", text: "#f5f6fa" },
+    templateIds: ["autoridade", "presenca", "ecossistema", "vitrine"],
+  },
+  { id: "presenca", tab: "premium", name: "Presença", description: "Em breve.", swatch: { background: "#000000", accent: "#d6ae58", text: "#ffffff" }, templateIds: [] },
+  { id: "ecossistema", tab: "premium", name: "Ecossistema", description: "Em breve.", swatch: { background: "#030303", accent: "#ff3469", text: "#f7f7f7" }, templateIds: [] },
+  { id: "vitrine", tab: "premium", name: "Vitrine", description: "Em breve.", swatch: { background: "#111d1f", accent: "#e6ff35", text: "#e7e9e8" }, templateIds: [] },
+];
+
+// The models inside a collection, in its listed order.
+export function collectionModels(collection: TemplateCollection): PageTemplate[] {
+  return collection.templateIds.map((id) => TEMPLATES.find((t) => t.id === id)).filter((t): t is PageTemplate => !!t);
+}
+
 export const TEMPLATE_TABS: TemplateTab[] = [
   { id: "essencial", label: "Modelos Essenciais", kind: "models", plan: "Essencial", note: "Modelos do plano Essencial. Novos modelos em breve." },
   { id: "premium", label: "Modelos Premium", kind: "models", plan: "Profissional", note: "Modelos do plano Profissional." },
