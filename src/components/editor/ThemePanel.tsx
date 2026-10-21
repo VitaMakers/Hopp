@@ -14,6 +14,8 @@ const LAYOUT_LABELS: Record<Theme["layout"], string> = {
   name: "Só o nome",
   poster: "Capa com nome",
   blank: "Sem cabeçalho",
+  band: "Faixas coloridas",
+  cutout: "Recorte",
 };
 const BACKGROUND_LABELS: Record<Theme["backgroundType"], string> = { solid: "Cor", gradient: "Degradê", image: "Imagem" };
 const AVATAR_LABELS: Record<Theme["avatarShape"], string> = { circle: "Redonda", rounded: "Arredondada", square: "Quadrada" };

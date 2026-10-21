@@ -16,6 +16,7 @@ export const BLOCK_CATALOG: Record<BlockType, { label: string; description: stri
   map: { label: "Mapa", description: "Endereço no mapa e botão de rota" },
   contact: { label: "Salvar contato", description: "Visitante salva seu contato no celular" },
   stats: { label: "Números", description: "Destaques como \"10+ anos\" e \"500+ clientes\"" },
+  gallery: { label: "Galeria", description: "Grade de fotos, cada uma com link opcional" },
 };
 
 export const SOCIAL_LABELS: Record<SocialPlatform, string> = {
@@ -109,6 +110,8 @@ export function createBlock(type: BlockType): Block {
           { value: "TOP 3", label: "na sua especialidade" },
         ],
       };
+    case "gallery":
+      return { ...base, type, title: "", items: [{ imageUrl: "", url: "" }] };
   }
 }
 
@@ -265,6 +268,8 @@ export function blockSummary(block: Block): string {
     case "product":
     case "map":
       return block.title;
+    case "gallery":
+      return block.title || `Galeria (${block.items.length})`;
     case "whatsapp":
     case "contact":
       return block.buttonText;

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Logo">
+  <g fill="#d9452f">
+    <circle cx="60" cy="60" r="10"/>
+    <g>
+      <rect x="57" y="6" width="6" height="26" rx="3"/>
+      <rect x="57" y="88" width="6" height="26" rx="3"/>
+      <rect x="6" y="57" width="26" height="6" rx="3"/>
+      <rect x="88" y="57" width="26" height="6" rx="3"/>
+      <rect x="57" y="6" width="6" height="26" rx="3" transform="rotate(45 60 60)"/>
+      <rect x="57" y="88" width="6" height="26" rx="3" transform="rotate(45 60 60)"/>
+      <rect x="57" y="6" width="6" height="26" rx="3" transform="rotate(-45 60 60)"/>
+      <rect x="57" y="88" width="6" height="26" rx="3" transform="rotate(-45 60 60)"/>
+    </g>
+  </g>
+</svg>
