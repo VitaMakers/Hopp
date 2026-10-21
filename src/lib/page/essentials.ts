@@ -2,38 +2,51 @@ import { nanoid } from "nanoid";
 import { page, type PageTemplate, type TemplateCollection } from "./templates";
 import type { Block, PageDoc, SocialPlatform, Theme } from "./schema";
 
-// The "Modelos Essenciais" gallery: original starter pages grouped by the same
-// categories the market expects (loja, criadores, esporte...). Each one is
-// built on the normal theme + block system, so every text, colour, image,
-// link and the cover (photo or video) is 100% editable. Within a category the
-// models use deliberately different structures — coloured bands, a cut-out
-// portrait, a photo/video cover, a photo grid, a logo header — so they don't
-// all look alike. Photos are reliable placeholders (picsum.photos), logos and
-// video covers are bundled in /public/assets; all meant to be swapped.
+// The "Modelos Essenciais" gallery: original starter pages grouped by the
+// market's categories. Each model is built from one of twelve structural
+// recipes (coloured bands, a cut-out portrait, a video cover, a photo grid,
+// a product shelf, a local + FAQ + map page, an embedded player, a card
+// stack, a name-first list...), and every category gets a different kit of
+// recipes, so the models don't all share the same skeleton. Everything is
+// built on the normal theme + block system and stays 100% editable. Photos
+// are placeholders (picsum.photos); logos and video covers are bundled in
+// /public/assets. All meant to be swapped for the person's own.
 
 const bid = () => nanoid(10);
 const pic = (seed: string, w = 800, h = 1000) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
 
 type LinkBlock = Extract<Block, { type: "link" }>;
-type SubscribeBlock = Extract<Block, { type: "subscribe" }>;
+type L = { t: string; u: string; bt?: string; l?: string; s?: string };
 
-function lk(title: string, url: string, extra: Partial<LinkBlock> = {}): Block {
-  return { id: bid(), enabled: true, type: "link", title, url, imageUrl: "", highlight: false, display: "button", label: "", subtitle: "", buttonText: "", accent: "", ...extra };
+function lk(x: L, extra: Partial<LinkBlock> = {}): Block {
+  return { id: bid(), enabled: true, type: "link", title: x.t, url: x.u, imageUrl: "", highlight: false, display: "button", label: x.l ?? "", subtitle: x.s ?? "", buttonText: x.bt ?? "", accent: "", ...extra };
 }
-function hd(text: string, style: Extract<Block, { type: "heading" }>["style"] = "section"): Block {
-  return { id: bid(), enabled: true, type: "heading", text, style };
+function banner(x: L, seed: string): Block {
+  return lk(x, { display: "banner", imageUrl: pic(seed, 1000, 700), buttonText: x.bt ?? "Saiba mais" });
 }
-function sub(title: string, buttonText: string, extra: Partial<SubscribeBlock> = {}): Block {
-  return { id: bid(), enabled: true, type: "subscribe", title, buttonText, collectPhone: false, thankYouMessage: "Prontinho! Recebi seus dados e já já falo com você.", ...extra };
+function sub(title: string, buttonText: string, collectPhone = false): Block {
+  return { id: bid(), enabled: true, type: "subscribe", title, buttonText, collectPhone, thankYouMessage: "Prontinho! Recebi seus dados e já já falo com você." };
 }
-function prod(p: { label?: string; title: string; description: string; price?: string; seed: string; buttonText: string; url: string }): Block {
+function prodB(p: { label?: string; title: string; description: string; price?: string; seed: string; buttonText: string; url: string }): Block {
   return { id: bid(), enabled: true, type: "product", label: p.label ?? "", price: p.price ?? "", title: p.title, description: p.description, imageUrl: pic(p.seed, 900, 700), buttonText: p.buttonText, url: p.url };
 }
-function stats(items: [string, string][]): Block {
+function statsB(items: [string, string][]): Block {
   return { id: bid(), enabled: true, type: "stats", items: items.map(([value, label]) => ({ value, label })) };
 }
-function gal(title: string, seeds: string[]): Block {
+function galB(title: string, seeds: string[]): Block {
   return { id: bid(), enabled: true, type: "gallery", title, items: seeds.map((s) => ({ imageUrl: pic(s, 600, 600), url: "" })) };
+}
+function hd(text: string, style: Extract<Block, { type: "heading" }>["style"] = "divider"): Block {
+  return { id: bid(), enabled: true, type: "heading", text, style };
+}
+function faqB(items: [string, string][]): Block {
+  return { id: bid(), enabled: true, type: "faq", title: "Perguntas frequentes", items: items.map(([question, answer]) => ({ question, answer })) };
+}
+function mapB(title: string, address: string): Block {
+  return { id: bid(), enabled: true, type: "map", title, address };
+}
+function embedB(e: { kind: "youtube" | "spotify"; url: string }): Block {
+  return e.kind === "youtube" ? { id: bid(), enabled: true, type: "youtube", url: e.url } : { id: bid(), enabled: true, type: "spotify", url: e.url };
 }
 
 type Pal = { bg: string; text: string; btn: string; btnText: string; accent: string };
@@ -57,822 +70,372 @@ const PAL = {
 } satisfies Record<string, Pal>;
 
 type Video = "aurora" | "sunset" | "forest" | "mono";
-type ESpec = {
+
+// Category content the recipes draw from.
+type Cat = {
   id: string;
   name: string;
-  cat: string;
-  layout: Theme["layout"];
-  font: Theme["font"];
-  pal: keyof typeof PAL;
-  bio: string;
-  shape?: Theme["buttonShape"];
-  style?: Theme["buttonStyle"];
-  avatarShape?: Theme["avatarShape"];
-  video?: Video;
-  photo?: string;
-  avatar?: string;
-  logo?: string;
+  swatch: { background: string; accent: string; text: string };
+  socials: [SocialPlatform, string][];
   wa?: string;
-  socials?: [SocialPlatform, string][];
-  blocks: Block[];
+  pals: (keyof typeof PAL)[];
+  fonts: Theme["font"][];
+  bio: string;
+  names: string[];
+  kit: RecipeKey[];
+  vid: Video;
+  logo?: string;
+  primary: L;
+  links: L[];
+  gal: string[];
+  stats?: [string, string][];
+  products?: Parameters<typeof prodB>[0][];
+  faq?: [string, string][];
+  address?: string;
+  embed?: { kind: "youtube" | "spotify"; url: string };
 };
 
-function buildTemplate(spec: ESpec): PageTemplate {
-  const p: Pal = PAL[spec.pal];
+type Piece = { layout: Theme["layout"]; blocks: Block[]; video?: Video; logo?: string; shape?: Theme["buttonShape"]; style?: Theme["buttonStyle"] };
+type Recipe = (c: Cat, mid: string) => Piece;
+
+const g4 = (c: Cat) => c.gal.slice(0, 4);
+const g3 = (c: Cat) => c.gal.slice(0, 3);
+
+// The twelve structural recipes. Each has its own layout and block makeup, so
+// two models built from different recipes never share a skeleton.
+const RECIPES = {
+  // Coloured bands (name/tagline/socials) + a photo grid.
+  faixaGrade: (c): Piece => ({
+    layout: "band", shape: "square", style: "fill",
+    blocks: [lk(c.primary, { display: "button" }), galB("Destaques", g4(c)), lk(c.links[0], { display: "card" })],
+  }),
+  // Cut-out portrait + a highlighted button and two cards.
+  recorteCartoes: (c): Piece => ({
+    layout: "cutout", shape: "pill", style: "fill",
+    blocks: [lk(c.primary, { highlight: true, display: "button" }), lk(c.links[0], { display: "card" }), lk(c.links[1], { display: "card" })],
+  }),
+  // Full-screen video cover + a banner, a card and an e-mail capture.
+  capaVideoBanner: (c, mid): Piece => ({
+    layout: "poster", shape: "square", style: "outline", video: c.vid,
+    blocks: [banner(c.primary, `${mid}-b`), lk(c.links[0], { display: "card" }), sub("Receba as novidades por e-mail", "Quero receber")],
+  }),
+  // Logo header + photo grid + a highlight and a card.
+  logoGrade: (c): Piece => ({
+    layout: "classic", shape: "rounded", style: "fill", logo: c.logo ?? "/assets/logo-mono.svg",
+    blocks: [galB("", g3(c)), lk(c.primary, { highlight: true, display: "button" }), lk(c.links[0], { display: "card" })],
+  }),
+  // Big photo header + a banner, numbers and a card.
+  fotoGrandeStats: (c, mid): Piece => ({
+    layout: "hero", shape: "square", style: "fill",
+    blocks: [banner(c.primary, `${mid}-b`), statsB(c.stats ?? [["+500", "clientes"], ["10", "anos"], ["4.9", "nota"]]), lk(c.links[0], { display: "card" })],
+  }),
+  // Floating card + a stack of link cards.
+  cartaoPilha: (c): Piece => ({
+    layout: "card", shape: "rounded", style: "soft",
+    blocks: [lk(c.primary, { display: "card" }), lk(c.links[0], { display: "card" }), lk(c.links[1], { display: "card" }), lk(c.links[2] ?? c.links[0], { display: "button" })],
+  }),
+  // Name-first header + a divider and a short list.
+  soNomeLista: (c): Piece => ({
+    layout: "name", shape: "pill", style: "soft",
+    blocks: [hd("LINKS", "divider"), lk(c.primary, { display: "card" }), lk(c.links[0], { display: "card" }), sub("Entre na lista e receba primeiro", "Entrar na lista")],
+  }),
+  // Cover banner header + a banner and two links.
+  capaBanner: (c, mid): Piece => ({
+    layout: "cover", shape: "rounded", style: "fill",
+    blocks: [banner(c.primary, `${mid}-b`), lk(c.links[0], { display: "card" }), lk(c.links[1], { display: "button" })],
+  }),
+  // Product shelf (two products + a button).
+  vitrineProdutos: (c): Piece => ({
+    layout: "poster", shape: "rounded", style: "fill",
+    blocks: [prodB(c.products![0]), prodB(c.products![1]), lk(c.primary, { display: "button" })],
+  }),
+  // Local business: a highlight, an FAQ and a map.
+  localFaqMapa: (c): Piece => ({
+    layout: "classic", shape: "rounded", style: "fill",
+    blocks: [lk(c.primary, { highlight: true, display: "button" }), faqB(c.faq!), mapB("Onde estamos", c.address!)],
+  }),
+  // Embedded player (YouTube/Spotify) + two links, on bands.
+  midiaEmbed: (c): Piece => ({
+    layout: "band", shape: "square", style: "outline",
+    blocks: [embedB(c.embed!), lk(c.links[0], { display: "card" }), lk(c.primary, { display: "button" })],
+  }),
+  // Cut-out portrait with a video + a banner and a card.
+  recorteVideo: (c, mid): Piece => ({
+    layout: "cutout", shape: "square", style: "fill", video: c.vid,
+    blocks: [banner(c.primary, `${mid}-b`), lk(c.links[0], { display: "card" })],
+  }),
+} satisfies Record<string, Recipe>;
+type RecipeKey = keyof typeof RECIPES;
+
+const CATS: Cat[] = [
+  {
+    id: "loja", name: "🛍️ Loja", swatch: { background: PAL.clay.bg, accent: PAL.clay.accent, text: PAL.clay.text },
+    socials: [["instagram", "https://instagram.com/"], ["tiktok", "https://tiktok.com/"], ["pinterest", "https://pinterest.com/"]], wa: "(11) 99999-0000",
+    pals: ["blush", "ink", "clay", "sand"], fonts: ["condensed", "rounded", "serif", "sans"], vid: "mono",
+    bio: "Novidades da semana, fretes e condições especiais. Escolha por onde começar 👇",
+    names: ["Jaya Store", "Drop Noturno", "Vitrine Essencial", "Feito à Mão"],
+    kit: ["faixaGrade", "capaVideoBanner", "vitrineProdutos", "recorteCartoes"],
+    primary: { t: "Ver catálogo completo", u: "https://example.com/catalogo", bt: "Explorar loja" },
+    links: [{ t: "Promoções da semana", l: "OFERTAS", s: "Até 40% off", u: "https://example.com/ofertas" }, { t: "Comprar no WhatsApp", u: "https://wa.me/5511999990000" }, { t: "Como comprar", u: "https://example.com/ajuda" }],
+    gal: ["loja-g1", "loja-g2", "loja-g3", "loja-g4"],
+    products: [
+      { label: "DESTAQUE", title: "Kit Presente", description: "Nossa combinação mais pedida, embalada para presentear.", price: "R$ 149", seed: "loja-p1", buttonText: "Comprar", url: "https://example.com/kit" },
+      { label: "NOVO", title: "Edição Especial", description: "Produção limitada, com acabamento exclusivo.", price: "R$ 89", seed: "loja-p2", buttonText: "Ver produto", url: "https://example.com/especial" },
+    ],
+  },
+  {
+    id: "criadores", name: "💫 Criadores de conteúdo", swatch: { background: PAL.ink.bg, accent: PAL.ink.accent, text: PAL.ink.text },
+    socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"], ["tiktok", "https://tiktok.com/"]],
+    pals: ["ink", "plum", "night", "mono"], fonts: ["condensed", "rounded", "sans", "mono"], vid: "aurora",
+    bio: "Criador de conteúdo · bastidores, colabs e tudo o que rola por aqui 💜",
+    names: ["Creator Hub", "Em Vídeo", "Todos os Links", "No Ar"],
+    kit: ["capaVideoBanner", "midiaEmbed", "cartaoPilha", "recorteCartoes"],
+    primary: { t: "Para marcas: mídia kit", u: "https://example.com/midiakit", bt: "Quero ver" },
+    links: [{ t: "Último vídeo", l: "NOVO", s: "Sai todo sábado", u: "https://youtube.com/" }, { t: "Cupom de desconto", l: "CUPOM", s: "Use MEUNOME10", u: "https://example.com/cupom" }, { t: "Meu TikTok", u: "https://tiktok.com/" }],
+    gal: ["cri-g1", "cri-g2", "cri-g3", "cri-g4"],
+    embed: { kind: "youtube", url: "https://www.youtube.com/watch?v=aqz-KE-bpKQ" },
+  },
+  {
+    id: "esporte", name: "🏋️ Esporte e Fitness", swatch: { background: PAL.lime.bg, accent: PAL.lime.accent, text: PAL.lime.text },
+    socials: [["instagram", "https://instagram.com/"]], wa: "(11) 97777-0000",
+    pals: ["lime", "ink", "slate", "mint"], fonts: ["condensed", "tech", "sans", "rounded"], vid: "forest",
+    bio: "Personal trainer · planos online e presenciais. Bora evoluir 💪",
+    names: ["Treino & Resultado", "Box Funcional", "Minhas Metas", "Nutri Esportiva"],
+    kit: ["fotoGrandeStats", "faixaGrade", "soNomeLista", "recorteCartoes"],
+    primary: { t: "Montar meu treino", u: "https://wa.me/5511977770000", bt: "Falar comigo" },
+    links: [{ t: "Planos e valores", l: "PLANOS", s: "Mensal, trimestral e anual", u: "https://example.com/planos" }, { t: "Horários das turmas", s: "Manhã, tarde e noite", u: "https://example.com/horarios" }, { t: "Aula experimental grátis", u: "https://wa.me/5511977770000" }],
+    gal: ["esp-g1", "esp-g2", "esp-g3", "esp-g4"],
+    stats: [["+500", "alunos"], ["10", "anos"], ["100%", "online"]],
+  },
+  {
+    id: "criativo", name: "🎨 Criativo", swatch: { background: PAL.plum.bg, accent: PAL.plum.accent, text: PAL.plum.text },
+    socials: [["instagram", "https://instagram.com/"], ["linkedin", "https://linkedin.com/"]],
+    pals: ["plum", "mono", "ink", "rose"], fonts: ["elegant", "serif", "sans", "rounded"], vid: "aurora", logo: "/assets/logo-mono.svg",
+    bio: "Direção de arte & design. Uma seleção dos meus projetos recentes.",
+    names: ["Portfólio Criativo", "Fotografia Autoral", "Estúdio de Branding", "Ilustração"],
+    kit: ["logoGrade", "capaVideoBanner", "recorteCartoes", "cartaoPilha"],
+    primary: { t: "Ver portfólio completo", u: "https://example.com/portfolio", bt: "Explorar" },
+    links: [{ t: "Orçamento de projeto", s: "Conte sua ideia", u: "https://example.com/orcamento" }, { t: "Serviços", s: "Identidade, web e social", u: "https://example.com/servicos" }, { t: "Loja de prints", u: "https://example.com/prints" }],
+    gal: ["cria-g1", "cria-g2", "cria-g3", "cria-g4"],
+  },
+  {
+    id: "comida", name: "🍕 Comida e bebida", swatch: { background: PAL.sun.bg, accent: PAL.sun.accent, text: PAL.sun.text },
+    socials: [["instagram", "https://instagram.com/"]], wa: "(11) 95555-0000",
+    pals: ["sun", "clay", "ink", "cream"], fonts: ["serif", "elegant", "condensed", "rounded"], vid: "sunset",
+    bio: "Sabor de verdade, feito na hora. Confira o cardápio e peça 🍔",
+    names: ["Cardápio Digital", "Nossa Vitrine", "Onde Estamos", "Cantina"],
+    kit: ["capaBanner", "vitrineProdutos", "localFaqMapa", "faixaGrade"],
+    primary: { t: "Ver cardápio", u: "https://example.com/cardapio", bt: "Abrir cardápio" },
+    links: [{ t: "Pedir pelo WhatsApp", u: "https://wa.me/5511955550000" }, { t: "Peça no iFood", s: "Entrega rápida", u: "https://ifood.com.br/" }, { t: "Reservar mesa", u: "https://wa.me/5511955550000" }],
+    gal: ["com-g1", "com-g2", "com-g3", "com-g4"],
+    products: [
+      { label: "MAIS PEDIDO", title: "Combo da Casa", description: "Prato principal, acompanhamento e bebida.", price: "R$ 45", seed: "com-p1", buttonText: "Pedir", url: "https://wa.me/5511955550000" },
+      { label: "DOCE", title: "Sobremesa Especial", description: "Para fechar com chave de ouro.", price: "R$ 18", seed: "com-p2", buttonText: "Quero", url: "https://wa.me/5511955550000" },
+    ],
+    faq: [["Vocês entregam?", "Sim, em toda a região. Consulte a taxa pelo WhatsApp."], ["Qual o horário?", "Terça a domingo, das 18h às 23h."]],
+    address: "Av. Paulista, 1000 - São Paulo",
+  },
+  {
+    id: "imobiliaria", name: "🏠 Imobiliária", swatch: { background: PAL.slate.bg, accent: PAL.slate.accent, text: PAL.slate.text },
+    socials: [["instagram", "https://instagram.com/"], ["linkedin", "https://linkedin.com/"]], wa: "(11) 93333-0000",
+    pals: ["slate", "night", "ink", "ocean"], fonts: ["sans", "elegant", "serif", "mono"], vid: "mono", logo: "/assets/logo-mono.svg",
+    bio: "Encontro o imóvel certo para o seu momento. Vamos conversar?",
+    names: ["Corretor de Imóveis", "Lançamento", "Fale Comigo", "Carteira de Imóveis"],
+    kit: ["logoGrade", "capaVideoBanner", "localFaqMapa", "cartaoPilha"],
+    primary: { t: "Imóveis à venda", u: "https://example.com/venda", bt: "Ver ofertas" },
+    links: [{ t: "Imóveis para alugar", l: "ALUGUEL", s: "Atualizado toda semana", u: "https://example.com/aluguel" }, { t: "Quero vender meu imóvel", s: "Avaliação gratuita", u: "https://wa.me/5511933330000" }, { t: "Agendar visita", u: "https://wa.me/5511933330000" }],
+    gal: ["imo-g1", "imo-g2", "imo-g3", "imo-g4"],
+    faq: [["Como funciona a visita?", "Agende pelo WhatsApp e eu levo você a conhecer o imóvel."], ["Trabalha com financiamento?", "Sim, ajudo em toda a parte de documentação e crédito."]],
+    address: "Rua das Palmeiras, 250 - São Paulo",
+  },
+  {
+    id: "beleza", name: "💄 Beleza", swatch: { background: PAL.blush.bg, accent: PAL.blush.accent, text: PAL.blush.text },
+    socials: [["instagram", "https://instagram.com/"]], wa: "(11) 91111-0000",
+    pals: ["blush", "berry", "rose", "mono"], fonts: ["elegant", "serif", "rounded", "condensed"], vid: "sunset",
+    bio: "Cabelo, unhas e estética. Agende seu momento de cuidado ✨",
+    names: ["Studio de Beleza", "Maquiagem", "Minha Agenda", "Skincare"],
+    kit: ["faixaGrade", "capaVideoBanner", "soNomeLista", "recorteCartoes"],
+    primary: { t: "Agendar horário", u: "https://example.com/agenda", bt: "Marcar agora" },
+    links: [{ t: "Nossos serviços", l: "SERVIÇOS", s: "Tabela com preços", u: "https://example.com/servicos" }, { t: "Pacote noiva", s: "Prova + dia do casamento", u: "https://example.com/noiva" }, { t: "Ver trabalhos", u: "https://instagram.com/" }],
+    gal: ["bel-g1", "bel-g2", "bel-g3", "bel-g4"],
+  },
+  {
+    id: "eventos", name: "🎤 Eventos", swatch: { background: PAL.night.bg, accent: PAL.night.accent, text: PAL.night.text },
+    socials: [["instagram", "https://instagram.com/"]],
+    pals: ["night", "berry", "ink", "plum"], fonts: ["condensed", "sans", "tech", "serif"], vid: "aurora",
+    bio: "A noite que você não vai querer perder. Garanta seu ingresso.",
+    names: ["Festa & Line-up", "O Evento", "Programação", "Workshop"],
+    kit: ["capaVideoBanner", "fotoGrandeStats", "cartaoPilha", "soNomeLista"],
+    primary: { t: "Comprar ingresso", u: "https://example.com/ingressos", bt: "Garantir" },
+    links: [{ t: "Ver atrações", l: "LINE-UP", s: "Horários e palcos", u: "https://example.com/lineup" }, { t: "Local e regras", u: "https://example.com/local" }, { t: "Seja patrocinador", s: "Planos e cotas", u: "https://example.com/patrocinio" }],
+    gal: ["eve-g1", "eve-g2", "eve-g3", "eve-g4"],
+    stats: [["2 dias", "de evento"], ["+20", "atrações"], ["3", "palcos"]],
+  },
+  {
+    id: "negocios", name: "💼 Negócios", swatch: { background: PAL.slate.bg, accent: PAL.slate.accent, text: PAL.slate.text },
+    socials: [["linkedin", "https://linkedin.com/"], ["instagram", "https://instagram.com/"]],
+    pals: ["slate", "ink", "night", "sand"], fonts: ["sans", "condensed", "serif", "mono"], vid: "mono", logo: "/assets/logo-mono.svg",
+    bio: "Ajudo empresas a crescer com estratégia e método. Conheça meu trabalho.",
+    names: ["Consultoria", "Resultados", "Soluções", "Mentoria"],
+    kit: ["logoGrade", "fotoGrandeStats", "cartaoPilha", "recorteCartoes"],
+    primary: { t: "Agendar diagnóstico", u: "https://example.com/diagnostico", bt: "Marcar conversa" },
+    links: [{ t: "Como eu trabalho", s: "Etapas e entregáveis", u: "https://example.com/metodo" }, { t: "Cases e resultados", s: "Clientes reais", u: "https://example.com/cases" }, { t: "Pedir proposta", s: "Resposta em 24h", u: "https://example.com/proposta" }],
+    gal: ["neg-g1", "neg-g2", "neg-g3", "neg-g4"],
+    stats: [["+80", "clientes"], ["5x", "ROI médio"], ["7", "anos"]],
+  },
+  {
+    id: "moda", name: "👗 Moda", swatch: { background: PAL.mono.bg, accent: PAL.mono.accent, text: PAL.mono.text },
+    socials: [["instagram", "https://instagram.com/"], ["tiktok", "https://tiktok.com/"]], wa: "(11) 90000-4444",
+    pals: ["mono", "sand", "clay", "blush"], fonts: ["elegant", "serif", "condensed", "sans"], vid: "mono",
+    bio: "Nova coleção no ar. Peças atemporais, feitas para durar.",
+    names: ["Marca de Moda", "Vitrine", "Consultoria de Imagem", "Brechó"],
+    kit: ["capaVideoBanner", "vitrineProdutos", "recorteCartoes", "faixaGrade"],
+    primary: { t: "Comprar a coleção", u: "https://example.com/colecao", bt: "Ver peças" },
+    links: [{ t: "Lookbook", s: "Inspiração de looks", u: "https://example.com/lookbook" }, { t: "Encontre seu tamanho", u: "https://example.com/tamanhos" }, { t: "Comprar no WhatsApp", u: "https://wa.me/5511900004444" }],
+    gal: ["mod-g1", "mod-g2", "mod-g3", "mod-g4"],
+    products: [
+      { label: "NOVO", title: "Peça Statement", description: "O destaque da nova coleção, em tiragem limitada.", price: "R$ 259", seed: "mod-p1", buttonText: "Comprar", url: "https://example.com/peca" },
+      { label: "BÁSICO", title: "Essencial do Guarda-roupa", description: "Aquela peça que combina com tudo.", price: "R$ 129", seed: "mod-p2", buttonText: "Ver", url: "https://example.com/essencial" },
+    ],
+  },
+  {
+    id: "bemestar", name: "🌿 Bem-estar e Saúde", swatch: { background: PAL.mint.bg, accent: PAL.mint.accent, text: PAL.mint.text },
+    socials: [["instagram", "https://instagram.com/"]], wa: "(11) 90000-6666",
+    pals: ["mint", "forest", "sand", "cream"], fonts: ["serif", "elegant", "rounded", "sans"], vid: "forest",
+    bio: "Cuidar de você importa. Atendimento acolhedor, online e presencial.",
+    names: ["Terapia & Psicologia", "Vida Saudável", "Yoga & Meditação", "Spa & Relax"],
+    kit: ["recorteCartoes", "capaBanner", "faixaGrade", "soNomeLista"],
+    primary: { t: "Agendar sessão", u: "https://example.com/agenda", bt: "Marcar sessão" },
+    links: [{ t: "Como funciona o atendimento", s: "Sigiloso e seguro", u: "https://example.com/como" }, { t: "Planos de acompanhamento", u: "https://example.com/planos" }, { t: "Tire suas dúvidas", u: "https://wa.me/5511900006666" }],
+    gal: ["bem-g1", "bem-g2", "bem-g3", "bem-g4"],
+  },
+  {
+    id: "entretenimento", name: "🎭 Entretenimento", swatch: { background: PAL.berry.bg, accent: PAL.berry.accent, text: PAL.berry.text },
+    socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"], ["spotify", "https://open.spotify.com/"]],
+    pals: ["berry", "night", "sun", "plum"], fonts: ["condensed", "tech", "serif", "sans"], vid: "sunset",
+    bio: "Shows, próximos projetos e tudo sobre mim em um só lugar.",
+    names: ["Artista", "No Palco", "Stand-up", "DJ Set"],
+    kit: ["capaVideoBanner", "midiaEmbed", "recorteCartoes", "cartaoPilha"],
+    primary: { t: "Próximos shows", u: "https://example.com/agenda", bt: "Ver datas" },
+    links: [{ t: "Assista agora", l: "NOVO", s: "Clipe recém-lançado", u: "https://youtube.com/" }, { t: "Contratação", s: "Festas e eventos", u: "https://example.com/contato" }, { t: "Cortes e vídeos", u: "https://youtube.com/" }],
+    gal: ["ent-g1", "ent-g2", "ent-g3", "ent-g4"],
+    embed: { kind: "spotify", url: "https://open.spotify.com/" },
+  },
+  {
+    id: "educacao", name: "📚 Educação", swatch: { background: PAL.ocean.bg, accent: PAL.ocean.accent, text: PAL.ocean.text },
+    socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"]],
+    pals: ["ocean", "slate", "night", "sand"], fonts: ["sans", "serif", "rounded", "mono"], vid: "aurora", logo: "/assets/logo-mono.svg",
+    bio: "Aprenda no seu ritmo, com aulas práticas e certificado.",
+    names: ["Curso Online", "Materiais", "Minhas Aulas", "Professor Particular"],
+    kit: ["logoGrade", "vitrineProdutos", "soNomeLista", "recorteCartoes"],
+    primary: { t: "Matricular agora", u: "https://example.com/matricula", bt: "Quero me inscrever" },
+    links: [{ t: "O que você vai aprender", s: "Grade completa", u: "https://example.com/conteudo" }, { t: "Aula gratuita de amostra", l: "GRÁTIS", s: "Veja antes de decidir", u: "https://youtube.com/" }, { t: "Falar comigo", u: "https://wa.me/5511900009999" }],
+    gal: ["edu-g1", "edu-g2", "edu-g3", "edu-g4"],
+    products: [
+      { label: "LANÇAMENTO", title: "Curso Completo", description: "Do zero ao avançado, com certificado e suporte.", price: "R$ 297", seed: "edu-p1", buttonText: "Matricular", url: "https://example.com/curso" },
+      { label: "E-BOOK", title: "Guia Prático", description: "Mais de 120 páginas com exercícios e exemplos.", price: "R$ 39", seed: "edu-p2", buttonText: "Comprar", url: "https://example.com/ebook" },
+    ],
+  },
+  {
+    id: "musica", name: "🎵 Música", swatch: { background: PAL.plum.bg, accent: PAL.plum.accent, text: PAL.plum.text },
+    socials: [["spotify", "https://open.spotify.com/"], ["youtube", "https://youtube.com/"], ["instagram", "https://instagram.com/"]],
+    pals: ["plum", "ink", "ocean", "sand"], fonts: ["condensed", "tech", "serif", "mono"], vid: "aurora",
+    bio: "Novo single disponível em todas as plataformas 🎧",
+    names: ["Músico", "Ouça Agora", "Produtor Musical", "Aulas de Música"],
+    kit: ["capaVideoBanner", "midiaEmbed", "recorteVideo", "cartaoPilha"],
+    primary: { t: "Ouvir agora", u: "https://open.spotify.com/", bt: "Dar play" },
+    links: [{ t: "Clipe no YouTube", s: "Assista em primeira mão", u: "https://youtube.com/" }, { t: "Shows e turnê", s: "Próximas datas", u: "https://example.com/shows" }, { t: "Contratação", u: "https://example.com/contato" }],
+    gal: ["mus-g1", "mus-g2", "mus-g3", "mus-g4"],
+    embed: { kind: "spotify", url: "https://open.spotify.com/" },
+  },
+  {
+    id: "tecnologia", name: "🎮 Tecnologia e jogos", swatch: { background: PAL.ocean.bg, accent: PAL.ocean.accent, text: PAL.ocean.text },
+    socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"], ["linkedin", "https://linkedin.com/"]],
+    pals: ["ocean", "night", "slate", "mono"], fonts: ["tech", "mono", "sans", "condensed"], vid: "mono", logo: "/assets/logo-mono.svg",
+    bio: "Live todo dia, projetos e tudo o que eu construo. Entra pra tribo 🎮",
+    names: ["Streamer / Gamer", "Em Live", "Dev / Portfólio", "Startup / App"],
+    kit: ["capaVideoBanner", "fotoGrandeStats", "cartaoPilha", "logoGrade"],
+    primary: { t: "Assistir ao vivo", u: "https://twitch.tv/", bt: "Entrar na live" },
+    links: [{ t: "Canal no YouTube", s: "Melhores momentos", u: "https://youtube.com/" }, { t: "Servidor no Discord", l: "COMUNIDADE", s: "Entra pro grupo", u: "https://discord.com/" }, { t: "Meu GitHub", u: "https://github.com/" }],
+    gal: ["tec-g1", "tec-g2", "tec-g3", "tec-g4"],
+    stats: [["+50mil", "seguidores"], ["4.8★", "avaliação"], ["24/7", "online"]],
+  },
+  {
+    id: "viagens", name: "🌴 Viagens e atividades", swatch: { background: PAL.forest.bg, accent: PAL.forest.accent, text: PAL.forest.text },
+    socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"]], wa: "(11) 91000-3333",
+    pals: ["forest", "ocean", "sand", "lime"], fonts: ["rounded", "serif", "condensed", "elegant"], vid: "forest",
+    bio: "Roteiros montados pra você só se preocupar em aproveitar ✈️",
+    names: ["Agência de Viagens", "Guia de Turismo", "Experiências", "Aventura"],
+    kit: ["capaVideoBanner", "faixaGrade", "recorteCartoes", "capaBanner"],
+    primary: { t: "Ver pacotes", u: "https://example.com/pacotes", bt: "Explorar destinos" },
+    links: [{ t: "Montar roteiro sob medida", s: "Do seu jeito", u: "https://wa.me/5511910003333" }, { t: "Ofertas da semana", l: "OFERTAS", u: "https://example.com/ofertas" }, { t: "Avaliações", s: "O que dizem os viajantes", u: "https://example.com/avaliacoes" }],
+    gal: ["via-g1", "via-g2", "via-g3", "via-g4"],
+  },
+  {
+    id: "comunidade", name: "🤝 Comunidade", swatch: { background: PAL.sand.bg, accent: PAL.sand.accent, text: PAL.sand.text },
+    socials: [["instagram", "https://instagram.com/"], ["telegram", "https://t.me/"]],
+    pals: ["sand", "mint", "night", "plum"], fonts: ["rounded", "serif", "sans", "elegant"], vid: "aurora", logo: "/assets/logo-mono.svg",
+    bio: "Um lugar pra trocar, aprender e crescer junto. Faça parte 🤝",
+    names: ["Comunidade", "Projeto Social", "Faça Parte", "Clube de Assinatura"],
+    kit: ["faixaGrade", "recorteCartoes", "cartaoPilha", "capaBanner"],
+    primary: { t: "Entrar na comunidade", u: "https://example.com/entrar", bt: "Quero entrar" },
+    links: [{ t: "Grupo no WhatsApp", l: "GRUPO", s: "Conversas do dia a dia", u: "https://chat.whatsapp.com/" }, { t: "Canal no Telegram", s: "Avisos e conteúdos", u: "https://t.me/" }, { t: "Como ajudar", u: "https://example.com/ajudar" }],
+    gal: ["cmn-g1", "cmn-g2", "cmn-g3", "cmn-g4"],
+  },
+];
+
+function toTemplate(c: Cat, k: number): PageTemplate {
+  const mid = `${c.id}-${k}`;
+  const piece = RECIPES[c.kit[k]](c, mid);
+  const palKey = c.pals[k % c.pals.length];
+  const p: Pal = PAL[palKey];
+  const font = c.fonts[k % c.fonts.length];
+  const photoSeed = mid;
+  const photo = pic(photoSeed, 800, 1000);
   return {
-    id: spec.id,
-    name: spec.name,
-    category: spec.cat,
+    id: mid,
+    name: c.names[k],
+    category: c.id,
     plan: "basic",
     tab: "essencial",
-    description: spec.bio,
+    description: c.bio,
     swatch: { background: p.bg, accent: p.accent, text: p.text },
     build: (name) => {
-      const photoSeed = spec.photo ?? spec.id;
-      const photo = pic(photoSeed, 800, 1000);
-      const profile: Partial<PageDoc["profile"]> = { bio: spec.bio, floatingWhatsapp: spec.wa ?? "", logo: spec.logo ?? "" };
-      if (spec.layout === "hero") profile.avatarUrl = photo;
-      else if (spec.layout === "poster" || spec.layout === "cover") {
+      const profile: Partial<PageDoc["profile"]> = { bio: c.bio, floatingWhatsapp: c.wa ?? "", logo: piece.logo ?? "" };
+      if (piece.layout === "hero") profile.avatarUrl = photo;
+      else if (piece.layout === "poster" || piece.layout === "cover") {
         profile.coverUrl = photo;
-        profile.avatarUrl = pic(spec.avatar ?? `${photoSeed}-a`, 240, 240);
-      } else profile.avatarUrl = pic(spec.avatar ?? photoSeed, 240, 240);
-      if (spec.video) profile.coverVideo = `/assets/cover-${spec.video}.mp4`;
+        profile.avatarUrl = pic(`${photoSeed}-a`, 240, 240);
+      } else profile.avatarUrl = pic(photoSeed, 240, 240);
+      if (piece.video) profile.coverVideo = `/assets/cover-${piece.video}.mp4`;
       return page(name, {
         profile,
-        socials: (spec.socials ?? []).map(([platform, url]) => ({ platform, url })),
+        socials: c.socials.map(([platform, url]) => ({ platform, url })),
         theme: {
-          layout: spec.layout,
-          font: spec.font,
+          layout: piece.layout,
+          font,
           background: p.bg,
           background2: p.bg,
           backgroundType: "solid",
           text: p.text,
           buttonBackground: p.btn,
           buttonText: p.btnText,
-          buttonShape: spec.shape ?? "pill",
-          buttonStyle: spec.style ?? "fill",
+          buttonShape: piece.shape ?? "pill",
+          buttonStyle: piece.style ?? "fill",
           buttonShadow: false,
-          avatarShape: spec.avatarShape ?? "circle",
+          avatarShape: "circle",
           socialStyle: "icons",
           accent: p.accent,
           headingFont: "same",
           premium: "",
         },
-        blocks: spec.blocks,
+        blocks: piece.blocks,
       });
     },
   };
 }
 
-const CATS: { id: string; name: string; swatch: { background: string; accent: string; text: string } }[] = [
-  { id: "loja", name: "🛍️ Loja", swatch: { background: PAL.clay.bg, accent: PAL.clay.accent, text: PAL.clay.text } },
-  { id: "criadores", name: "💫 Criadores de conteúdo", swatch: { background: PAL.ink.bg, accent: PAL.ink.accent, text: PAL.ink.text } },
-  { id: "esporte", name: "🏋️ Esporte e Fitness", swatch: { background: PAL.lime.bg, accent: PAL.lime.accent, text: PAL.lime.text } },
-  { id: "criativo", name: "🎨 Criativo", swatch: { background: PAL.plum.bg, accent: PAL.plum.accent, text: PAL.plum.text } },
-  { id: "comida", name: "🍕 Comida e bebida", swatch: { background: PAL.sun.bg, accent: PAL.sun.accent, text: PAL.sun.text } },
-  { id: "imobiliaria", name: "🏠 Imobiliária", swatch: { background: PAL.slate.bg, accent: PAL.slate.accent, text: PAL.slate.text } },
-  { id: "beleza", name: "💄 Beleza", swatch: { background: PAL.blush.bg, accent: PAL.blush.accent, text: PAL.blush.text } },
-  { id: "eventos", name: "🎤 Eventos", swatch: { background: PAL.night.bg, accent: PAL.night.accent, text: PAL.night.text } },
-  { id: "negocios", name: "💼 Negócios", swatch: { background: PAL.slate.bg, accent: PAL.slate.accent, text: PAL.slate.text } },
-  { id: "moda", name: "👗 Moda", swatch: { background: PAL.mono.bg, accent: PAL.mono.accent, text: PAL.mono.text } },
-  { id: "bemestar", name: "🌿 Bem-estar e Saúde", swatch: { background: PAL.mint.bg, accent: PAL.mint.accent, text: PAL.mint.text } },
-  { id: "entretenimento", name: "🎭 Entretenimento", swatch: { background: PAL.berry.bg, accent: PAL.berry.accent, text: PAL.berry.text } },
-  { id: "educacao", name: "📚 Educação", swatch: { background: PAL.ocean.bg, accent: PAL.ocean.accent, text: PAL.ocean.text } },
-  { id: "musica", name: "🎵 Música", swatch: { background: PAL.plum.bg, accent: PAL.plum.accent, text: PAL.plum.text } },
-  { id: "tecnologia", name: "🎮 Tecnologia e jogos", swatch: { background: PAL.ocean.bg, accent: PAL.ocean.accent, text: PAL.ocean.text } },
-  { id: "viagens", name: "🌴 Viagens e atividades", swatch: { background: PAL.forest.bg, accent: PAL.forest.accent, text: PAL.forest.text } },
-  { id: "comunidade", name: "🤝 Comunidade", swatch: { background: PAL.sand.bg, accent: PAL.sand.accent, text: PAL.sand.text } },
-];
-
-const ESSENTIALS: ESpec[] = [
-  // ---------------- 🛍️ Loja ----------------
-  {
-    id: "loja-banda", name: "Jaya Store", cat: "loja", layout: "band", font: "condensed", pal: "blush", shape: "square", style: "fill",
-    bio: "Qualidade em cada detalhe",
-    socials: [["instagram", "https://instagram.com/"], ["tiktok", "https://tiktok.com/"], ["pinterest", "https://pinterest.com/"]],
-    blocks: [
-      lk("Ver catálogo", "https://example.com/catalogo", { display: "button", buttonText: "Ver catálogo" }),
-      gal("Nova coleção", ["loja-banda-1", "loja-banda-2", "loja-banda-3", "loja-banda-4"]),
-      lk("Comprar pelo WhatsApp", "https://wa.me/5511999990000", { display: "button" }),
-    ],
-  },
-  {
-    id: "loja-drop", name: "Drop Noturno", cat: "loja", layout: "poster", font: "condensed", pal: "ink", video: "mono", shape: "square", style: "outline",
-    bio: "Coleção nova no ar. Peças limitadas — quando acabar, acabou.",
-    socials: [["instagram", "https://instagram.com/"], ["tiktok", "https://tiktok.com/"]],
-    blocks: [
-      lk("Comprar o drop", "https://example.com/drop", { display: "banner", label: "LIMITADO", buttonText: "Garantir o meu", imageUrl: pic("loja-drop-b1", 1000, 700) }),
-      lk("Ver lookbook", "https://example.com/lookbook", { display: "card", subtitle: "Todas as peças em detalhe" }),
-      sub("Avise-me no próximo drop", "Entrar na lista"),
-    ],
-  },
-  {
-    id: "loja-artesanal", name: "Feito à Mão", cat: "loja", layout: "cutout", font: "serif", pal: "clay", shape: "rounded", style: "soft",
-    bio: "Produtos artesanais em pequenos lotes, feitos com carinho.",
-    blocks: [
-      prod({ label: "DESTAQUE", title: "Kit Presente", description: "Nossa combinação mais pedida, embalada para presentear.", price: "R$ 149", seed: "loja-artesanal-p1", buttonText: "Comprar", url: "https://example.com/kit" }),
-      prod({ title: "Edição Especial", description: "Produção limitada, com acabamento exclusivo.", price: "R$ 89", seed: "loja-artesanal-p2", buttonText: "Ver produto", url: "https://example.com/especial" }),
-      lk("Falar com a loja", "https://wa.me/5511999990000", { display: "button", buttonText: "Tirar dúvidas" }),
-    ],
-  },
-  {
-    id: "loja-vitrine", name: "Vitrine Sol", cat: "loja", layout: "classic", font: "rounded", pal: "sand", shape: "rounded", logo: "/assets/logo-sol.svg",
-    bio: "Novidades da semana, fretes e condições especiais 👇",
-    wa: "(11) 99999-0000",
-    socials: [["instagram", "https://instagram.com/"], ["whatsapp", "+5511999990000"]],
-    blocks: [
-      gal("Mais vendidos", ["loja-vitrine-1", "loja-vitrine-2", "loja-vitrine-3"]),
-      lk("Ver catálogo completo", "https://example.com/catalogo", { highlight: true, buttonText: "Explorar loja" }),
-      lk("Promoções da semana", "https://example.com/ofertas", { display: "card", label: "OFERTAS", subtitle: "Até 40% off em itens selecionados" }),
-      sub("Entre na lista VIP e receba os lançamentos primeiro", "Quero novidades", { collectPhone: true }),
-    ],
-  },
-
-  // ---------------- 💫 Criadores de conteúdo ----------------
-  {
-    id: "criador-hub", name: "Hub do Criador", cat: "criadores", layout: "hero", font: "condensed", pal: "ink", video: "aurora",
-    bio: "Criador de conteúdo · bastidores, colabs e tudo o que rola por aqui.",
-    socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"], ["tiktok", "https://tiktok.com/"]],
-    blocks: [
-      lk("Meu canal no YouTube", "https://youtube.com/", { display: "banner", label: "VÍDEOS", buttonText: "Assistir", imageUrl: pic("criador-hub-b1", 1000, 700) }),
-      lk("Último vídeo", "https://youtube.com/", { display: "card", label: "NOVO", subtitle: "Sai todo sábado" }),
-      lk("Para marcas: mídia kit", "https://example.com/midiakit", { display: "card", label: "COLABS", subtitle: "Parcerias e publis" }),
-      sub("Newsletter dos bastidores", "Quero receber"),
-    ],
-  },
-  {
-    id: "criador-links", name: "Todos os Links", cat: "criadores", layout: "cutout", font: "rounded", pal: "plum", shape: "pill",
-    bio: "Tudo o que eu citei nos stories tá aqui embaixo 💜",
-    socials: [["instagram", "https://instagram.com/"], ["tiktok", "https://tiktok.com/"], ["spotify", "https://open.spotify.com/"]],
-    blocks: [
-      lk("Produto que amei", "https://example.com/produto", { highlight: true, buttonText: "Ver agora" }),
-      lk("Cupom de desconto", "https://example.com/cupom", { display: "card", label: "CUPOM", subtitle: "Use MEUNOME10" }),
-      lk("Meu TikTok", "https://tiktok.com/", { display: "button" }),
-      lk("Meu Spotify", "https://open.spotify.com/", { display: "button" }),
-    ],
-  },
-  {
-    id: "criador-faixa", name: "Creator Band", cat: "criadores", layout: "band", font: "condensed", pal: "night", shape: "square",
-    bio: "Transformo ideias em conteúdo que conecta.",
-    socials: [["instagram", "https://instagram.com/"], ["linkedin", "https://linkedin.com/"], ["youtube", "https://youtube.com/"]],
-    blocks: [
-      stats([["120k", "seguidores"], ["8M", "views/mês"], ["+40", "marcas"]]),
-      lk("Portfólio de conteúdo", "https://example.com/portfolio", { display: "banner", label: "PORTFÓLIO", buttonText: "Ver cases", imageUrl: pic("criador-faixa-b1", 1000, 700) }),
-      lk("Trabalhe comigo", "https://example.com/contato", { display: "card", subtitle: "Orçamentos e parcerias" }),
-    ],
-  },
-  {
-    id: "criador-podcast", name: "Meu Podcast", cat: "criadores", layout: "cover", font: "mono", pal: "mono", shape: "square", style: "outline",
-    bio: "Conversas sem roteiro, toda terça. Ouça onde você quiser.",
-    socials: [["spotify", "https://open.spotify.com/"], ["youtube", "https://youtube.com/"]],
-    blocks: [
-      lk("Ouvir no Spotify", "https://open.spotify.com/", { display: "banner", label: "EPISÓDIO NOVO", buttonText: "Dar play", imageUrl: pic("criador-podcast-b1", 1000, 700) }),
-      lk("Assistir no YouTube", "https://youtube.com/", { display: "card", subtitle: "Com vídeo e cortes" }),
-      sub("Receba cada episódio por e-mail", "Inscrever"),
-    ],
-  },
-
-  // ---------------- 🏋️ Esporte e Fitness ----------------
-  {
-    id: "fit-treino", name: "Treino & Resultado", cat: "esporte", layout: "hero", font: "condensed", pal: "lime", video: "forest", shape: "square",
-    bio: "Personal trainer · planos online e presenciais. Bora evoluir 💪",
-    wa: "(11) 97777-0000",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      lk("Montar meu treino", "https://wa.me/5511977770000", { display: "banner", label: "COMECE HOJE", buttonText: "Falar comigo", imageUrl: pic("fit-treino-b1", 1000, 700) }),
-      stats([["+500", "alunos"], ["10", "anos"], ["100%", "online"]]),
-      lk("Planos e valores", "https://example.com/planos", { display: "card", subtitle: "Mensal, trimestral e anual" }),
-      sub("Baixe o guia grátis de treino", "Quero o guia", { collectPhone: true }),
-    ],
-  },
-  {
-    id: "fit-box", name: "Cross & Box", cat: "esporte", layout: "band", font: "tech", pal: "lime", shape: "square", style: "outline",
-    bio: "Sua box de treino funcional. Primeira aula é por nossa conta.",
-    wa: "(11) 96666-0000",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      lk("Agendar aula grátis", "https://wa.me/5511966660000", { highlight: true, buttonText: "Quero experimentar" }),
-      gal("Nossa box", ["fit-box-1", "fit-box-2", "fit-box-3"]),
-      lk("Horários das turmas", "https://example.com/horarios", { display: "card", label: "GRADE", subtitle: "Manhã, tarde e noite" }),
-    ],
-  },
-  {
-    id: "fit-nutri", name: "Nutri Esportiva", cat: "esporte", layout: "cutout", font: "sans", pal: "mint", shape: "pill",
-    bio: "Comida de verdade para performar e viver bem.",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      lk("Agendar consulta", "https://example.com/agenda", { highlight: true, buttonText: "Marcar horário" }),
-      lk("Como funciona o acompanhamento", "https://example.com/como", { display: "card", subtitle: "Online e presencial" }),
-      lk("Receitas gratuitas", "https://example.com/receitas", { display: "button" }),
-    ],
-  },
-  {
-    id: "fit-run", name: "Assessoria de Corrida", cat: "esporte", layout: "poster", font: "condensed", pal: "slate", shape: "square", style: "soft",
-    bio: "Do primeiro quilômetro à sua primeira maratona.",
-    blocks: [
-      hd("PROGRAMAS", "divider"),
-      lk("Iniciantes 5km", "https://example.com/iniciantes", { display: "card", label: "5KM", subtitle: "Comece do zero, sem lesões" }),
-      lk("Performance 21/42km", "https://example.com/performance", { display: "card", label: "21/42KM", subtitle: "Planilha e acompanhamento" }),
-      lk("Falar com o treinador", "https://example.com/contato", { display: "button" }),
-    ],
-  },
-
-  // ---------------- 🎨 Criativo ----------------
-  {
-    id: "criativo-portfolio", name: "Portfólio Criativo", cat: "criativo", layout: "poster", font: "elegant", pal: "plum", video: "aurora",
-    bio: "Direção de arte & design. Seleção de projetos recentes.",
-    socials: [["instagram", "https://instagram.com/"], ["linkedin", "https://linkedin.com/"]],
-    blocks: [
-      gal("Trabalhos recentes", ["criativo-portfolio-1", "criativo-portfolio-2", "criativo-portfolio-3", "criativo-portfolio-4"]),
-      lk("Ver portfólio completo", "https://example.com/portfolio", { display: "banner", label: "TRABALHOS", buttonText: "Explorar", imageUrl: pic("criativo-portfolio-b1", 1000, 700) }),
-      lk("Orçamento de projeto", "https://example.com/orcamento", { display: "card", subtitle: "Conte sua ideia" }),
-    ],
-  },
-  {
-    id: "criativo-foto", name: "Fotografia", cat: "criativo", layout: "cutout", font: "serif", pal: "mono", shape: "square", style: "outline",
-    bio: "Retratos, casamentos e ensaios autorais.",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      lk("Galeria de ensaios", "https://example.com/galeria", { display: "banner", label: "GALERIA", buttonText: "Ver fotos", imageUrl: pic("criativo-foto-b1", 1000, 700) }),
-      lk("Reservar uma data", "https://example.com/reserva", { display: "card", subtitle: "Consulte disponibilidade" }),
-      lk("Tabela de pacotes", "https://example.com/pacotes", { display: "button" }),
-    ],
-  },
-  {
-    id: "criativo-studio", name: "Estúdio de Branding", cat: "criativo", layout: "band", font: "sans", pal: "ink", shape: "rounded",
-    bio: "Marcas que as pessoas lembram.",
-    socials: [["instagram", "https://instagram.com/"], ["linkedin", "https://linkedin.com/"]],
-    blocks: [
-      lk("Nossos cases", "https://example.com/cases", { highlight: true, buttonText: "Ver projetos" }),
-      lk("Serviços", "https://example.com/servicos", { display: "card", subtitle: "Identidade, web e social" }),
-      sub("Receba um case por semana", "Assinar"),
-    ],
-  },
-  {
-    id: "criativo-ilustra", name: "Ilustração", cat: "criativo", layout: "classic", font: "rounded", pal: "rose", shape: "pill", style: "soft", logo: "/assets/logo-mono.svg",
-    bio: "Encomendas abertas para projetos e presentes.",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      gal("Portfólio", ["criativo-ilustra-1", "criativo-ilustra-2", "criativo-ilustra-3"]),
-      lk("Encomendar ilustração", "https://example.com/encomenda", { highlight: true, buttonText: "Quero uma" }),
-      lk("Loja de prints", "https://example.com/prints", { display: "card", subtitle: "Pôsteres e cartões" }),
-    ],
-  },
-
-  // ---------------- 🍕 Comida e bebida ----------------
-  {
-    id: "comida-cardapio", name: "Cardápio Digital", cat: "comida", layout: "poster", font: "serif", pal: "sun", shape: "rounded",
-    bio: "Sabor de verdade, feito na hora. Confira o cardápio e peça 🍔",
-    wa: "(11) 95555-0000",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      lk("Ver cardápio", "https://example.com/cardapio", { display: "banner", label: "CARDÁPIO", buttonText: "Abrir", imageUrl: pic("comida-cardapio-b1", 1000, 700) }),
-      lk("Pedir pelo WhatsApp", "https://wa.me/5511955550000", { highlight: true, buttonText: "Fazer pedido" }),
-      lk("Peça no iFood", "https://ifood.com.br/", { display: "card", subtitle: "Entrega rápida" }),
-      lk("Onde estamos", "https://maps.google.com/", { display: "button", buttonText: "Ver endereço" }),
-    ],
-  },
-  {
-    id: "comida-cafe", name: "Cafeteria", cat: "comida", layout: "band", font: "elegant", pal: "clay", shape: "rounded", style: "soft",
-    bio: "Café especial, pães e doces artesanais 🤎",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      gal("Da nossa casa", ["comida-cafe-1", "comida-cafe-2", "comida-cafe-3"]),
-      lk("Nosso menu", "https://example.com/menu", { display: "card", label: "MENU", subtitle: "Cafés, bebidas e quitutes" }),
-      lk("Reservar mesa", "https://wa.me/5511955550000", { display: "button", buttonText: "Reservar" }),
-    ],
-  },
-  {
-    id: "comida-foodtruck", name: "Food Truck", cat: "comida", layout: "hero", font: "condensed", pal: "ink", video: "sunset", shape: "square",
-    bio: "A gente leva o sabor até você. Veja onde estaremos hoje.",
-    wa: "(11) 95555-0000",
-    blocks: [
-      lk("Onde estamos hoje", "https://instagram.com/", { display: "banner", label: "AO VIVO", buttonText: "Ver agenda", imageUrl: pic("comida-foodtruck-b1", 1000, 700) }),
-      lk("Chamar para evento", "https://wa.me/5511955550000", { display: "card", subtitle: "Festas e corporativo" }),
-      lk("Ver o menu", "https://example.com/menu", { display: "button" }),
-    ],
-  },
-  {
-    id: "comida-doces", name: "Confeitaria", cat: "comida", layout: "cutout", font: "rounded", pal: "blush", shape: "pill", style: "soft",
-    bio: "Bolos e doces por encomenda para adoçar o seu dia 🧁",
-    wa: "(11) 94444-0000",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      lk("Fazer encomenda", "https://wa.me/5511944440000", { highlight: true, buttonText: "Encomendar" }),
-      prod({ label: "MAIS PEDIDO", title: "Bolo Vulcão", description: "Recheio que escorre, massa fofinha. Serve 15 fatias.", price: "R$ 120", seed: "comida-doces-p1", buttonText: "Quero esse", url: "https://wa.me/5511944440000" }),
-      lk("Tabela de preços", "https://example.com/precos", { display: "button" }),
-    ],
-  },
-
-  // ---------------- 🏠 Imobiliária ----------------
-  {
-    id: "imob-corretor", name: "Corretor de Imóveis", cat: "imobiliaria", layout: "classic", font: "sans", pal: "slate", shape: "rounded", logo: "/assets/logo-mono.svg",
-    bio: "Encontro o imóvel certo para o seu momento.",
-    wa: "(11) 93333-0000",
-    socials: [["instagram", "https://instagram.com/"], ["linkedin", "https://linkedin.com/"]],
-    blocks: [
-      lk("Imóveis à venda", "https://example.com/venda", { display: "banner", label: "VENDA", buttonText: "Ver ofertas", imageUrl: pic("imob-corretor-b1", 1000, 700) }),
-      lk("Imóveis para alugar", "https://example.com/aluguel", { display: "card", label: "ALUGUEL", subtitle: "Atualizado toda semana" }),
-      lk("Quero vender meu imóvel", "https://wa.me/5511933330000", { display: "card", subtitle: "Avaliação gratuita" }),
-      lk("Falar agora", "https://wa.me/5511933330000", { display: "button", buttonText: "Chamar no WhatsApp" }),
-    ],
-  },
-  {
-    id: "imob-lancamento", name: "Lançamento", cat: "imobiliaria", layout: "poster", font: "elegant", pal: "night", video: "mono",
-    bio: "Novo empreendimento na melhor região. Unidades limitadas.",
-    wa: "(11) 93333-0000",
-    blocks: [
-      lk("Conhecer o empreendimento", "https://example.com/lancamento", { display: "banner", label: "LANÇAMENTO", buttonText: "Ver plantas", imageUrl: pic("imob-lancamento-b1", 1000, 700) }),
-      stats([["2 e 3", "dormitórios"], ["48–72", "m²"], ["Lazer", "completo"]]),
-      lk("Agendar visita", "https://wa.me/5511933330000", { display: "card", subtitle: "Decorado aberto" }),
-    ],
-  },
-  {
-    id: "imob-temporada", name: "Aluguel de Temporada", cat: "imobiliaria", layout: "band", font: "serif", pal: "ocean", shape: "pill", style: "soft",
-    bio: "Casas e apês para suas férias, sem taxas extras.",
-    blocks: [
-      gal("Acomodações", ["imob-temporada-1", "imob-temporada-2", "imob-temporada-3"]),
-      lk("Ver disponibilidade", "https://example.com/acomodacoes", { highlight: true, buttonText: "Reservar" }),
-      lk("Consultar datas", "https://wa.me/5511922220000", { display: "card", subtitle: "Resposta no mesmo dia" }),
-    ],
-  },
-  {
-    id: "imob-locacao", name: "Locação Rápida", cat: "imobiliaria", layout: "cutout", font: "sans", pal: "mint", shape: "rounded",
-    bio: "Aluguel sem fiador e com aprovação rápida.",
-    wa: "(11) 92222-0000",
-    blocks: [
-      lk("Ver imóveis disponíveis", "https://example.com/disponiveis", { highlight: true, buttonText: "Buscar imóvel" }),
-      lk("Simular aluguel", "https://example.com/simular", { display: "card", subtitle: "Sem compromisso" }),
-      lk("Falar com a equipe", "https://wa.me/5511922220000", { display: "button" }),
-    ],
-  },
-
-  // ---------------- 💄 Beleza ----------------
-  {
-    id: "beleza-studio", name: "Studio de Beleza", cat: "beleza", layout: "band", font: "elegant", pal: "blush", shape: "pill", style: "soft",
-    bio: "Cabelo, unhas e estética ✨",
-    wa: "(11) 91111-0000",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      gal("Nossos trabalhos", ["beleza-studio-1", "beleza-studio-2", "beleza-studio-3"]),
-      lk("Agendar horário", "https://example.com/agenda", { highlight: true, buttonText: "Marcar agora" }),
-      lk("Nossos serviços", "https://example.com/servicos", { display: "card", label: "SERVIÇOS", subtitle: "Tabela com preços" }),
-    ],
-  },
-  {
-    id: "beleza-makeup", name: "Maquiagem", cat: "beleza", layout: "poster", font: "elegant", pal: "berry", video: "sunset",
-    bio: "Maquiadora profissional. Noivas, eventos e ensaios.",
-    socials: [["instagram", "https://instagram.com/"], ["tiktok", "https://tiktok.com/"]],
-    blocks: [
-      lk("Reservar data", "https://wa.me/5511911110000", { display: "banner", label: "AGENDA", buttonText: "Consultar", imageUrl: pic("beleza-makeup-b1", 1000, 700) }),
-      lk("Pacote noiva", "https://example.com/noiva", { display: "card", subtitle: "Prova + dia do casamento" }),
-      lk("Antes e depois", "https://instagram.com/", { display: "button" }),
-    ],
-  },
-  {
-    id: "beleza-barber", name: "Barbearia", cat: "beleza", layout: "cover", font: "condensed", pal: "mono", shape: "square", style: "outline",
-    bio: "Corte, barba e aquele trato. Agende e não pegue fila.",
-    wa: "(11) 90000-1111",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      lk("Agendar corte", "https://example.com/agenda", { display: "banner", label: "AGENDA", buttonText: "Marcar", imageUrl: pic("beleza-barber-b1", 1000, 700) }),
-      lk("Tabela de serviços", "https://example.com/servicos", { display: "card", subtitle: "Corte, barba, combo" }),
-      lk("Como chegar", "https://maps.google.com/", { display: "button" }),
-    ],
-  },
-  {
-    id: "beleza-skin", name: "Skincare & Estética", cat: "beleza", layout: "cutout", font: "serif", pal: "rose", shape: "rounded", style: "soft",
-    bio: "Protocolos faciais e corporais com avaliação personalizada.",
-    wa: "(11) 90000-2222",
-    blocks: [
-      lk("Agendar avaliação", "https://wa.me/5511900002222", { highlight: true, buttonText: "Quero avaliar" }),
-      lk("Tratamentos", "https://example.com/tratamentos", { display: "card", subtitle: "Limpeza, peeling e mais" }),
-      sub("Dicas de cuidados toda semana", "Receber dicas"),
-    ],
-  },
-
-  // ---------------- 🎤 Eventos ----------------
-  {
-    id: "evento-festa", name: "Festa & Line-up", cat: "eventos", layout: "poster", font: "condensed", pal: "night", video: "aurora", shape: "square",
-    bio: "A noite que você não vai querer perder. Garanta seu ingresso.",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      lk("Comprar ingresso", "https://example.com/ingressos", { display: "banner", label: "INGRESSOS", buttonText: "Garantir", imageUrl: pic("evento-festa-b1", 1000, 700) }),
-      hd("LINE-UP", "divider"),
-      lk("Ver atrações", "https://example.com/lineup", { display: "card", subtitle: "Horários e palcos" }),
-      lk("Local e regras", "https://example.com/local", { display: "button" }),
-    ],
-  },
-  {
-    id: "evento-congresso", name: "Congresso", cat: "eventos", layout: "band", font: "sans", pal: "slate", shape: "rounded",
-    bio: "Dois dias de palestras, networking e conteúdo de ponta.",
-    socials: [["linkedin", "https://linkedin.com/"], ["instagram", "https://instagram.com/"]],
-    blocks: [
-      lk("Inscrições abertas", "https://example.com/inscricao", { highlight: true, buttonText: "Inscrever-se" }),
-      lk("Programação", "https://example.com/programacao", { display: "card", subtitle: "Palestrantes e horários" }),
-      lk("Seja patrocinador", "https://example.com/patrocinio", { display: "card", subtitle: "Planos e cotas" }),
-    ],
-  },
-  {
-    id: "evento-casamento", name: "Casamento", cat: "eventos", layout: "cutout", font: "elegant", pal: "cream", shape: "pill", style: "soft",
-    bio: "João & Maria · 12 de abril 💍",
-    blocks: [
-      lk("Confirmar presença", "https://example.com/rsvp", { highlight: true, buttonText: "Confirmar (RSVP)" }),
-      lk("Lista de presentes", "https://example.com/presentes", { display: "card", subtitle: "Ajude a realizar nosso sonho" }),
-      lk("Local e horário", "https://maps.google.com/", { display: "button", buttonText: "Ver no mapa" }),
-    ],
-  },
-  {
-    id: "evento-workshop", name: "Workshop", cat: "eventos", layout: "classic", font: "rounded", pal: "sun", shape: "rounded", logo: "/assets/logo-sol.svg",
-    bio: "Encontro prático e presencial. Vagas limitadas por turma.",
-    blocks: [
-      lk("Garantir minha vaga", "https://example.com/vaga", { display: "banner", label: "PRESENCIAL", buttonText: "Inscrever", imageUrl: pic("evento-workshop-b1", 1000, 700) }),
-      stats([["20", "vagas"], ["4h", "de prática"], ["1", "certificado"]]),
-      lk("O que você vai aprender", "https://example.com/conteudo", { display: "card" }),
-    ],
-  },
-
-  // ---------------- 💼 Negócios ----------------
-  {
-    id: "negocio-consultoria", name: "Consultoria", cat: "negocios", layout: "classic", font: "sans", pal: "slate", shape: "rounded", logo: "/assets/logo-mono.svg",
-    bio: "Ajudo empresas a crescer com estratégia e método.",
-    socials: [["linkedin", "https://linkedin.com/"], ["instagram", "https://instagram.com/"]],
-    blocks: [
-      lk("Agendar diagnóstico", "https://example.com/diagnostico", { highlight: true, buttonText: "Marcar conversa" }),
-      lk("Como eu trabalho", "https://example.com/metodo", { display: "card", subtitle: "Etapas e entregáveis" }),
-      lk("Cases e resultados", "https://example.com/cases", { display: "card", subtitle: "Clientes reais" }),
-      sub("Insights de gestão no seu e-mail", "Assinar newsletter"),
-    ],
-  },
-  {
-    id: "negocio-agencia", name: "Agência", cat: "negocios", layout: "poster", font: "condensed", pal: "ink", video: "mono", style: "outline",
-    bio: "Marketing que gera resultado, não só likes.",
-    socials: [["instagram", "https://instagram.com/"], ["linkedin", "https://linkedin.com/"]],
-    blocks: [
-      lk("Nossos serviços", "https://example.com/servicos", { display: "banner", label: "SERVIÇOS", buttonText: "Ver tudo", imageUrl: pic("negocio-agencia-b1", 1000, 700) }),
-      stats([["+80", "clientes"], ["5x", "ROI médio"], ["7", "anos"]]),
-      lk("Pedir proposta", "https://example.com/proposta", { display: "card", subtitle: "Resposta em 24h" }),
-    ],
-  },
-  {
-    id: "negocio-b2b", name: "Soluções B2B", cat: "negocios", layout: "band", font: "sans", pal: "night", shape: "square",
-    bio: "Tecnologia e serviços para a sua empresa escalar.",
-    socials: [["linkedin", "https://linkedin.com/"]],
-    blocks: [
-      lk("Nossas soluções", "https://example.com/solucoes", { display: "card", subtitle: "Feitas para o seu setor" }),
-      lk("Fale com vendas", "https://example.com/vendas", { display: "card", subtitle: "Demonstração gratuita" }),
-      lk("Baixar apresentação", "https://example.com/deck", { display: "button" }),
-    ],
-  },
-  {
-    id: "negocio-coach", name: "Mentoria Executiva", cat: "negocios", layout: "cutout", font: "serif", pal: "sand", shape: "pill", style: "soft",
-    bio: "Clareza para decidir e crescer.",
-    socials: [["linkedin", "https://linkedin.com/"], ["instagram", "https://instagram.com/"]],
-    blocks: [
-      lk("Aplicar para a mentoria", "https://example.com/aplicacao", { highlight: true, buttonText: "Quero aplicar" }),
-      lk("Para quem é", "https://example.com/paraquem", { display: "card", subtitle: "Veja se faz sentido" }),
-      lk("Depoimentos", "https://example.com/depoimentos", { display: "button" }),
-    ],
-  },
-
-  // ---------------- 👗 Moda ----------------
-  {
-    id: "moda-brand", name: "Marca de Moda", cat: "moda", layout: "poster", font: "elegant", pal: "mono", video: "mono", shape: "square", style: "outline",
-    bio: "Nova coleção no ar. Peças atemporais, feitas para durar.",
-    socials: [["instagram", "https://instagram.com/"], ["tiktok", "https://tiktok.com/"]],
-    blocks: [
-      lk("Comprar a coleção", "https://example.com/colecao", { display: "banner", label: "NOVA COLEÇÃO", buttonText: "Ver peças", imageUrl: pic("moda-brand-b1", 1000, 700) }),
-      lk("Lookbook", "https://example.com/lookbook", { display: "card", subtitle: "Inspiração de looks" }),
-      lk("Encontre seu tamanho", "https://example.com/tamanhos", { display: "button" }),
-    ],
-  },
-  {
-    id: "moda-consultora", name: "Consultoria de Imagem", cat: "moda", layout: "cutout", font: "serif", pal: "sand", shape: "pill", style: "soft",
-    bio: "Vista quem você é, com confiança.",
-    socials: [["instagram", "https://instagram.com/"], ["pinterest", "https://pinterest.com/"]],
-    blocks: [
-      lk("Agendar consultoria", "https://example.com/consultoria", { highlight: true, buttonText: "Quero marcar" }),
-      lk("Serviços de estilo", "https://example.com/servicos", { display: "card", subtitle: "Guarda-roupa, compras, cores" }),
-      sub("Dicas de estilo toda semana", "Receber"),
-    ],
-  },
-  {
-    id: "moda-brecho", name: "Brechó", cat: "moda", layout: "band", font: "rounded", pal: "clay", shape: "rounded",
-    bio: "Moda circular com peças únicas ♻️",
-    wa: "(11) 90000-3333",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      gal("Garimpo da semana", ["moda-brecho-1", "moda-brecho-2", "moda-brecho-3"]),
-      lk("Comprar pelo WhatsApp", "https://wa.me/5511900003333", { highlight: true, buttonText: "Chamar" }),
-      lk("Quero vender peças", "https://example.com/vender", { display: "card", subtitle: "Como funciona" }),
-    ],
-  },
-  {
-    id: "moda-acessorios", name: "Acessórios", cat: "moda", layout: "classic", font: "sans", pal: "blush", shape: "pill", logo: "/assets/logo-mono.svg",
-    bio: "Semijoias que completam qualquer look.",
-    wa: "(11) 90000-4444",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      prod({ label: "QUERIDINHO", title: "Colar Essencial", description: "Banho de ouro 18k, antialérgico. Vai com tudo.", price: "R$ 79", seed: "moda-acessorios-p1", buttonText: "Comprar", url: "https://example.com/colar" }),
-      lk("Ver catálogo", "https://example.com/catalogo", { display: "card", subtitle: "Coleção completa" }),
-      lk("Comprar no WhatsApp", "https://wa.me/5511900004444", { display: "button", buttonText: "Falar com a loja" }),
-    ],
-  },
-
-  // ---------------- 🌿 Bem-estar e Saúde ----------------
-  {
-    id: "bem-terapia", name: "Terapia & Psicologia", cat: "bemestar", layout: "cutout", font: "serif", pal: "mint", shape: "rounded", style: "soft",
-    bio: "Atendimento online e acolhedor. Cuidar de você importa.",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      lk("Agendar sessão", "https://example.com/agenda", { highlight: true, buttonText: "Marcar sessão" }),
-      lk("Como funciona a terapia online", "https://example.com/online", { display: "card", subtitle: "Sigiloso e seguro" }),
-      lk("Tire suas dúvidas", "https://wa.me/5511900005555", { display: "button" }),
-    ],
-  },
-  {
-    id: "bem-yoga", name: "Yoga & Meditação", cat: "bemestar", layout: "hero", font: "elegant", pal: "forest", shape: "pill", style: "soft",
-    bio: "Respire. Aulas para o seu dia render mais.",
-    socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"]],
-    blocks: [
-      lk("Aula experimental grátis", "https://example.com/experimental", { highlight: true, buttonText: "Experimentar" }),
-      lk("Horários das aulas", "https://example.com/horarios", { display: "card", subtitle: "Online e presencial" }),
-      lk("Meditações no YouTube", "https://youtube.com/", { display: "button" }),
-    ],
-  },
-  {
-    id: "bem-nutri", name: "Vida Saudável", cat: "bemestar", layout: "band", font: "rounded", pal: "mint", shape: "rounded",
-    bio: "Reeducação alimentar sem sofrimento, do seu jeito.",
-    wa: "(11) 90000-6666",
-    blocks: [
-      lk("Agendar consulta", "https://wa.me/5511900006666", { highlight: true, buttonText: "Agendar" }),
-      lk("Planos de acompanhamento", "https://example.com/planos", { display: "card", subtitle: "Mensal e trimestral" }),
-      sub("E-book de receitas leves grátis", "Baixar e-book", { collectPhone: true }),
-    ],
-  },
-  {
-    id: "bem-spa", name: "Spa & Relax", cat: "bemestar", layout: "poster", font: "elegant", pal: "sand", video: "forest",
-    bio: "Massagens e terapias para relaxar corpo e mente.",
-    wa: "(11) 90000-7777",
-    blocks: [
-      lk("Reservar horário", "https://wa.me/5511900007777", { display: "banner", label: "RESERVAS", buttonText: "Reservar", imageUrl: pic("bem-spa-b1", 1000, 700) }),
-      lk("Nossos tratamentos", "https://example.com/tratamentos", { display: "card", subtitle: "Massagens, day spa e mais" }),
-      lk("Vale-presente", "https://example.com/presente", { display: "button" }),
-    ],
-  },
-
-  // ---------------- 🎭 Entretenimento ----------------
-  {
-    id: "ent-artista", name: "Artista", cat: "entretenimento", layout: "poster", font: "condensed", pal: "berry", video: "sunset", shape: "square",
-    bio: "Shows, próximos projetos e tudo sobre mim em um só lugar.",
-    socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"], ["tiktok", "https://tiktok.com/"]],
-    blocks: [
-      lk("Próximos shows", "https://example.com/agenda", { display: "banner", label: "AGENDA", buttonText: "Ver datas", imageUrl: pic("ent-artista-b1", 1000, 700) }),
-      lk("Assista agora", "https://youtube.com/", { display: "card", label: "NOVO", subtitle: "Clipe recém-lançado" }),
-      lk("Contato e contratação", "https://example.com/contato", { display: "button" }),
-    ],
-  },
-  {
-    id: "ent-humor", name: "Comédia Stand-up", cat: "entretenimento", layout: "cutout", font: "condensed", pal: "sun", shape: "square",
-    bio: "Vem rir comigo 🎤",
-    socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"]],
-    blocks: [
-      lk("Comprar ingressos", "https://example.com/ingressos", { highlight: true, buttonText: "Garantir" }),
-      lk("Cidades da turnê", "https://example.com/tour", { display: "card", subtitle: "Veja se vou aí" }),
-      lk("Cortes e vídeos", "https://youtube.com/", { display: "button" }),
-    ],
-  },
-  {
-    id: "ent-dj", name: "DJ & Produtor", cat: "entretenimento", layout: "cover", font: "tech", pal: "night", video: "aurora", style: "outline",
-    bio: "Sets, releases e contratação para a sua festa.",
-    socials: [["spotify", "https://open.spotify.com/"], ["instagram", "https://instagram.com/"]],
-    blocks: [
-      lk("Ouvir último set", "https://open.spotify.com/", { display: "banner", label: "NOVO SET", buttonText: "Dar play", imageUrl: pic("ent-dj-b1", 1000, 700) }),
-      lk("Contratar para evento", "https://wa.me/5511900008888", { display: "card", subtitle: "Festas e casamentos" }),
-      lk("Agenda de shows", "https://example.com/agenda", { display: "button" }),
-    ],
-  },
-  {
-    id: "ent-teatro", name: "Peça de Teatro", cat: "entretenimento", layout: "band", font: "serif", pal: "plum", shape: "rounded", style: "soft",
-    bio: "Em cartaz! Confira sessões e garanta seu lugar.",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      lk("Comprar ingresso", "https://example.com/ingressos", { highlight: true, buttonText: "Ver sessões" }),
-      lk("Sobre o espetáculo", "https://example.com/sobre", { display: "card", subtitle: "Sinopse e elenco" }),
-      lk("Teatro e como chegar", "https://maps.google.com/", { display: "button" }),
-    ],
-  },
-
-  // ---------------- 📚 Educação ----------------
-  {
-    id: "edu-curso", name: "Curso Online", cat: "educacao", layout: "classic", font: "sans", pal: "ocean", shape: "rounded", logo: "/assets/logo-mono.svg",
-    bio: "Aprenda no seu ritmo, com aulas práticas e certificado.",
-    socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"]],
-    blocks: [
-      lk("Matricular agora", "https://example.com/matricula", { highlight: true, buttonText: "Quero me inscrever" }),
-      lk("O que você vai aprender", "https://example.com/conteudo", { display: "card", subtitle: "Grade completa" }),
-      lk("Aula gratuita de amostra", "https://youtube.com/", { display: "card", label: "GRÁTIS", subtitle: "Veja antes de decidir" }),
-      sub("Receba materiais de estudo grátis", "Quero receber"),
-    ],
-  },
-  {
-    id: "edu-professor", name: "Professor Particular", cat: "educacao", layout: "cutout", font: "serif", pal: "slate", shape: "rounded", style: "soft",
-    bio: "Da dúvida ao domínio, no seu tempo.",
-    blocks: [
-      lk("Agendar aula", "https://example.com/agenda", { highlight: true, buttonText: "Marcar aula" }),
-      lk("Matérias e níveis", "https://example.com/materias", { display: "card", subtitle: "Fundamental ao vestibular" }),
-      lk("Falar comigo", "https://wa.me/5511900009999", { display: "button" }),
-    ],
-  },
-  {
-    id: "edu-idiomas", name: "Escola de Idiomas", cat: "educacao", layout: "band", font: "rounded", pal: "sun", shape: "pill",
-    bio: "Fluência de verdade, conversando desde a primeira aula 🌎",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      lk("Teste de nível grátis", "https://example.com/teste", { highlight: true, buttonText: "Fazer teste" }),
-      lk("Turmas e horários", "https://example.com/turmas", { display: "card", subtitle: "Online e presencial" }),
-      lk("Falar com a escola", "https://wa.me/5511910000000", { display: "button" }),
-    ],
-  },
-  {
-    id: "edu-ebook", name: "E-book & Materiais", cat: "educacao", layout: "poster", font: "sans", pal: "night", shape: "square",
-    bio: "Materiais que descomplicam o aprendizado. Baixe agora.",
-    blocks: [
-      prod({ label: "LANÇAMENTO", title: "Guia Completo", description: "Mais de 120 páginas, com exercícios e exemplos práticos.", price: "R$ 39", seed: "edu-ebook-p1", buttonText: "Comprar e baixar", url: "https://example.com/ebook" }),
-      lk("Amostra gratuita", "https://example.com/amostra", { display: "card", subtitle: "Leia o primeiro capítulo" }),
-      sub("Avise-me dos próximos materiais", "Entrar na lista"),
-    ],
-  },
-
-  // ---------------- 🎵 Música ----------------
-  {
-    id: "mus-artista", name: "Músico", cat: "musica", layout: "poster", font: "condensed", pal: "plum", video: "aurora", shape: "square",
-    bio: "Novo single disponível em todas as plataformas 🎧",
-    socials: [["spotify", "https://open.spotify.com/"], ["youtube", "https://youtube.com/"], ["instagram", "https://instagram.com/"]],
-    blocks: [
-      lk("Ouvir agora", "https://open.spotify.com/", { display: "banner", label: "NOVO SINGLE", buttonText: "Dar play", imageUrl: pic("mus-artista-b1", 1000, 700) }),
-      lk("Clipe no YouTube", "https://youtube.com/", { display: "card", subtitle: "Assista em primeira mão" }),
-      lk("Shows e turnê", "https://example.com/shows", { display: "card", subtitle: "Próximas datas" }),
-    ],
-  },
-  {
-    id: "mus-banda", name: "Banda", cat: "musica", layout: "band", font: "condensed", pal: "ink", shape: "square", style: "outline",
-    bio: "Som que não cabe em rótulo.",
-    socials: [["spotify", "https://open.spotify.com/"], ["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"]],
-    blocks: [
-      lk("Nosso Spotify", "https://open.spotify.com/", { highlight: true, buttonText: "Ouvir" }),
-      lk("Agenda de shows", "https://example.com/agenda", { display: "card", subtitle: "Onde tocamos" }),
-      lk("Contratação", "https://example.com/contato", { display: "button" }),
-    ],
-  },
-  {
-    id: "mus-produtor", name: "Produtor Musical", cat: "musica", layout: "cover", font: "tech", pal: "ocean", video: "mono", style: "outline",
-    bio: "Mixagem, master e produção. Transforme sua ideia em faixa.",
-    socials: [["instagram", "https://instagram.com/"], ["spotify", "https://open.spotify.com/"]],
-    blocks: [
-      lk("Ouvir trabalhos", "https://open.spotify.com/", { display: "banner", label: "PORTFÓLIO", buttonText: "Ouvir", imageUrl: pic("mus-produtor-b1", 1000, 700) }),
-      lk("Orçar produção", "https://wa.me/5511910001111", { display: "card", subtitle: "Conte sobre seu projeto" }),
-      lk("Tabela de serviços", "https://example.com/servicos", { display: "button" }),
-    ],
-  },
-  {
-    id: "mus-professor", name: "Aulas de Música", cat: "musica", layout: "cutout", font: "serif", pal: "sand", shape: "rounded", style: "soft",
-    bio: "Toque sua primeira música já na estreia.",
-    blocks: [
-      lk("Agendar aula experimental", "https://example.com/experimental", { highlight: true, buttonText: "Quero experimentar" }),
-      lk("Planos de aula", "https://example.com/planos", { display: "card", subtitle: "Online e presencial" }),
-      lk("Vídeos no YouTube", "https://youtube.com/", { display: "button" }),
-    ],
-  },
-
-  // ---------------- 🎮 Tecnologia e jogos ----------------
-  {
-    id: "tec-streamer", name: "Streamer / Gamer", cat: "tecnologia", layout: "poster", font: "tech", pal: "ocean", video: "mono", shape: "square", style: "outline",
-    bio: "Live todo dia. Entra pra tribo 🎮",
-    socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"], ["tiktok", "https://tiktok.com/"]],
-    blocks: [
-      lk("Assistir ao vivo", "https://twitch.tv/", { display: "banner", label: "AO VIVO", buttonText: "Entrar na live", imageUrl: pic("tec-streamer-b1", 1000, 700) }),
-      lk("Canal no YouTube", "https://youtube.com/", { display: "card", subtitle: "Melhores momentos" }),
-      lk("Servidor no Discord", "https://discord.com/", { display: "card", label: "COMUNIDADE", subtitle: "Entra pro nosso grupo" }),
-    ],
-  },
-  {
-    id: "tec-dev", name: "Dev / Portfólio", cat: "tecnologia", layout: "band", font: "mono", pal: "slate", shape: "square", style: "outline",
-    bio: "Desenvolvedor full-stack. Projetos, código e contato.",
-    socials: [["linkedin", "https://linkedin.com/"]],
-    blocks: [
-      lk("Meu GitHub", "https://github.com/", { display: "card", subtitle: "Código aberto e projetos" }),
-      lk("Portfólio", "https://example.com/portfolio", { display: "card", subtitle: "Cases com resultado" }),
-      lk("Baixar currículo", "https://example.com/cv", { display: "button" }),
-    ],
-  },
-  {
-    id: "tec-startup", name: "Startup / App", cat: "tecnologia", layout: "classic", font: "sans", pal: "night", shape: "rounded", logo: "/assets/logo-mono.svg",
-    bio: "O app que resolve o seu problema. Baixe e teste grátis.",
-    socials: [["instagram", "https://instagram.com/"], ["linkedin", "https://linkedin.com/"]],
-    blocks: [
-      lk("Baixar na App Store", "https://apps.apple.com/", { highlight: true, buttonText: "Baixar para iPhone" }),
-      lk("Baixar no Google Play", "https://play.google.com/", { display: "button", buttonText: "Baixar para Android" }),
-      stats([["+50mil", "downloads"], ["4.8★", "avaliação"], ["grátis", "para testar"]]),
-      lk("Conhecer os planos", "https://example.com/planos", { display: "card" }),
-    ],
-  },
-  {
-    id: "tec-assistencia", name: "Assistência Técnica", cat: "tecnologia", layout: "cutout", font: "sans", pal: "mono", shape: "rounded",
-    bio: "Conserto com garantia. Orçamento na hora.",
-    wa: "(11) 91000-2222",
-    blocks: [
-      lk("Pedir orçamento", "https://wa.me/5511910002222", { highlight: true, buttonText: "Falar agora" }),
-      lk("Serviços que fazemos", "https://example.com/servicos", { display: "card", subtitle: "Telas, baterias, formatação" }),
-      lk("Onde estamos", "https://maps.google.com/", { display: "button" }),
-    ],
-  },
-
-  // ---------------- 🌴 Viagens e atividades ----------------
-  {
-    id: "via-agencia", name: "Agência de Viagens", cat: "viagens", layout: "poster", font: "rounded", pal: "ocean", video: "forest",
-    bio: "Roteiros montados pra você só aproveitar ✈️",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      lk("Ver pacotes", "https://example.com/pacotes", { display: "banner", label: "PACOTES", buttonText: "Explorar destinos", imageUrl: pic("via-agencia-b1", 1000, 700) }),
-      lk("Montar roteiro sob medida", "https://wa.me/5511910003333", { display: "card", subtitle: "Do seu jeito" }),
-      lk("Ofertas da semana", "https://example.com/ofertas", { display: "card", label: "OFERTAS" }),
-    ],
-  },
-  {
-    id: "via-guia", name: "Guia de Turismo", cat: "viagens", layout: "band", font: "serif", pal: "forest", shape: "pill", style: "soft",
-    bio: "Passeios e experiências locais com quem conhece de verdade.",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      gal("Experiências", ["via-guia-1", "via-guia-2", "via-guia-3"]),
-      lk("Reservar passeio", "https://example.com/passeios", { highlight: true, buttonText: "Reservar" }),
-      lk("Avaliações", "https://example.com/avaliacoes", { display: "card", subtitle: "O que dizem os viajantes" }),
-    ],
-  },
-  {
-    id: "via-pousada", name: "Pousada", cat: "viagens", layout: "cutout", font: "elegant", pal: "sand", shape: "rounded", style: "soft",
-    bio: "Seu refúgio pertinho da natureza.",
-    wa: "(11) 91000-4444",
-    blocks: [
-      lk("Reservar direto", "https://wa.me/5511910004444", { highlight: true, buttonText: "Consultar datas" }),
-      lk("Ver acomodações", "https://example.com/quartos", { display: "card", subtitle: "Fotos e preços" }),
-      lk("Como chegar", "https://maps.google.com/", { display: "button" }),
-    ],
-  },
-  {
-    id: "via-aventura", name: "Turismo de Aventura", cat: "viagens", layout: "hero", font: "condensed", pal: "lime", video: "forest", shape: "square",
-    bio: "Trilhas, rapel e adrenalina com segurança. Bora?",
-    socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"]],
-    blocks: [
-      lk("Ver atividades", "https://example.com/atividades", { display: "banner", label: "AVENTURA", buttonText: "Escolher", imageUrl: pic("via-aventura-b1", 1000, 700) }),
-      lk("Agendar pelo WhatsApp", "https://wa.me/5511910005555", { display: "card", subtitle: "Grupos e individual" }),
-      lk("Equipamentos inclusos", "https://example.com/equipamentos", { display: "button" }),
-    ],
-  },
-
-  // ---------------- 🤝 Comunidade ----------------
-  {
-    id: "com-grupo", name: "Comunidade", cat: "comunidade", layout: "band", font: "rounded", pal: "sand", shape: "pill",
-    bio: "Um lugar pra trocar, aprender e crescer junto 🤝",
-    socials: [["instagram", "https://instagram.com/"], ["telegram", "https://t.me/"]],
-    blocks: [
-      lk("Entrar na comunidade", "https://example.com/entrar", { highlight: true, buttonText: "Quero entrar" }),
-      lk("Grupo no WhatsApp", "https://chat.whatsapp.com/", { display: "card", label: "GRUPO", subtitle: "Conversas do dia a dia" }),
-      lk("Canal no Telegram", "https://t.me/", { display: "card", subtitle: "Avisos e conteúdos" }),
-    ],
-  },
-  {
-    id: "com-ong", name: "ONG / Projeto Social", cat: "comunidade", layout: "cutout", font: "serif", pal: "mint", shape: "rounded", style: "soft",
-    bio: "Transformamos vidas com a sua ajuda.",
-    socials: [["instagram", "https://instagram.com/"]],
-    blocks: [
-      lk("Fazer uma doação", "https://example.com/doar", { highlight: true, buttonText: "Doar agora" }),
-      lk("Seja voluntário", "https://example.com/voluntario", { display: "card", subtitle: "Doe seu tempo" }),
-      lk("Nosso impacto", "https://example.com/impacto", { display: "card", subtitle: "Resultados e transparência" }),
-    ],
-  },
-  {
-    id: "com-igreja", name: "Igreja / Ministério", cat: "comunidade", layout: "poster", font: "serif", pal: "night", video: "aurora", shape: "rounded", style: "soft",
-    bio: "Todos são bem-vindos. Veja horários e como participar.",
-    socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"]],
-    blocks: [
-      lk("Cultos ao vivo", "https://youtube.com/", { display: "banner", label: "AO VIVO", buttonText: "Assistir", imageUrl: pic("com-igreja-b1", 1000, 700) }),
-      lk("Horários e endereço", "https://maps.google.com/", { display: "card", subtitle: "Presencial e online" }),
-      lk("Pedidos de oração", "https://example.com/oracao", { display: "button" }),
-    ],
-  },
-  {
-    id: "com-clube", name: "Clube de Assinatura", cat: "comunidade", layout: "classic", font: "sans", pal: "plum", shape: "pill", logo: "/assets/logo-mono.svg",
-    bio: "Benefícios, conteúdos exclusivos e uma galera que fala a sua língua.",
-    blocks: [
-      lk("Assinar o clube", "https://example.com/assinar", { highlight: true, buttonText: "Quero ser membro" }),
-      lk("O que você recebe", "https://example.com/beneficios", { display: "card", subtitle: "Lista completa" }),
-      sub("Prévia grátis no seu e-mail", "Quero a prévia"),
-    ],
-  },
-];
-
-export const ESSENTIAL_TEMPLATES: PageTemplate[] = ESSENTIALS.map(buildTemplate);
+export const ESSENTIAL_TEMPLATES: PageTemplate[] = CATS.flatMap((c) => c.kit.map((_, k) => toTemplate(c, k)));
 
 export const ESSENTIAL_COLLECTIONS: TemplateCollection[] = CATS.map((c) => ({
   id: c.id,
@@ -880,5 +443,5 @@ export const ESSENTIAL_COLLECTIONS: TemplateCollection[] = CATS.map((c) => ({
   name: c.name,
   description: `Modelos de ${c.name.replace(/^[^\p{L}]+/u, "")}.`,
   swatch: c.swatch,
-  templateIds: ESSENTIALS.filter((m) => m.cat === c.id).map((m) => m.id),
+  templateIds: c.kit.map((_, k) => `${c.id}-${k}`),
 }));
