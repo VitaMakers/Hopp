@@ -233,6 +233,9 @@ export const pageDocSchema = z.object({
     bio: z.string().max(300),
     avatarUrl: z.string().max(1000),
     coverUrl: z.string().max(1000),
+    // Video cover (mp4/webm). When set, the cover/hero/poster layouts play it
+    // in place of the cover image; coverUrl (or the avatar) is its poster.
+    coverVideo: z.string().max(1000).default(""),
     // Shown in the Presença/Ecossistema header in place of the name text.
     logo: z.string().max(1000).default(""),
     verified: z.boolean().default(false),

@@ -4,8 +4,8 @@ import { toCsv } from "./csv";
 import { handleError, normalizeHandle, safeHttpUrl, shortCodeError } from "./handles";
 import { BLOCK_CATALOG, createBlock, defaultPageDoc, THEME_PRESETS } from "./page/catalog";
 import { spotifyEmbedUrl, youtubeEmbedUrl } from "./page/embed";
-import { imageSrc, linkHref, socialHref, vCard, whatsappHref } from "./page/links";
-import { TEMPLATES } from "./page/templates";
+import { imageSrc, linkHref, socialHref, vCard, videoSrc, whatsappHref } from "./page/links";
+import { TEMPLATES, TEMPLATE_COLLECTIONS } from "./page/templates";
 import { pageDocSchema, type BlockType } from "./page/schema";
 
 describe("youtubeEmbedUrl", () => {
@@ -92,12 +92,26 @@ describe("whatsappHref", () => {
 });
 
 describe("templates", () => {
-  it("every template builds a valid premium page", () => {
+  it("every template builds a valid page with unique block ids", () => {
     for (const template of TEMPLATES) {
       const doc = template.build("Ana");
       expect(pageDocSchema.safeParse(doc).success, template.id).toBe(true);
-      expect(doc.theme.premium, template.id).not.toBe("");
+      // Premium-tab models use a premium design; essential models use the theme.
+      if (template.tab === "premium") expect(doc.theme.premium, template.id).not.toBe("");
+      else expect(doc.theme.premium, template.id).toBe("");
       expect(new Set(doc.blocks.map((block) => block.id)).size).toBe(doc.blocks.length);
+      // A video cover must point at a bundled asset or an http(s) URL.
+      if (doc.profile.coverVideo) expect(videoSrc(doc.profile.coverVideo), template.id).not.toBeNull();
+    }
+  });
+
+  it("every collection lists only models that exist, under its own tab", () => {
+    for (const collection of TEMPLATE_COLLECTIONS) {
+      for (const id of collection.templateIds) {
+        const model = TEMPLATES.find((t) => t.id === id);
+        expect(model, `${collection.id} → ${id}`).toBeTruthy();
+        expect(model!.tab).toBe(collection.tab);
+      }
     }
   });
 
