@@ -33,8 +33,8 @@ function prodB(p: { label?: string; title: string; description: string; price?: 
 function statsB(items: [string, string][]): Block {
   return { id: bid(), enabled: true, type: "stats", items: items.map(([value, label]) => ({ value, label })) };
 }
-function galB(title: string, seeds: string[]): Block {
-  return { id: bid(), enabled: true, type: "gallery", title, items: seeds.map((s) => ({ imageUrl: pic(s, 600, 600), url: "" })) };
+function galB(title: string, seeds: string[], display: "grid" | "carousel" = "grid"): Block {
+  return { id: bid(), enabled: true, type: "gallery", title, display, items: seeds.map((s) => ({ imageUrl: pic(s, 600, 600), url: "" })) };
 }
 function hd(text: string, style: Extract<Block, { type: "heading" }>["style"] = "divider"): Block {
   return { id: bid(), enabled: true, type: "heading", text, style };
@@ -164,6 +164,21 @@ const RECIPES = {
     layout: "cutout", shape: "square", style: "fill", video: c.vid,
     blocks: [banner(c.primary, `${mid}-b`), lk(c.links[0], { display: "card" })],
   }),
+  // Full-bleed photo/video with the name centred over it (Cloud Layers).
+  telaCheia: (c): Piece => ({
+    layout: "fullscreen", shape: "pill", style: "fill", video: c.vid,
+    blocks: [lk(c.primary, { display: "button" }), lk(c.links[0], { display: "card" }), sub("Receba as novidades por e-mail", "Quero receber")],
+  }),
+  // A large framed portrait at the top, then a highlight and two cards.
+  retratoGrande: (c): Piece => ({
+    layout: "portrait", shape: "rounded", style: "soft",
+    blocks: [lk(c.primary, { highlight: true, display: "button" }), lk(c.links[0], { display: "card" }), lk(c.links[1], { display: "card" })],
+  }),
+  // Logo header + a horizontal photo carousel + a highlight and a card.
+  carrossel: (c): Piece => ({
+    layout: "classic", shape: "rounded", style: "fill", logo: c.logo ?? "/assets/logo-sol.svg",
+    blocks: [galB("Destaques", c.gal, "carousel"), lk(c.primary, { highlight: true, display: "button" }), lk(c.links[0], { display: "card" })],
+  }),
 } satisfies Record<string, Recipe>;
 type RecipeKey = keyof typeof RECIPES;
 
@@ -174,7 +189,7 @@ const CATS: Cat[] = [
     pals: ["blush", "ink", "clay", "sand"], fonts: ["condensed", "rounded", "serif", "sans"], vid: "mono",
     bio: "Novidades da semana, fretes e condições especiais. Escolha por onde começar 👇",
     names: ["Jaya Store", "Drop Noturno", "Vitrine Essencial", "Feito à Mão"],
-    kit: ["faixaGrade", "capaVideoBanner", "vitrineProdutos", "recorteCartoes"],
+    kit: ["faixaGrade", "capaVideoBanner", "vitrineProdutos", "carrossel"],
     primary: { t: "Ver catálogo completo", u: "https://example.com/catalogo", bt: "Explorar loja" },
     links: [{ t: "Promoções da semana", l: "OFERTAS", s: "Até 40% off", u: "https://example.com/ofertas" }, { t: "Comprar no WhatsApp", u: "https://wa.me/5511999990000" }, { t: "Como comprar", u: "https://example.com/ajuda" }],
     gal: ["loja-g1", "loja-g2", "loja-g3", "loja-g4"],
@@ -213,7 +228,7 @@ const CATS: Cat[] = [
     pals: ["plum", "mono", "ink", "rose"], fonts: ["elegant", "serif", "sans", "rounded"], vid: "aurora", logo: "/assets/logo-mono.svg",
     bio: "Direção de arte & design. Uma seleção dos meus projetos recentes.",
     names: ["Portfólio Criativo", "Fotografia Autoral", "Estúdio de Branding", "Ilustração"],
-    kit: ["logoGrade", "capaVideoBanner", "recorteCartoes", "cartaoPilha"],
+    kit: ["carrossel", "capaVideoBanner", "recorteCartoes", "cartaoPilha"],
     primary: { t: "Ver portfólio completo", u: "https://example.com/portfolio", bt: "Explorar" },
     links: [{ t: "Orçamento de projeto", s: "Conte sua ideia", u: "https://example.com/orcamento" }, { t: "Serviços", s: "Identidade, web e social", u: "https://example.com/servicos" }, { t: "Loja de prints", u: "https://example.com/prints" }],
     gal: ["cria-g1", "cria-g2", "cria-g3", "cria-g4"],
@@ -224,7 +239,7 @@ const CATS: Cat[] = [
     pals: ["sun", "clay", "ink", "cream"], fonts: ["serif", "elegant", "condensed", "rounded"], vid: "sunset",
     bio: "Sabor de verdade, feito na hora. Confira o cardápio e peça 🍔",
     names: ["Cardápio Digital", "Nossa Vitrine", "Onde Estamos", "Cantina"],
-    kit: ["capaBanner", "vitrineProdutos", "localFaqMapa", "faixaGrade"],
+    kit: ["capaBanner", "vitrineProdutos", "localFaqMapa", "retratoGrande"],
     primary: { t: "Ver cardápio", u: "https://example.com/cardapio", bt: "Abrir cardápio" },
     links: [{ t: "Pedir pelo WhatsApp", u: "https://wa.me/5511955550000" }, { t: "Peça no iFood", s: "Entrega rápida", u: "https://ifood.com.br/" }, { t: "Reservar mesa", u: "https://wa.me/5511955550000" }],
     gal: ["com-g1", "com-g2", "com-g3", "com-g4"],
@@ -241,7 +256,7 @@ const CATS: Cat[] = [
     pals: ["slate", "night", "ink", "ocean"], fonts: ["sans", "elegant", "serif", "mono"], vid: "mono", logo: "/assets/logo-mono.svg",
     bio: "Encontro o imóvel certo para o seu momento. Vamos conversar?",
     names: ["Corretor de Imóveis", "Lançamento", "Fale Comigo", "Carteira de Imóveis"],
-    kit: ["logoGrade", "capaVideoBanner", "localFaqMapa", "cartaoPilha"],
+    kit: ["logoGrade", "telaCheia", "localFaqMapa", "cartaoPilha"],
     primary: { t: "Imóveis à venda", u: "https://example.com/venda", bt: "Ver ofertas" },
     links: [{ t: "Imóveis para alugar", l: "ALUGUEL", s: "Atualizado toda semana", u: "https://example.com/aluguel" }, { t: "Quero vender meu imóvel", s: "Avaliação gratuita", u: "https://wa.me/5511933330000" }, { t: "Agendar visita", u: "https://wa.me/5511933330000" }],
     gal: ["imo-g1", "imo-g2", "imo-g3", "imo-g4"],
@@ -254,7 +269,7 @@ const CATS: Cat[] = [
     pals: ["blush", "berry", "rose", "mono"], fonts: ["elegant", "serif", "rounded", "condensed"], vid: "sunset",
     bio: "Cabelo, unhas e estética. Agende seu momento de cuidado ✨",
     names: ["Studio de Beleza", "Maquiagem", "Minha Agenda", "Skincare"],
-    kit: ["faixaGrade", "capaVideoBanner", "soNomeLista", "recorteCartoes"],
+    kit: ["faixaGrade", "retratoGrande", "soNomeLista", "recorteCartoes"],
     primary: { t: "Agendar horário", u: "https://example.com/agenda", bt: "Marcar agora" },
     links: [{ t: "Nossos serviços", l: "SERVIÇOS", s: "Tabela com preços", u: "https://example.com/servicos" }, { t: "Pacote noiva", s: "Prova + dia do casamento", u: "https://example.com/noiva" }, { t: "Ver trabalhos", u: "https://instagram.com/" }],
     gal: ["bel-g1", "bel-g2", "bel-g3", "bel-g4"],
@@ -289,7 +304,7 @@ const CATS: Cat[] = [
     pals: ["mono", "sand", "clay", "blush"], fonts: ["elegant", "serif", "condensed", "sans"], vid: "mono",
     bio: "Nova coleção no ar. Peças atemporais, feitas para durar.",
     names: ["Marca de Moda", "Vitrine", "Consultoria de Imagem", "Brechó"],
-    kit: ["capaVideoBanner", "vitrineProdutos", "recorteCartoes", "faixaGrade"],
+    kit: ["telaCheia", "vitrineProdutos", "recorteCartoes", "faixaGrade"],
     primary: { t: "Comprar a coleção", u: "https://example.com/colecao", bt: "Ver peças" },
     links: [{ t: "Lookbook", s: "Inspiração de looks", u: "https://example.com/lookbook" }, { t: "Encontre seu tamanho", u: "https://example.com/tamanhos" }, { t: "Comprar no WhatsApp", u: "https://wa.me/5511900004444" }],
     gal: ["mod-g1", "mod-g2", "mod-g3", "mod-g4"],
@@ -304,7 +319,7 @@ const CATS: Cat[] = [
     pals: ["mint", "forest", "sand", "cream"], fonts: ["serif", "elegant", "rounded", "sans"], vid: "forest",
     bio: "Cuidar de você importa. Atendimento acolhedor, online e presencial.",
     names: ["Terapia & Psicologia", "Vida Saudável", "Yoga & Meditação", "Spa & Relax"],
-    kit: ["recorteCartoes", "capaBanner", "faixaGrade", "soNomeLista"],
+    kit: ["retratoGrande", "capaBanner", "faixaGrade", "soNomeLista"],
     primary: { t: "Agendar sessão", u: "https://example.com/agenda", bt: "Marcar sessão" },
     links: [{ t: "Como funciona o atendimento", s: "Sigiloso e seguro", u: "https://example.com/como" }, { t: "Planos de acompanhamento", u: "https://example.com/planos" }, { t: "Tire suas dúvidas", u: "https://wa.me/5511900006666" }],
     gal: ["bem-g1", "bem-g2", "bem-g3", "bem-g4"],
@@ -366,7 +381,7 @@ const CATS: Cat[] = [
     pals: ["forest", "ocean", "sand", "lime"], fonts: ["rounded", "serif", "condensed", "elegant"], vid: "forest",
     bio: "Roteiros montados pra você só se preocupar em aproveitar ✈️",
     names: ["Agência de Viagens", "Guia de Turismo", "Experiências", "Aventura"],
-    kit: ["capaVideoBanner", "faixaGrade", "recorteCartoes", "capaBanner"],
+    kit: ["telaCheia", "faixaGrade", "recorteCartoes", "capaBanner"],
     primary: { t: "Ver pacotes", u: "https://example.com/pacotes", bt: "Explorar destinos" },
     links: [{ t: "Montar roteiro sob medida", s: "Do seu jeito", u: "https://wa.me/5511910003333" }, { t: "Ofertas da semana", l: "OFERTAS", u: "https://example.com/ofertas" }, { t: "Avaliações", s: "O que dizem os viajantes", u: "https://example.com/avaliacoes" }],
     gal: ["via-g1", "via-g2", "via-g3", "via-g4"],
@@ -403,7 +418,7 @@ function toTemplate(c: Cat, k: number): PageTemplate {
     build: (name) => {
       const profile: Partial<PageDoc["profile"]> = { bio: c.bio, floatingWhatsapp: c.wa ?? "", logo: piece.logo ?? "" };
       if (piece.layout === "hero") profile.avatarUrl = photo;
-      else if (piece.layout === "poster" || piece.layout === "cover") {
+      else if (piece.layout === "poster" || piece.layout === "cover" || piece.layout === "fullscreen" || piece.layout === "portrait") {
         profile.coverUrl = photo;
         profile.avatarUrl = pic(`${photoSeed}-a`, 240, 240);
       } else profile.avatarUrl = pic(photoSeed, 240, 240);

@@ -200,6 +200,42 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
     );
   }
 
+  if (theme.layout === "fullscreen") {
+    // Full-bleed photo/video with the name centred over it (Cloud Layers).
+    const media = coverImg ?? avatarImg;
+    return (
+      <div className="relative -mx-5 w-[calc(100%+2.5rem)]">
+        <div className="relative aspect-[3/4] max-h-[640px] w-full">
+          <CoverMedia video={video} img={media} alt={profile.name} className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/15 to-[var(--page-bg)]" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white">
+            <Logo doc={doc} className="mb-3 h-12 w-auto object-contain" />
+            <h1 className="text-4xl font-bold leading-tight tracking-tight [font-family:var(--heading-font)] drop-shadow">{profile.name}</h1>
+            {profile.bio ? <p className="mt-2 max-w-xs whitespace-pre-line text-sm opacity-90 drop-shadow">{profile.bio}</p> : null}
+            <span className="mt-5 text-2xl opacity-80" aria-hidden="true">↓</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (theme.layout === "portrait") {
+    // A large framed portrait at the top, name and bio below (profile-large).
+    const media = coverImg ?? avatarImg;
+    return (
+      <div className="flex flex-col items-center pt-8">
+        <div className="aspect-[3/4] w-full max-w-[320px] overflow-hidden rounded-[32px] ring-1 ring-black/10">
+          <CoverMedia video={video} img={media} alt={profile.name} className="h-full w-full object-cover" />
+        </div>
+        <div className="mt-5 flex flex-col items-center">
+          <Logo doc={doc} className="mb-2 h-10 w-auto object-contain" />
+          <Name doc={doc} big />
+        </div>
+        <Bio doc={doc} />
+      </div>
+    );
+  }
+
   if (poster || (theme.layout === "poster" && video)) {
     // Full-width media with the name over its darkened bottom edge.
     return (
@@ -594,22 +630,34 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
     case "gallery": {
       const items = block.items.map((item) => ({ src: imageSrc(item.imageUrl), href: linkHref(item.url) })).filter((item) => item.src);
       if (items.length === 0) return <Placeholder handle={handle} className={`${softBox} block w-full py-10 text-center`}>Galeria sem fotos</Placeholder>;
+      const picture = (src: string, cls: string) =>
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src} alt="" className={cls} loading="lazy" />;
+      const wrap = (index: number, href: string | null, inner: React.ReactNode) =>
+        href ? (
+          <a key={index} href={href} target="_blank" rel="noopener noreferrer" className="block shrink-0 transition-transform hover:scale-[1.02]" onClick={() => click(href)}>
+            {inner}
+          </a>
+        ) : (
+          <div key={index} className="shrink-0">{inner}</div>
+        );
+      if (block.display === "carousel") {
+        // A horizontal strip that scrolls (Action Ready style).
+        return (
+          <section className="-mx-5 w-[calc(100%+2.5rem)]">
+            {block.title ? <h2 className="mb-2.5 px-5 text-center font-semibold [font-family:var(--heading-font)]">{block.title}</h2> : null}
+            <div className="flex snap-x gap-2.5 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {items.map((item, index) => wrap(index, item.href, picture(item.src!, "h-44 w-36 snap-start rounded-[calc(var(--box-radius)*0.8)] object-cover")))}
+            </div>
+          </section>
+        );
+      }
       const cols = items.length === 1 ? "grid-cols-1" : items.length === 2 || items.length === 4 ? "grid-cols-2" : "grid-cols-3";
       return (
         <section className="w-full">
           {block.title ? <h2 className="mb-2.5 text-center font-semibold [font-family:var(--heading-font)]">{block.title}</h2> : null}
           <div className={`grid gap-2 ${cols}`}>
-            {items.map((item, index) => {
-              // eslint-disable-next-line @next/next/no-img-element
-              const picture = <img src={item.src!} alt="" className="aspect-square w-full rounded-[calc(var(--box-radius)*0.8)] object-cover" loading="lazy" />;
-              return item.href ? (
-                <a key={index} href={item.href} target="_blank" rel="noopener noreferrer" className="block transition-transform hover:scale-[1.02]" onClick={() => click(item.href!)}>
-                  {picture}
-                </a>
-              ) : (
-                <div key={index}>{picture}</div>
-              );
-            })}
+            {items.map((item, index) => wrap(index, item.href, picture(item.src!, "aspect-square w-full rounded-[calc(var(--box-radius)*0.8)] object-cover")))}
           </div>
         </section>
       );

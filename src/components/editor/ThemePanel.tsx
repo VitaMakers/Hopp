@@ -16,6 +16,8 @@ const LAYOUT_LABELS: Record<Theme["layout"], string> = {
   blank: "Sem cabeçalho",
   band: "Faixas coloridas",
   cutout: "Recorte",
+  fullscreen: "Tela cheia",
+  portrait: "Retrato",
 };
 const BACKGROUND_LABELS: Record<Theme["backgroundType"], string> = { solid: "Cor", gradient: "Degradê", image: "Imagem" };
 const AVATAR_LABELS: Record<Theme["avatarShape"], string> = { circle: "Redonda", rounded: "Arredondada", square: "Quadrada" };

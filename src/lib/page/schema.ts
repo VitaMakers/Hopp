@@ -161,6 +161,8 @@ export const galleryBlockSchema = z.object({
   ...blockBase,
   type: z.literal("gallery"),
   title: z.string().max(120).default(""),
+  // Grid of squares, or a horizontal carousel strip.
+  display: z.enum(["grid", "carousel"]).default("grid"),
   items: z
     .array(z.object({ imageUrl: z.string().max(1000), url: z.string().max(2000).default("") }))
     .max(9),
@@ -187,7 +189,7 @@ export const blockSchema = z.discriminatedUnion("type", [
 export const BUTTON_SHAPES = ["square", "rounded", "pill"] as const;
 export const BUTTON_STYLES = ["fill", "outline", "soft"] as const;
 export const FONTS = ["sans", "serif", "mono", "rounded", "elegant", "condensed", "tech"] as const;
-export const LAYOUTS = ["classic", "cover", "card", "hero", "name", "poster", "blank", "band", "cutout"] as const;
+export const LAYOUTS = ["classic", "cover", "card", "hero", "name", "poster", "blank", "band", "cutout", "fullscreen", "portrait"] as const;
 export const BACKGROUND_TYPES = ["solid", "gradient", "image"] as const;
 export const AVATAR_SHAPES = ["circle", "rounded", "square"] as const;
 export const SOCIAL_STYLES = ["icons", "pills"] as const;

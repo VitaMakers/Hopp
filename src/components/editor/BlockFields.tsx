@@ -282,6 +282,12 @@ export function BlockFields({ block, premium = "", onChange }: { block: Block; p
       return (
         <div className="flex flex-col gap-3">
           <TextField label="Título (opcional)" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
+          <Options
+            label="Formato"
+            value={block.display}
+            options={{ grid: "Grade", carousel: "Carrossel" }}
+            onChange={(display) => onChange({ ...block, display })}
+          />
           {block.items.map((item, index) => {
             const setItem = (patch: Partial<typeof item>) =>
               onChange({ ...block, items: block.items.map((it, i) => (i === index ? { ...it, ...patch } : it)) });
