@@ -111,7 +111,7 @@ export function createBlock(type: BlockType): Block {
         ],
       };
     case "gallery":
-      return { ...base, type, title: "", items: [{ imageUrl: "", url: "" }] };
+      return { ...base, type, title: "", display: "grid", items: [{ imageUrl: "", url: "" }] };
   }
 }
 
