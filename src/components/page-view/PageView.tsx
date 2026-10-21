@@ -34,8 +34,8 @@ export function PageView({ doc, handle, footer, still }: Props) {
 
   const content = (
     <>
-      <Header doc={doc} still={still} />
-      <Socials doc={doc} handle={handle} />
+      <Header doc={doc} handle={handle} still={still} />
+      {theme.layout === "band" ? null : <Socials doc={doc} handle={handle} />}
       <div className="mt-7 flex w-full flex-col gap-3.5">
         {blocks.map((block) => (
           <BlockView key={block.id} block={block} doc={doc} handle={handle} />
@@ -98,6 +98,14 @@ function Bio({ doc }: { doc: PageDoc }) {
   return <p className="mt-2 max-w-md whitespace-pre-line text-center text-[15px] opacity-80">{doc.profile.bio}</p>;
 }
 
+// An optional brand logo shown at the top of some headers.
+function Logo({ doc, className = "mb-3 h-14 w-auto object-contain" }: { doc: PageDoc; className?: string }) {
+  const src = imageSrc(doc.profile.logo);
+  if (!src) return null;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={src} alt={doc.profile.name} className={className} />;
+}
+
 // A cover/hero slot: plays the cover video when there is one, otherwise shows
 // the image. In thumbnails (still) the video is drawn as its poster instead.
 function CoverMedia({
@@ -132,7 +140,7 @@ function CoverMedia({
   return img ? <img src={img} alt={alt} className={className} style={style} /> : null;
 }
 
-function Header({ doc, still }: { doc: PageDoc; still?: boolean }) {
+function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?: boolean }) {
   const { profile, theme } = doc;
   const video = still ? null : videoSrc(profile.coverVideo);
   const coverImg = imageSrc(profile.coverUrl);
@@ -148,7 +156,45 @@ function Header({ doc, still }: { doc: PageDoc; still?: boolean }) {
     // Text-only header: the name set large in the heading font.
     return (
       <div className="flex flex-col items-center pt-14">
+        <Logo doc={doc} />
         <Name doc={doc} big />
+        <Bio doc={doc} />
+      </div>
+    );
+  }
+
+  if (theme.layout === "band") {
+    // Stacked coloured bands: name, tagline and socials, each full-width.
+    return (
+      <div className="-mx-5 w-[calc(100%+2.5rem)] overflow-hidden">
+        <div className="px-6 py-8 text-center" style={{ background: "var(--page-accent)", color: "var(--btn-text)" }}>
+          <Logo doc={doc} className="mx-auto mb-3 h-12 w-auto object-contain" />
+          <h1 className="text-3xl font-extrabold uppercase leading-tight tracking-tight [font-family:var(--heading-font)]">{profile.name}</h1>
+        </div>
+        {profile.bio ? (
+          <div className="px-6 py-3 text-center text-sm font-medium" style={{ background: "color-mix(in srgb, var(--page-accent) 20%, var(--page-bg))" }}>
+            {profile.bio}
+          </div>
+        ) : null}
+        <div className="flex justify-center py-2.5" style={{ background: "color-mix(in srgb, var(--page-accent) 10%, var(--page-bg))" }}>
+          <Socials doc={doc} handle={handle} />
+        </div>
+      </div>
+    );
+  }
+
+  if (theme.layout === "cutout") {
+    // Portrait inside an organic blob over a tinted field.
+    const blob = coverImg ?? avatarImg;
+    return (
+      <div className="flex flex-col items-center pt-10">
+        <Name doc={doc} big />
+        <div
+          className="relative mt-4 h-72 w-64 overflow-hidden"
+          style={{ borderRadius: "42% 58% 63% 37% / 41% 44% 56% 59%", background: "color-mix(in srgb, var(--page-accent) 18%, var(--page-bg))" }}
+        >
+          <CoverMedia video={video} img={blob} alt={profile.name} className="h-full w-full object-cover" />
+        </div>
         <Bio doc={doc} />
       </div>
     );
@@ -201,7 +247,8 @@ function Header({ doc, still }: { doc: PageDoc; still?: boolean }) {
       ) : null}
       <div className={`flex flex-col items-center ${cover || bannerVideo ? "-mt-12" : theme.layout === "card" ? "" : "pt-12"}`}>
         <Avatar doc={doc} size="h-24 w-24" />
-        <div className="mt-4">
+        <div className="mt-4 flex flex-col items-center">
+          <Logo doc={doc} className="mb-2 h-10 w-auto object-contain" />
           <Name doc={doc} />
         </div>
         <Bio doc={doc} />
@@ -542,6 +589,29 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
         >
           {block.buttonText || "Salvar contato"}
         </button>
+      );
+    }
+    case "gallery": {
+      const items = block.items.map((item) => ({ src: imageSrc(item.imageUrl), href: linkHref(item.url) })).filter((item) => item.src);
+      if (items.length === 0) return <Placeholder handle={handle} className={`${softBox} block w-full py-10 text-center`}>Galeria sem fotos</Placeholder>;
+      const cols = items.length === 1 ? "grid-cols-1" : items.length === 2 || items.length === 4 ? "grid-cols-2" : "grid-cols-3";
+      return (
+        <section className="w-full">
+          {block.title ? <h2 className="mb-2.5 text-center font-semibold [font-family:var(--heading-font)]">{block.title}</h2> : null}
+          <div className={`grid gap-2 ${cols}`}>
+            {items.map((item, index) => {
+              // eslint-disable-next-line @next/next/no-img-element
+              const picture = <img src={item.src!} alt="" className="aspect-square w-full rounded-[calc(var(--box-radius)*0.8)] object-cover" loading="lazy" />;
+              return item.href ? (
+                <a key={index} href={item.href} target="_blank" rel="noopener noreferrer" className="block transition-transform hover:scale-[1.02]" onClick={() => click(item.href!)}>
+                  {picture}
+                </a>
+              ) : (
+                <div key={index}>{picture}</div>
+              );
+            })}
+          </div>
+        </section>
       );
     }
   }

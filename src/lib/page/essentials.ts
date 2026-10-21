@@ -3,19 +3,19 @@ import { page, type PageTemplate, type TemplateCollection } from "./templates";
 import type { Block, PageDoc, SocialPlatform, Theme } from "./schema";
 
 // The "Modelos Essenciais" gallery: original starter pages grouped by the same
-// categories the market expects (loja, criadores, esporte...). They are built
-// on the normal theme + block system, so every text, colour, image, link and
-// the cover (photo or video) is 100% editable. The photos are reliable
-// placeholders (picsum.photos) and the video covers are the bundled gradient
-// loops in /public/assets — all meant to be swapped for the person's own.
+// categories the market expects (loja, criadores, esporte...). Each one is
+// built on the normal theme + block system, so every text, colour, image,
+// link and the cover (photo or video) is 100% editable. Within a category the
+// models use deliberately different structures — coloured bands, a cut-out
+// portrait, a photo/video cover, a photo grid, a logo header — so they don't
+// all look alike. Photos are reliable placeholders (picsum.photos), logos and
+// video covers are bundled in /public/assets; all meant to be swapped.
 
 const bid = () => nanoid(10);
-// A reliable placeholder photo, deterministic by seed. Swapped by the person.
 const pic = (seed: string, w = 800, h = 1000) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
 
 type LinkBlock = Extract<Block, { type: "link" }>;
 type SubscribeBlock = Extract<Block, { type: "subscribe" }>;
-type ImageBlock = Extract<Block, { type: "image" }>;
 
 function lk(title: string, url: string, extra: Partial<LinkBlock> = {}): Block {
   return { id: bid(), enabled: true, type: "link", title, url, imageUrl: "", highlight: false, display: "button", label: "", subtitle: "", buttonText: "", accent: "", ...extra };
@@ -26,16 +26,17 @@ function hd(text: string, style: Extract<Block, { type: "heading" }>["style"] = 
 function sub(title: string, buttonText: string, extra: Partial<SubscribeBlock> = {}): Block {
   return { id: bid(), enabled: true, type: "subscribe", title, buttonText, collectPhone: false, thankYouMessage: "Prontinho! Recebi seus dados e já já falo com você.", ...extra };
 }
-function img(seed: string, extra: Partial<ImageBlock> = {}): Block {
-  return { id: bid(), enabled: true, type: "image", imageUrl: pic(seed, 900, 600), alt: "", url: "", ...extra };
-}
 function prod(p: { label?: string; title: string; description: string; price?: string; seed: string; buttonText: string; url: string }): Block {
   return { id: bid(), enabled: true, type: "product", label: p.label ?? "", price: p.price ?? "", title: p.title, description: p.description, imageUrl: pic(p.seed, 900, 700), buttonText: p.buttonText, url: p.url };
 }
 function stats(items: [string, string][]): Block {
   return { id: bid(), enabled: true, type: "stats", items: items.map(([value, label]) => ({ value, label })) };
 }
-type Pal = { bg: string; text: string; btn: string; btnText: string; accent: string; bgType?: Theme["backgroundType"]; bg2?: string };
+function gal(title: string, seeds: string[]): Block {
+  return { id: bid(), enabled: true, type: "gallery", title, items: seeds.map((s) => ({ imageUrl: pic(s, 600, 600), url: "" })) };
+}
+
+type Pal = { bg: string; text: string; btn: string; btnText: string; accent: string };
 const PAL = {
   ink: { bg: "#0e1116", text: "#f5f5f4", btn: "#f5f5f4", btnText: "#0e1116", accent: "#8b5cf6" },
   plum: { bg: "#1a0b2e", text: "#f3e9ff", btn: "#c084fc", btnText: "#1a0b2e", accent: "#e879f9" },
@@ -67,19 +68,17 @@ type ESpec = {
   shape?: Theme["buttonShape"];
   style?: Theme["buttonStyle"];
   avatarShape?: Theme["avatarShape"];
-  // A video cover loop; the model then gets a photo poster behind it.
   video?: Video;
-  // Override the auto photo seed (default: the model id).
   photo?: string;
   avatar?: string;
+  logo?: string;
   wa?: string;
   socials?: [SocialPlatform, string][];
   blocks: Block[];
 };
 
-function build(spec: ESpec): PageTemplate {
+function buildTemplate(spec: ESpec): PageTemplate {
   const p: Pal = PAL[spec.pal];
-  const swatch = { background: p.bg, accent: p.accent, text: p.text };
   return {
     id: spec.id,
     name: spec.name,
@@ -87,11 +86,11 @@ function build(spec: ESpec): PageTemplate {
     plan: "basic",
     tab: "essencial",
     description: spec.bio,
-    swatch,
+    swatch: { background: p.bg, accent: p.accent, text: p.text },
     build: (name) => {
       const photoSeed = spec.photo ?? spec.id;
       const photo = pic(photoSeed, 800, 1000);
-      const profile: Partial<PageDoc["profile"]> = { bio: spec.bio, floatingWhatsapp: spec.wa ?? "" };
+      const profile: Partial<PageDoc["profile"]> = { bio: spec.bio, floatingWhatsapp: spec.wa ?? "", logo: spec.logo ?? "" };
       if (spec.layout === "hero") profile.avatarUrl = photo;
       else if (spec.layout === "poster" || spec.layout === "cover") {
         profile.coverUrl = photo;
@@ -105,8 +104,8 @@ function build(spec: ESpec): PageTemplate {
           layout: spec.layout,
           font: spec.font,
           background: p.bg,
-          background2: p.bg2 ?? p.bg,
-          backgroundType: p.bgType ?? "solid",
+          background2: p.bg,
+          backgroundType: "solid",
           text: p.text,
           buttonBackground: p.btn,
           buttonText: p.btnText,
@@ -125,7 +124,6 @@ function build(spec: ESpec): PageTemplate {
   };
 }
 
-// The 17 categories, in gallery order.
 const CATS: { id: string; name: string; swatch: { background: string; accent: string; text: string } }[] = [
   { id: "loja", name: "🛍️ Loja", swatch: { background: PAL.clay.bg, accent: PAL.clay.accent, text: PAL.clay.text } },
   { id: "criadores", name: "💫 Criadores de conteúdo", swatch: { background: PAL.ink.bg, accent: PAL.ink.accent, text: PAL.ink.text } },
@@ -149,46 +147,44 @@ const CATS: { id: string; name: string; swatch: { background: string; accent: st
 const ESSENTIALS: ESpec[] = [
   // ---------------- 🛍️ Loja ----------------
   {
-    id: "loja-vitrine", name: "Vitrine da Loja", cat: "loja", layout: "cover", font: "rounded", pal: "clay", shape: "rounded",
-    bio: "Novidades da semana, fretes e condições especiais. Escolha por onde começar 👇",
-    wa: "(11) 99999-0000",
-    socials: [["instagram", "https://instagram.com/"], ["whatsapp", "+5511999990000"]],
+    id: "loja-banda", name: "Jaya Store", cat: "loja", layout: "band", font: "condensed", pal: "blush", shape: "square", style: "fill",
+    bio: "Qualidade em cada detalhe",
+    socials: [["instagram", "https://instagram.com/"], ["tiktok", "https://tiktok.com/"], ["pinterest", "https://pinterest.com/"]],
     blocks: [
-      lk("Ver catálogo completo", "https://example.com/catalogo", { display: "banner", label: "CATÁLOGO", buttonText: "Explorar", imageUrl: pic("loja-vitrine-b1", 1000, 700) }),
-      lk("Promoções da semana", "https://example.com/ofertas", { display: "card", label: "OFERTAS", subtitle: "Até 40% off em itens selecionados" }),
-      lk("Comprar pelo WhatsApp", "https://wa.me/5511999990000", { display: "button", buttonText: "Chamar no Zap" }),
-      sub("Entre na lista VIP e receba os lançamentos primeiro", "Quero novidades", { collectPhone: true }),
+      lk("Ver catálogo", "https://example.com/catalogo", { display: "button", buttonText: "Ver catálogo" }),
+      gal("Nova coleção", ["loja-banda-1", "loja-banda-2", "loja-banda-3", "loja-banda-4"]),
+      lk("Comprar pelo WhatsApp", "https://wa.me/5511999990000", { display: "button" }),
     ],
   },
   {
-    id: "loja-express", name: "Pedido Express", cat: "loja", layout: "classic", font: "sans", pal: "mint", shape: "pill",
-    bio: "Peça em segundos. Entrega no mesmo dia para toda a cidade 🛵",
-    wa: "(11) 98888-0000",
-    blocks: [
-      lk("Fazer meu pedido", "https://wa.me/5511988880000", { highlight: true, buttonText: "Pedir agora" }),
-      lk("Cardápio de produtos", "https://example.com/produtos", { display: "card", label: "PRODUTOS", subtitle: "Tudo o que temos, com fotos e preços" }),
-      stats([["2h", "entrega média"], ["4.9", "avaliação"], ["+3mil", "pedidos"]]),
-      lk("Formas de pagamento", "https://example.com/pagamento", { display: "button" }),
-    ],
-  },
-  {
-    id: "loja-drop", name: "Drop Novo", cat: "loja", layout: "poster", font: "condensed", pal: "ink", video: "mono", shape: "square", style: "outline",
+    id: "loja-drop", name: "Drop Noturno", cat: "loja", layout: "poster", font: "condensed", pal: "ink", video: "mono", shape: "square", style: "outline",
     bio: "Coleção nova no ar. Peças limitadas — quando acabar, acabou.",
     socials: [["instagram", "https://instagram.com/"], ["tiktok", "https://tiktok.com/"]],
     blocks: [
-      hd("A COLEÇÃO", "divider"),
       lk("Comprar o drop", "https://example.com/drop", { display: "banner", label: "LIMITADO", buttonText: "Garantir o meu", imageUrl: pic("loja-drop-b1", 1000, 700) }),
       lk("Ver lookbook", "https://example.com/lookbook", { display: "card", subtitle: "Todas as peças em detalhe" }),
       sub("Avise-me no próximo drop", "Entrar na lista"),
     ],
   },
   {
-    id: "loja-catalogo", name: "Catálogo Visual", cat: "loja", layout: "name", font: "serif", pal: "cream", shape: "rounded", style: "soft",
-    bio: "Produtos artesanais feitos à mão, em pequenos lotes.",
+    id: "loja-artesanal", name: "Feito à Mão", cat: "loja", layout: "cutout", font: "serif", pal: "clay", shape: "rounded", style: "soft",
+    bio: "Produtos artesanais em pequenos lotes, feitos com carinho.",
     blocks: [
-      prod({ label: "DESTAQUE", title: "Kit Presente", description: "Nossa combinação mais pedida, embalada para presentear.", price: "R$ 149", seed: "loja-catalogo-p1", buttonText: "Comprar", url: "https://example.com/kit" }),
-      prod({ title: "Edição Especial", description: "Produção limitada, com acabamento exclusivo.", price: "R$ 89", seed: "loja-catalogo-p2", buttonText: "Ver produto", url: "https://example.com/especial" }),
+      prod({ label: "DESTAQUE", title: "Kit Presente", description: "Nossa combinação mais pedida, embalada para presentear.", price: "R$ 149", seed: "loja-artesanal-p1", buttonText: "Comprar", url: "https://example.com/kit" }),
+      prod({ title: "Edição Especial", description: "Produção limitada, com acabamento exclusivo.", price: "R$ 89", seed: "loja-artesanal-p2", buttonText: "Ver produto", url: "https://example.com/especial" }),
       lk("Falar com a loja", "https://wa.me/5511999990000", { display: "button", buttonText: "Tirar dúvidas" }),
+    ],
+  },
+  {
+    id: "loja-vitrine", name: "Vitrine Sol", cat: "loja", layout: "classic", font: "rounded", pal: "sand", shape: "rounded", logo: "/assets/logo-sol.svg",
+    bio: "Novidades da semana, fretes e condições especiais 👇",
+    wa: "(11) 99999-0000",
+    socials: [["instagram", "https://instagram.com/"], ["whatsapp", "+5511999990000"]],
+    blocks: [
+      gal("Mais vendidos", ["loja-vitrine-1", "loja-vitrine-2", "loja-vitrine-3"]),
+      lk("Ver catálogo completo", "https://example.com/catalogo", { highlight: true, buttonText: "Explorar loja" }),
+      lk("Promoções da semana", "https://example.com/ofertas", { display: "card", label: "OFERTAS", subtitle: "Até 40% off em itens selecionados" }),
+      sub("Entre na lista VIP e receba os lançamentos primeiro", "Quero novidades", { collectPhone: true }),
     ],
   },
 
@@ -205,23 +201,23 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "criador-links", name: "Todos os Links", cat: "criadores", layout: "classic", font: "rounded", pal: "plum", shape: "pill",
+    id: "criador-links", name: "Todos os Links", cat: "criadores", layout: "cutout", font: "rounded", pal: "plum", shape: "pill",
     bio: "Tudo o que eu citei nos stories tá aqui embaixo 💜",
     socials: [["instagram", "https://instagram.com/"], ["tiktok", "https://tiktok.com/"], ["spotify", "https://open.spotify.com/"]],
     blocks: [
-      lk("Produto que amei", "https://example.com/produto", { highlight: true, buttonText: "Ver" }),
+      lk("Produto que amei", "https://example.com/produto", { highlight: true, buttonText: "Ver agora" }),
       lk("Cupom de desconto", "https://example.com/cupom", { display: "card", label: "CUPOM", subtitle: "Use MEUNOME10" }),
       lk("Meu TikTok", "https://tiktok.com/", { display: "button" }),
       lk("Meu Spotify", "https://open.spotify.com/", { display: "button" }),
     ],
   },
   {
-    id: "criador-creator", name: "Creator Pro", cat: "criadores", layout: "poster", font: "sans", pal: "night", video: "night" as Video,
-    bio: "Transformo ideias em conteúdo que conecta. Veja meu trabalho.",
-    socials: [["instagram", "https://instagram.com/"], ["linkedin", "https://linkedin.com/"]],
+    id: "criador-faixa", name: "Creator Band", cat: "criadores", layout: "band", font: "condensed", pal: "night", shape: "square",
+    bio: "Transformo ideias em conteúdo que conecta.",
+    socials: [["instagram", "https://instagram.com/"], ["linkedin", "https://linkedin.com/"], ["youtube", "https://youtube.com/"]],
     blocks: [
       stats([["120k", "seguidores"], ["8M", "views/mês"], ["+40", "marcas"]]),
-      lk("Portfólio de conteúdo", "https://example.com/portfolio", { display: "banner", label: "PORTFÓLIO", buttonText: "Ver cases", imageUrl: pic("criador-creator-b1", 1000, 700) }),
+      lk("Portfólio de conteúdo", "https://example.com/portfolio", { display: "banner", label: "PORTFÓLIO", buttonText: "Ver cases", imageUrl: pic("criador-faixa-b1", 1000, 700) }),
       lk("Trabalhe comigo", "https://example.com/contato", { display: "card", subtitle: "Orçamentos e parcerias" }),
     ],
   },
@@ -250,18 +246,19 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "fit-box", name: "Cross & Box", cat: "esporte", layout: "poster", font: "tech", pal: "ink", video: "mono", style: "outline",
-    bio: "Sua box de treino funcional. Primeira aula experimental é por nossa conta.",
+    id: "fit-box", name: "Cross & Box", cat: "esporte", layout: "band", font: "tech", pal: "lime", shape: "square", style: "outline",
+    bio: "Sua box de treino funcional. Primeira aula é por nossa conta.",
     wa: "(11) 96666-0000",
+    socials: [["instagram", "https://instagram.com/"]],
     blocks: [
       lk("Agendar aula grátis", "https://wa.me/5511966660000", { highlight: true, buttonText: "Quero experimentar" }),
+      gal("Nossa box", ["fit-box-1", "fit-box-2", "fit-box-3"]),
       lk("Horários das turmas", "https://example.com/horarios", { display: "card", label: "GRADE", subtitle: "Manhã, tarde e noite" }),
-      lk("Onde treinamos", "https://maps.google.com/", { display: "button", buttonText: "Ver no mapa" }),
     ],
   },
   {
-    id: "fit-nutri", name: "Nutri Esportiva", cat: "esporte", layout: "classic", font: "sans", pal: "mint", shape: "pill",
-    bio: "Nutricionista esportiva. Comida de verdade para performar e viver bem.",
+    id: "fit-nutri", name: "Nutri Esportiva", cat: "esporte", layout: "cutout", font: "sans", pal: "mint", shape: "pill",
+    bio: "Comida de verdade para performar e viver bem.",
     socials: [["instagram", "https://instagram.com/"]],
     blocks: [
       lk("Agendar consulta", "https://example.com/agenda", { highlight: true, buttonText: "Marcar horário" }),
@@ -270,12 +267,12 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "fit-run", name: "Assessoria de Corrida", cat: "esporte", layout: "name", font: "condensed", pal: "slate", shape: "square", style: "soft",
+    id: "fit-run", name: "Assessoria de Corrida", cat: "esporte", layout: "poster", font: "condensed", pal: "slate", shape: "square", style: "soft",
     bio: "Do primeiro quilômetro à sua primeira maratona.",
     blocks: [
       hd("PROGRAMAS", "divider"),
-      lk("Iniciantes", "https://example.com/iniciantes", { display: "card", label: "5KM", subtitle: "Comece do zero, sem lesões" }),
-      lk("Performance", "https://example.com/performance", { display: "card", label: "21/42KM", subtitle: "Planilha e acompanhamento" }),
+      lk("Iniciantes 5km", "https://example.com/iniciantes", { display: "card", label: "5KM", subtitle: "Comece do zero, sem lesões" }),
+      lk("Performance 21/42km", "https://example.com/performance", { display: "card", label: "21/42KM", subtitle: "Planilha e acompanhamento" }),
       lk("Falar com o treinador", "https://example.com/contato", { display: "button" }),
     ],
   },
@@ -286,14 +283,14 @@ const ESSENTIALS: ESpec[] = [
     bio: "Direção de arte & design. Seleção de projetos recentes.",
     socials: [["instagram", "https://instagram.com/"], ["linkedin", "https://linkedin.com/"]],
     blocks: [
-      img("criativo-portfolio-g1"),
+      gal("Trabalhos recentes", ["criativo-portfolio-1", "criativo-portfolio-2", "criativo-portfolio-3", "criativo-portfolio-4"]),
       lk("Ver portfólio completo", "https://example.com/portfolio", { display: "banner", label: "TRABALHOS", buttonText: "Explorar", imageUrl: pic("criativo-portfolio-b1", 1000, 700) }),
       lk("Orçamento de projeto", "https://example.com/orcamento", { display: "card", subtitle: "Conte sua ideia" }),
     ],
   },
   {
-    id: "criativo-foto", name: "Fotografia", cat: "criativo", layout: "hero", font: "serif", pal: "mono", shape: "square", style: "outline",
-    bio: "Fotógrafo · retratos, casamentos e ensaios autorais.",
+    id: "criativo-foto", name: "Fotografia", cat: "criativo", layout: "cutout", font: "serif", pal: "mono", shape: "square", style: "outline",
+    bio: "Retratos, casamentos e ensaios autorais.",
     socials: [["instagram", "https://instagram.com/"]],
     blocks: [
       lk("Galeria de ensaios", "https://example.com/galeria", { display: "banner", label: "GALERIA", buttonText: "Ver fotos", imageUrl: pic("criativo-foto-b1", 1000, 700) }),
@@ -302,8 +299,8 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "criativo-studio", name: "Estúdio de Design", cat: "criativo", layout: "classic", font: "sans", pal: "ink", shape: "rounded",
-    bio: "Estúdio de branding. Marcas que as pessoas lembram.",
+    id: "criativo-studio", name: "Estúdio de Branding", cat: "criativo", layout: "band", font: "sans", pal: "ink", shape: "rounded",
+    bio: "Marcas que as pessoas lembram.",
     socials: [["instagram", "https://instagram.com/"], ["linkedin", "https://linkedin.com/"]],
     blocks: [
       lk("Nossos cases", "https://example.com/cases", { highlight: true, buttonText: "Ver projetos" }),
@@ -312,19 +309,19 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "criativo-ilustra", name: "Ilustração", cat: "criativo", layout: "cover", font: "rounded", pal: "rose", shape: "pill", style: "soft",
-    bio: "Ilustradora. Encomendas abertas para projetos e presentes.",
+    id: "criativo-ilustra", name: "Ilustração", cat: "criativo", layout: "classic", font: "rounded", pal: "rose", shape: "pill", style: "soft", logo: "/assets/logo-mono.svg",
+    bio: "Encomendas abertas para projetos e presentes.",
     socials: [["instagram", "https://instagram.com/"]],
     blocks: [
-      lk("Encomendar ilustração", "https://example.com/encomenda", { display: "banner", label: "ENCOMENDAS", buttonText: "Quero uma", imageUrl: pic("criativo-ilustra-b1", 1000, 700) }),
+      gal("Portfólio", ["criativo-ilustra-1", "criativo-ilustra-2", "criativo-ilustra-3"]),
+      lk("Encomendar ilustração", "https://example.com/encomenda", { highlight: true, buttonText: "Quero uma" }),
       lk("Loja de prints", "https://example.com/prints", { display: "card", subtitle: "Pôsteres e cartões" }),
-      lk("Portfólio no Behance", "https://behance.net/", { display: "button" }),
     ],
   },
 
   // ---------------- 🍕 Comida e bebida ----------------
   {
-    id: "comida-cardapio", name: "Cardápio Digital", cat: "comida", layout: "cover", font: "serif", pal: "sun", shape: "rounded",
+    id: "comida-cardapio", name: "Cardápio Digital", cat: "comida", layout: "poster", font: "serif", pal: "sun", shape: "rounded",
     bio: "Sabor de verdade, feito na hora. Confira o cardápio e peça 🍔",
     wa: "(11) 95555-0000",
     socials: [["instagram", "https://instagram.com/"]],
@@ -336,17 +333,17 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "comida-cafe", name: "Cafeteria", cat: "comida", layout: "hero", font: "elegant", pal: "cream", shape: "rounded", style: "soft",
-    bio: "Café especial, pães e doces artesanais. Venha tomar um 🤎",
+    id: "comida-cafe", name: "Cafeteria", cat: "comida", layout: "band", font: "elegant", pal: "clay", shape: "rounded", style: "soft",
+    bio: "Café especial, pães e doces artesanais 🤎",
     socials: [["instagram", "https://instagram.com/"]],
     blocks: [
+      gal("Da nossa casa", ["comida-cafe-1", "comida-cafe-2", "comida-cafe-3"]),
       lk("Nosso menu", "https://example.com/menu", { display: "card", label: "MENU", subtitle: "Cafés, bebidas e quitutes" }),
       lk("Reservar mesa", "https://wa.me/5511955550000", { display: "button", buttonText: "Reservar" }),
-      lk("Horário e localização", "https://maps.google.com/", { display: "button" }),
     ],
   },
   {
-    id: "comida-foodtruck", name: "Food Truck", cat: "comida", layout: "poster", font: "condensed", pal: "ink", video: "sunset", shape: "square",
+    id: "comida-foodtruck", name: "Food Truck", cat: "comida", layout: "hero", font: "condensed", pal: "ink", video: "sunset", shape: "square",
     bio: "A gente leva o sabor até você. Veja onde estaremos hoje.",
     wa: "(11) 95555-0000",
     blocks: [
@@ -356,7 +353,7 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "comida-doces", name: "Confeitaria", cat: "comida", layout: "classic", font: "rounded", pal: "blush", shape: "pill", style: "soft",
+    id: "comida-doces", name: "Confeitaria", cat: "comida", layout: "cutout", font: "rounded", pal: "blush", shape: "pill", style: "soft",
     bio: "Bolos e doces por encomenda para adoçar o seu dia 🧁",
     wa: "(11) 94444-0000",
     socials: [["instagram", "https://instagram.com/"]],
@@ -369,8 +366,8 @@ const ESSENTIALS: ESpec[] = [
 
   // ---------------- 🏠 Imobiliária ----------------
   {
-    id: "imob-corretor", name: "Corretor de Imóveis", cat: "imobiliaria", layout: "classic", font: "sans", pal: "slate", shape: "rounded",
-    bio: "Corretor credenciado. Encontro o imóvel certo para o seu momento.",
+    id: "imob-corretor", name: "Corretor de Imóveis", cat: "imobiliaria", layout: "classic", font: "sans", pal: "slate", shape: "rounded", logo: "/assets/logo-mono.svg",
+    bio: "Encontro o imóvel certo para o seu momento.",
     wa: "(11) 93333-0000",
     socials: [["instagram", "https://instagram.com/"], ["linkedin", "https://linkedin.com/"]],
     blocks: [
@@ -381,7 +378,7 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "imob-lancamento", name: "Lançamento", cat: "imobiliaria", layout: "poster", font: "elegant", pal: "ink", video: "night" as Video,
+    id: "imob-lancamento", name: "Lançamento", cat: "imobiliaria", layout: "poster", font: "elegant", pal: "night", video: "mono",
     bio: "Novo empreendimento na melhor região. Unidades limitadas.",
     wa: "(11) 93333-0000",
     blocks: [
@@ -391,8 +388,17 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "imob-locacao", name: "Locação Rápida", cat: "imobiliaria", layout: "cover", font: "sans", pal: "mint", shape: "rounded",
-    bio: "Aluguel sem fiador e com aprovação rápida. Veja as opções.",
+    id: "imob-temporada", name: "Aluguel de Temporada", cat: "imobiliaria", layout: "band", font: "serif", pal: "ocean", shape: "pill", style: "soft",
+    bio: "Casas e apês para suas férias, sem taxas extras.",
+    blocks: [
+      gal("Acomodações", ["imob-temporada-1", "imob-temporada-2", "imob-temporada-3"]),
+      lk("Ver disponibilidade", "https://example.com/acomodacoes", { highlight: true, buttonText: "Reservar" }),
+      lk("Consultar datas", "https://wa.me/5511922220000", { display: "card", subtitle: "Resposta no mesmo dia" }),
+    ],
+  },
+  {
+    id: "imob-locacao", name: "Locação Rápida", cat: "imobiliaria", layout: "cutout", font: "sans", pal: "mint", shape: "rounded",
+    bio: "Aluguel sem fiador e com aprovação rápida.",
     wa: "(11) 92222-0000",
     blocks: [
       lk("Ver imóveis disponíveis", "https://example.com/disponiveis", { highlight: true, buttonText: "Buscar imóvel" }),
@@ -400,26 +406,17 @@ const ESSENTIALS: ESpec[] = [
       lk("Falar com a equipe", "https://wa.me/5511922220000", { display: "button" }),
     ],
   },
-  {
-    id: "imob-temporada", name: "Aluguel de Temporada", cat: "imobiliaria", layout: "hero", font: "serif", pal: "ocean", shape: "pill", style: "soft",
-    bio: "Casas e apês para suas férias. Reserve direto, sem taxas extras.",
-    blocks: [
-      lk("Ver acomodações", "https://example.com/acomodacoes", { display: "banner", label: "DISPONÍVEL", buttonText: "Reservar", imageUrl: pic("imob-temporada-b1", 1000, 700) }),
-      lk("Consultar datas", "https://wa.me/5511922220000", { display: "card", subtitle: "Resposta no mesmo dia" }),
-      lk("Avaliações de hóspedes", "https://example.com/avaliacoes", { display: "button" }),
-    ],
-  },
 
   // ---------------- 💄 Beleza ----------------
   {
-    id: "beleza-studio", name: "Studio de Beleza", cat: "beleza", layout: "hero", font: "elegant", pal: "blush", shape: "pill", style: "soft",
-    bio: "Cabelo, unhas e estética. Agende seu momento de cuidado ✨",
+    id: "beleza-studio", name: "Studio de Beleza", cat: "beleza", layout: "band", font: "elegant", pal: "blush", shape: "pill", style: "soft",
+    bio: "Cabelo, unhas e estética ✨",
     wa: "(11) 91111-0000",
     socials: [["instagram", "https://instagram.com/"]],
     blocks: [
+      gal("Nossos trabalhos", ["beleza-studio-1", "beleza-studio-2", "beleza-studio-3"]),
       lk("Agendar horário", "https://example.com/agenda", { highlight: true, buttonText: "Marcar agora" }),
       lk("Nossos serviços", "https://example.com/servicos", { display: "card", label: "SERVIÇOS", subtitle: "Tabela com preços" }),
-      lk("Ver trabalhos", "https://instagram.com/", { display: "button", buttonText: "Portfólio no Insta" }),
     ],
   },
   {
@@ -444,7 +441,7 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "beleza-skin", name: "Skincare & Estética", cat: "beleza", layout: "classic", font: "serif", pal: "rose", shape: "rounded", style: "soft",
+    id: "beleza-skin", name: "Skincare & Estética", cat: "beleza", layout: "cutout", font: "serif", pal: "rose", shape: "rounded", style: "soft",
     bio: "Protocolos faciais e corporais com avaliação personalizada.",
     wa: "(11) 90000-2222",
     blocks: [
@@ -467,7 +464,7 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "evento-congresso", name: "Congresso", cat: "eventos", layout: "classic", font: "sans", pal: "slate", shape: "rounded",
+    id: "evento-congresso", name: "Congresso", cat: "eventos", layout: "band", font: "sans", pal: "slate", shape: "rounded",
     bio: "Dois dias de palestras, networking e conteúdo de ponta.",
     socials: [["linkedin", "https://linkedin.com/"], ["instagram", "https://instagram.com/"]],
     blocks: [
@@ -477,8 +474,8 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "evento-casamento", name: "Casamento", cat: "eventos", layout: "hero", font: "elegant", pal: "cream", shape: "pill", style: "soft",
-    bio: "João & Maria · 12 de abril. Tudo o que você precisa saber 💍",
+    id: "evento-casamento", name: "Casamento", cat: "eventos", layout: "cutout", font: "elegant", pal: "cream", shape: "pill", style: "soft",
+    bio: "João & Maria · 12 de abril 💍",
     blocks: [
       lk("Confirmar presença", "https://example.com/rsvp", { highlight: true, buttonText: "Confirmar (RSVP)" }),
       lk("Lista de presentes", "https://example.com/presentes", { display: "card", subtitle: "Ajude a realizar nosso sonho" }),
@@ -486,7 +483,7 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "evento-workshop", name: "Workshop", cat: "eventos", layout: "cover", font: "rounded", pal: "sun", shape: "rounded",
+    id: "evento-workshop", name: "Workshop", cat: "eventos", layout: "classic", font: "rounded", pal: "sun", shape: "rounded", logo: "/assets/logo-sol.svg",
     bio: "Encontro prático e presencial. Vagas limitadas por turma.",
     blocks: [
       lk("Garantir minha vaga", "https://example.com/vaga", { display: "banner", label: "PRESENCIAL", buttonText: "Inscrever", imageUrl: pic("evento-workshop-b1", 1000, 700) }),
@@ -497,8 +494,8 @@ const ESSENTIALS: ESpec[] = [
 
   // ---------------- 💼 Negócios ----------------
   {
-    id: "negocio-consultoria", name: "Consultoria", cat: "negocios", layout: "classic", font: "sans", pal: "slate", shape: "rounded",
-    bio: "Ajudo empresas a crescer com estratégia e método. Vamos conversar?",
+    id: "negocio-consultoria", name: "Consultoria", cat: "negocios", layout: "classic", font: "sans", pal: "slate", shape: "rounded", logo: "/assets/logo-mono.svg",
+    bio: "Ajudo empresas a crescer com estratégia e método.",
     socials: [["linkedin", "https://linkedin.com/"], ["instagram", "https://instagram.com/"]],
     blocks: [
       lk("Agendar diagnóstico", "https://example.com/diagnostico", { highlight: true, buttonText: "Marcar conversa" }),
@@ -509,7 +506,7 @@ const ESSENTIALS: ESpec[] = [
   },
   {
     id: "negocio-agencia", name: "Agência", cat: "negocios", layout: "poster", font: "condensed", pal: "ink", video: "mono", style: "outline",
-    bio: "Marketing que gera resultado, não só likes. Conheça a agência.",
+    bio: "Marketing que gera resultado, não só likes.",
     socials: [["instagram", "https://instagram.com/"], ["linkedin", "https://linkedin.com/"]],
     blocks: [
       lk("Nossos serviços", "https://example.com/servicos", { display: "banner", label: "SERVIÇOS", buttonText: "Ver tudo", imageUrl: pic("negocio-agencia-b1", 1000, 700) }),
@@ -518,19 +515,18 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "negocio-b2b", name: "Soluções B2B", cat: "negocios", layout: "name", font: "sans", pal: "night", shape: "square",
-    bio: "Tecnologia e serviços para a sua empresa escalar com segurança.",
+    id: "negocio-b2b", name: "Soluções B2B", cat: "negocios", layout: "band", font: "sans", pal: "night", shape: "square",
+    bio: "Tecnologia e serviços para a sua empresa escalar.",
     socials: [["linkedin", "https://linkedin.com/"]],
     blocks: [
-      hd("O QUE OFERECEMOS", "divider"),
       lk("Nossas soluções", "https://example.com/solucoes", { display: "card", subtitle: "Feitas para o seu setor" }),
       lk("Fale com vendas", "https://example.com/vendas", { display: "card", subtitle: "Demonstração gratuita" }),
       lk("Baixar apresentação", "https://example.com/deck", { display: "button" }),
     ],
   },
   {
-    id: "negocio-coach", name: "Mentoria Executiva", cat: "negocios", layout: "hero", font: "serif", pal: "sand", shape: "pill", style: "soft",
-    bio: "Mentor de líderes e empreendedores. Clareza para decidir e crescer.",
+    id: "negocio-coach", name: "Mentoria Executiva", cat: "negocios", layout: "cutout", font: "serif", pal: "sand", shape: "pill", style: "soft",
+    bio: "Clareza para decidir e crescer.",
     socials: [["linkedin", "https://linkedin.com/"], ["instagram", "https://instagram.com/"]],
     blocks: [
       lk("Aplicar para a mentoria", "https://example.com/aplicacao", { highlight: true, buttonText: "Quero aplicar" }),
@@ -551,8 +547,8 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "moda-consultora", name: "Consultoria de Imagem", cat: "moda", layout: "hero", font: "serif", pal: "sand", shape: "pill", style: "soft",
-    bio: "Consultora de estilo. Vista quem você é, com confiança.",
+    id: "moda-consultora", name: "Consultoria de Imagem", cat: "moda", layout: "cutout", font: "serif", pal: "sand", shape: "pill", style: "soft",
+    bio: "Vista quem você é, com confiança.",
     socials: [["instagram", "https://instagram.com/"], ["pinterest", "https://pinterest.com/"]],
     blocks: [
       lk("Agendar consultoria", "https://example.com/consultoria", { highlight: true, buttonText: "Quero marcar" }),
@@ -561,19 +557,19 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "moda-brecho", name: "Brechó", cat: "moda", layout: "cover", font: "rounded", pal: "clay", shape: "rounded",
-    bio: "Moda circular com peças únicas e preços honestos ♻️",
+    id: "moda-brecho", name: "Brechó", cat: "moda", layout: "band", font: "rounded", pal: "clay", shape: "rounded",
+    bio: "Moda circular com peças únicas ♻️",
     wa: "(11) 90000-3333",
     socials: [["instagram", "https://instagram.com/"]],
     blocks: [
-      lk("Ver peças novas", "https://instagram.com/", { display: "banner", label: "NOVIDADES", buttonText: "Garimpar", imageUrl: pic("moda-brecho-b1", 1000, 700) }),
+      gal("Garimpo da semana", ["moda-brecho-1", "moda-brecho-2", "moda-brecho-3"]),
       lk("Comprar pelo WhatsApp", "https://wa.me/5511900003333", { highlight: true, buttonText: "Chamar" }),
       lk("Quero vender peças", "https://example.com/vender", { display: "card", subtitle: "Como funciona" }),
     ],
   },
   {
-    id: "moda-acessorios", name: "Acessórios", cat: "moda", layout: "classic", font: "sans", pal: "blush", shape: "pill",
-    bio: "Semijoias e acessórios que completam qualquer look.",
+    id: "moda-acessorios", name: "Acessórios", cat: "moda", layout: "classic", font: "sans", pal: "blush", shape: "pill", logo: "/assets/logo-mono.svg",
+    bio: "Semijoias que completam qualquer look.",
     wa: "(11) 90000-4444",
     socials: [["instagram", "https://instagram.com/"]],
     blocks: [
@@ -585,8 +581,8 @@ const ESSENTIALS: ESpec[] = [
 
   // ---------------- 🌿 Bem-estar e Saúde ----------------
   {
-    id: "bem-terapia", name: "Terapia & Psicologia", cat: "bemestar", layout: "classic", font: "serif", pal: "mint", shape: "rounded", style: "soft",
-    bio: "Psicóloga · atendimento online e acolhedor. Cuidar de você importa.",
+    id: "bem-terapia", name: "Terapia & Psicologia", cat: "bemestar", layout: "cutout", font: "serif", pal: "mint", shape: "rounded", style: "soft",
+    bio: "Atendimento online e acolhedor. Cuidar de você importa.",
     socials: [["instagram", "https://instagram.com/"]],
     blocks: [
       lk("Agendar sessão", "https://example.com/agenda", { highlight: true, buttonText: "Marcar sessão" }),
@@ -596,7 +592,7 @@ const ESSENTIALS: ESpec[] = [
   },
   {
     id: "bem-yoga", name: "Yoga & Meditação", cat: "bemestar", layout: "hero", font: "elegant", pal: "forest", shape: "pill", style: "soft",
-    bio: "Respire. Aulas de yoga e meditação para o seu dia render mais.",
+    bio: "Respire. Aulas para o seu dia render mais.",
     socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"]],
     blocks: [
       lk("Aula experimental grátis", "https://example.com/experimental", { highlight: true, buttonText: "Experimentar" }),
@@ -605,11 +601,11 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "bem-nutri", name: "Vida Saudável", cat: "bemestar", layout: "cover", font: "rounded", pal: "lime", shape: "rounded",
-    bio: "Nutricionista. Reeducação alimentar sem sofrimento, do seu jeito.",
+    id: "bem-nutri", name: "Vida Saudável", cat: "bemestar", layout: "band", font: "rounded", pal: "mint", shape: "rounded",
+    bio: "Reeducação alimentar sem sofrimento, do seu jeito.",
     wa: "(11) 90000-6666",
     blocks: [
-      lk("Agendar consulta", "https://wa.me/5511900006666", { display: "banner", label: "CONSULTAS", buttonText: "Agendar", imageUrl: pic("bem-nutri-b1", 1000, 700) }),
+      lk("Agendar consulta", "https://wa.me/5511900006666", { highlight: true, buttonText: "Agendar" }),
       lk("Planos de acompanhamento", "https://example.com/planos", { display: "card", subtitle: "Mensal e trimestral" }),
       sub("E-book de receitas leves grátis", "Baixar e-book", { collectPhone: true }),
     ],
@@ -637,8 +633,8 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "ent-humor", name: "Comédia Stand-up", cat: "entretenimento", layout: "hero", font: "condensed", pal: "sun", shape: "square",
-    bio: "Comediante. Vem rir comigo — ingressos e tour aqui embaixo 🎤",
+    id: "ent-humor", name: "Comédia Stand-up", cat: "entretenimento", layout: "cutout", font: "condensed", pal: "sun", shape: "square",
+    bio: "Vem rir comigo 🎤",
     socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"]],
     blocks: [
       lk("Comprar ingressos", "https://example.com/ingressos", { highlight: true, buttonText: "Garantir" }),
@@ -657,8 +653,8 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "ent-teatro", name: "Peça de Teatro", cat: "entretenimento", layout: "classic", font: "serif", pal: "plum", shape: "rounded", style: "soft",
-    bio: "Em cartaz! Confira sessões, elenco e garanta seu lugar.",
+    id: "ent-teatro", name: "Peça de Teatro", cat: "entretenimento", layout: "band", font: "serif", pal: "plum", shape: "rounded", style: "soft",
+    bio: "Em cartaz! Confira sessões e garanta seu lugar.",
     socials: [["instagram", "https://instagram.com/"]],
     blocks: [
       lk("Comprar ingresso", "https://example.com/ingressos", { highlight: true, buttonText: "Ver sessões" }),
@@ -669,38 +665,37 @@ const ESSENTIALS: ESpec[] = [
 
   // ---------------- 📚 Educação ----------------
   {
-    id: "edu-curso", name: "Curso Online", cat: "educacao", layout: "classic", font: "sans", pal: "ocean", shape: "rounded",
+    id: "edu-curso", name: "Curso Online", cat: "educacao", layout: "classic", font: "sans", pal: "ocean", shape: "rounded", logo: "/assets/logo-mono.svg",
     bio: "Aprenda no seu ritmo, com aulas práticas e certificado.",
     socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"]],
     blocks: [
       lk("Matricular agora", "https://example.com/matricula", { highlight: true, buttonText: "Quero me inscrever" }),
       lk("O que você vai aprender", "https://example.com/conteudo", { display: "card", subtitle: "Grade completa" }),
       lk("Aula gratuita de amostra", "https://youtube.com/", { display: "card", label: "GRÁTIS", subtitle: "Veja antes de decidir" }),
-      sub("Receba materiais de estudo grátis", "Quero receber", { collectPhone: false }),
+      sub("Receba materiais de estudo grátis", "Quero receber"),
     ],
   },
   {
-    id: "edu-professor", name: "Professor Particular", cat: "educacao", layout: "name", font: "serif", pal: "slate", shape: "rounded", style: "soft",
-    bio: "Aulas particulares online. Da dúvida ao domínio, no seu tempo.",
+    id: "edu-professor", name: "Professor Particular", cat: "educacao", layout: "cutout", font: "serif", pal: "slate", shape: "rounded", style: "soft",
+    bio: "Da dúvida ao domínio, no seu tempo.",
     blocks: [
-      hd("COMO POSSO AJUDAR", "divider"),
-      lk("Agendar aula", "https://example.com/agenda", { display: "card", subtitle: "Primeira aula com desconto" }),
+      lk("Agendar aula", "https://example.com/agenda", { highlight: true, buttonText: "Marcar aula" }),
       lk("Matérias e níveis", "https://example.com/materias", { display: "card", subtitle: "Fundamental ao vestibular" }),
       lk("Falar comigo", "https://wa.me/5511900009999", { display: "button" }),
     ],
   },
   {
-    id: "edu-idiomas", name: "Escola de Idiomas", cat: "educacao", layout: "cover", font: "rounded", pal: "sun", shape: "pill",
+    id: "edu-idiomas", name: "Escola de Idiomas", cat: "educacao", layout: "band", font: "rounded", pal: "sun", shape: "pill",
     bio: "Fluência de verdade, conversando desde a primeira aula 🌎",
     socials: [["instagram", "https://instagram.com/"]],
     blocks: [
-      lk("Teste de nível grátis", "https://example.com/teste", { display: "banner", label: "GRÁTIS", buttonText: "Fazer teste", imageUrl: pic("edu-idiomas-b1", 1000, 700) }),
+      lk("Teste de nível grátis", "https://example.com/teste", { highlight: true, buttonText: "Fazer teste" }),
       lk("Turmas e horários", "https://example.com/turmas", { display: "card", subtitle: "Online e presencial" }),
       lk("Falar com a escola", "https://wa.me/5511910000000", { display: "button" }),
     ],
   },
   {
-    id: "edu-ebook", name: "E-book & Materiais", cat: "educacao", layout: "hero", font: "sans", pal: "night", shape: "square",
+    id: "edu-ebook", name: "E-book & Materiais", cat: "educacao", layout: "poster", font: "sans", pal: "night", shape: "square",
     bio: "Materiais que descomplicam o aprendizado. Baixe agora.",
     blocks: [
       prod({ label: "LANÇAMENTO", title: "Guia Completo", description: "Mais de 120 páginas, com exercícios e exemplos práticos.", price: "R$ 39", seed: "edu-ebook-p1", buttonText: "Comprar e baixar", url: "https://example.com/ebook" }),
@@ -721,8 +716,8 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "mus-banda", name: "Banda", cat: "musica", layout: "hero", font: "condensed", pal: "ink", shape: "square", style: "outline",
-    bio: "Som que não cabe em rótulo. Ouça, siga e venha ao show.",
+    id: "mus-banda", name: "Banda", cat: "musica", layout: "band", font: "condensed", pal: "ink", shape: "square", style: "outline",
+    bio: "Som que não cabe em rótulo.",
     socials: [["spotify", "https://open.spotify.com/"], ["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"]],
     blocks: [
       lk("Nosso Spotify", "https://open.spotify.com/", { highlight: true, buttonText: "Ouvir" }),
@@ -731,7 +726,7 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "mus-produtor", name: "Produtor Musical", cat: "musica", layout: "cover", font: "tech", pal: "ocean", video: "night" as Video, style: "outline",
+    id: "mus-produtor", name: "Produtor Musical", cat: "musica", layout: "cover", font: "tech", pal: "ocean", video: "mono", style: "outline",
     bio: "Mixagem, master e produção. Transforme sua ideia em faixa.",
     socials: [["instagram", "https://instagram.com/"], ["spotify", "https://open.spotify.com/"]],
     blocks: [
@@ -741,8 +736,8 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "mus-professor", name: "Aulas de Música", cat: "musica", layout: "classic", font: "serif", pal: "sand", shape: "rounded", style: "soft",
-    bio: "Professor de violão e teoria. Toque sua primeira música já na estreia.",
+    id: "mus-professor", name: "Aulas de Música", cat: "musica", layout: "cutout", font: "serif", pal: "sand", shape: "rounded", style: "soft",
+    bio: "Toque sua primeira música já na estreia.",
     blocks: [
       lk("Agendar aula experimental", "https://example.com/experimental", { highlight: true, buttonText: "Quero experimentar" }),
       lk("Planos de aula", "https://example.com/planos", { display: "card", subtitle: "Online e presencial" }),
@@ -752,8 +747,8 @@ const ESSENTIALS: ESpec[] = [
 
   // ---------------- 🎮 Tecnologia e jogos ----------------
   {
-    id: "tec-streamer", name: "Streamer / Gamer", cat: "tecnologia", layout: "poster", font: "tech", pal: "ocean", video: "night" as Video, shape: "square", style: "outline",
-    bio: "Live todo dia. Entra pra tribo e não perde nenhuma gameplay 🎮",
+    id: "tec-streamer", name: "Streamer / Gamer", cat: "tecnologia", layout: "poster", font: "tech", pal: "ocean", video: "mono", shape: "square", style: "outline",
+    bio: "Live todo dia. Entra pra tribo 🎮",
     socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"], ["tiktok", "https://tiktok.com/"]],
     blocks: [
       lk("Assistir ao vivo", "https://twitch.tv/", { display: "banner", label: "AO VIVO", buttonText: "Entrar na live", imageUrl: pic("tec-streamer-b1", 1000, 700) }),
@@ -762,18 +757,17 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "tec-dev", name: "Dev / Portfólio", cat: "tecnologia", layout: "name", font: "mono", pal: "slate", shape: "square", style: "outline",
+    id: "tec-dev", name: "Dev / Portfólio", cat: "tecnologia", layout: "band", font: "mono", pal: "slate", shape: "square", style: "outline",
     bio: "Desenvolvedor full-stack. Projetos, código e contato.",
     socials: [["linkedin", "https://linkedin.com/"]],
     blocks: [
-      hd("PROJETOS", "divider"),
       lk("Meu GitHub", "https://github.com/", { display: "card", subtitle: "Código aberto e projetos" }),
       lk("Portfólio", "https://example.com/portfolio", { display: "card", subtitle: "Cases com resultado" }),
       lk("Baixar currículo", "https://example.com/cv", { display: "button" }),
     ],
   },
   {
-    id: "tec-startup", name: "Startup / App", cat: "tecnologia", layout: "hero", font: "sans", pal: "night", shape: "rounded",
+    id: "tec-startup", name: "Startup / App", cat: "tecnologia", layout: "classic", font: "sans", pal: "night", shape: "rounded", logo: "/assets/logo-mono.svg",
     bio: "O app que resolve o seu problema. Baixe e teste grátis.",
     socials: [["instagram", "https://instagram.com/"], ["linkedin", "https://linkedin.com/"]],
     blocks: [
@@ -784,11 +778,11 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "tec-assistencia", name: "Assistência Técnica", cat: "tecnologia", layout: "cover", font: "sans", pal: "mono", shape: "rounded",
-    bio: "Conserto de celulares e computadores com garantia. Orçamento na hora.",
+    id: "tec-assistencia", name: "Assistência Técnica", cat: "tecnologia", layout: "cutout", font: "sans", pal: "mono", shape: "rounded",
+    bio: "Conserto com garantia. Orçamento na hora.",
     wa: "(11) 91000-2222",
     blocks: [
-      lk("Pedir orçamento", "https://wa.me/5511910002222", { display: "banner", label: "ORÇAMENTO", buttonText: "Falar agora", imageUrl: pic("tec-assistencia-b1", 1000, 700) }),
+      lk("Pedir orçamento", "https://wa.me/5511910002222", { highlight: true, buttonText: "Falar agora" }),
       lk("Serviços que fazemos", "https://example.com/servicos", { display: "card", subtitle: "Telas, baterias, formatação" }),
       lk("Onde estamos", "https://maps.google.com/", { display: "button" }),
     ],
@@ -797,7 +791,7 @@ const ESSENTIALS: ESpec[] = [
   // ---------------- 🌴 Viagens e atividades ----------------
   {
     id: "via-agencia", name: "Agência de Viagens", cat: "viagens", layout: "poster", font: "rounded", pal: "ocean", video: "forest",
-    bio: "Roteiros montados pra você só se preocupar em aproveitar ✈️",
+    bio: "Roteiros montados pra você só aproveitar ✈️",
     socials: [["instagram", "https://instagram.com/"]],
     blocks: [
       lk("Ver pacotes", "https://example.com/pacotes", { display: "banner", label: "PACOTES", buttonText: "Explorar destinos", imageUrl: pic("via-agencia-b1", 1000, 700) }),
@@ -806,28 +800,28 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "via-guia", name: "Guia de Turismo", cat: "viagens", layout: "hero", font: "serif", pal: "forest", shape: "pill", style: "soft",
+    id: "via-guia", name: "Guia de Turismo", cat: "viagens", layout: "band", font: "serif", pal: "forest", shape: "pill", style: "soft",
     bio: "Passeios e experiências locais com quem conhece de verdade.",
     socials: [["instagram", "https://instagram.com/"]],
     blocks: [
+      gal("Experiências", ["via-guia-1", "via-guia-2", "via-guia-3"]),
       lk("Reservar passeio", "https://example.com/passeios", { highlight: true, buttonText: "Reservar" }),
-      lk("Experiências disponíveis", "https://example.com/experiencias", { display: "card", subtitle: "Trilhas, city tour e mais" }),
-      lk("Avaliações", "https://example.com/avaliacoes", { display: "button" }),
+      lk("Avaliações", "https://example.com/avaliacoes", { display: "card", subtitle: "O que dizem os viajantes" }),
     ],
   },
   {
-    id: "via-pousada", name: "Pousada", cat: "viagens", layout: "cover", font: "elegant", pal: "sand", shape: "rounded", style: "soft",
-    bio: "Seu refúgio pertinho da natureza. Reserve sua estadia.",
+    id: "via-pousada", name: "Pousada", cat: "viagens", layout: "cutout", font: "elegant", pal: "sand", shape: "rounded", style: "soft",
+    bio: "Seu refúgio pertinho da natureza.",
     wa: "(11) 91000-4444",
     blocks: [
-      lk("Reservar direto", "https://wa.me/5511910004444", { display: "banner", label: "RESERVAS", buttonText: "Consultar datas", imageUrl: pic("via-pousada-b1", 1000, 700) }),
+      lk("Reservar direto", "https://wa.me/5511910004444", { highlight: true, buttonText: "Consultar datas" }),
       lk("Ver acomodações", "https://example.com/quartos", { display: "card", subtitle: "Fotos e preços" }),
       lk("Como chegar", "https://maps.google.com/", { display: "button" }),
     ],
   },
   {
-    id: "via-aventura", name: "Turismo de Aventura", cat: "viagens", layout: "poster", font: "condensed", pal: "lime", video: "forest", shape: "square",
-    bio: "Trilhas, rapel e adrenalina com toda a segurança. Bora?",
+    id: "via-aventura", name: "Turismo de Aventura", cat: "viagens", layout: "hero", font: "condensed", pal: "lime", video: "forest", shape: "square",
+    bio: "Trilhas, rapel e adrenalina com segurança. Bora?",
     socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"]],
     blocks: [
       lk("Ver atividades", "https://example.com/atividades", { display: "banner", label: "AVENTURA", buttonText: "Escolher", imageUrl: pic("via-aventura-b1", 1000, 700) }),
@@ -838,19 +832,18 @@ const ESSENTIALS: ESpec[] = [
 
   // ---------------- 🤝 Comunidade ----------------
   {
-    id: "com-grupo", name: "Comunidade", cat: "comunidade", layout: "classic", font: "rounded", pal: "sand", shape: "pill",
-    bio: "Um lugar pra trocar, aprender e crescer junto. Faça parte 🤝",
+    id: "com-grupo", name: "Comunidade", cat: "comunidade", layout: "band", font: "rounded", pal: "sand", shape: "pill",
+    bio: "Um lugar pra trocar, aprender e crescer junto 🤝",
     socials: [["instagram", "https://instagram.com/"], ["telegram", "https://t.me/"]],
     blocks: [
       lk("Entrar na comunidade", "https://example.com/entrar", { highlight: true, buttonText: "Quero entrar" }),
       lk("Grupo no WhatsApp", "https://chat.whatsapp.com/", { display: "card", label: "GRUPO", subtitle: "Conversas do dia a dia" }),
       lk("Canal no Telegram", "https://t.me/", { display: "card", subtitle: "Avisos e conteúdos" }),
-      sub("Receba os encontros por e-mail", "Receber agenda"),
     ],
   },
   {
-    id: "com-ong", name: "ONG / Projeto Social", cat: "comunidade", layout: "hero", font: "serif", pal: "mint", shape: "rounded", style: "soft",
-    bio: "Transformamos vidas com a sua ajuda. Conheça e apoie o projeto.",
+    id: "com-ong", name: "ONG / Projeto Social", cat: "comunidade", layout: "cutout", font: "serif", pal: "mint", shape: "rounded", style: "soft",
+    bio: "Transformamos vidas com a sua ajuda.",
     socials: [["instagram", "https://instagram.com/"]],
     blocks: [
       lk("Fazer uma doação", "https://example.com/doar", { highlight: true, buttonText: "Doar agora" }),
@@ -859,8 +852,8 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "com-igreja", name: "Igreja / Ministério", cat: "comunidade", layout: "cover", font: "serif", pal: "night", shape: "rounded", style: "soft",
-    bio: "Todos são bem-vindos. Veja horários, cultos e como participar.",
+    id: "com-igreja", name: "Igreja / Ministério", cat: "comunidade", layout: "poster", font: "serif", pal: "night", video: "aurora", shape: "rounded", style: "soft",
+    bio: "Todos são bem-vindos. Veja horários e como participar.",
     socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"]],
     blocks: [
       lk("Cultos ao vivo", "https://youtube.com/", { display: "banner", label: "AO VIVO", buttonText: "Assistir", imageUrl: pic("com-igreja-b1", 1000, 700) }),
@@ -869,18 +862,17 @@ const ESSENTIALS: ESpec[] = [
     ],
   },
   {
-    id: "com-clube", name: "Clube de Assinatura", cat: "comunidade", layout: "name", font: "sans", pal: "plum", shape: "pill",
+    id: "com-clube", name: "Clube de Assinatura", cat: "comunidade", layout: "classic", font: "sans", pal: "plum", shape: "pill", logo: "/assets/logo-mono.svg",
     bio: "Benefícios, conteúdos exclusivos e uma galera que fala a sua língua.",
     blocks: [
-      hd("SEJA MEMBRO", "divider"),
-      lk("Assinar o clube", "https://example.com/assinar", { display: "card", label: "MEMBROS", subtitle: "Vantagens todo mês" }),
+      lk("Assinar o clube", "https://example.com/assinar", { highlight: true, buttonText: "Quero ser membro" }),
       lk("O que você recebe", "https://example.com/beneficios", { display: "card", subtitle: "Lista completa" }),
       sub("Prévia grátis no seu e-mail", "Quero a prévia"),
     ],
   },
 ];
 
-export const ESSENTIAL_TEMPLATES: PageTemplate[] = ESSENTIALS.map(build);
+export const ESSENTIAL_TEMPLATES: PageTemplate[] = ESSENTIALS.map(buildTemplate);
 
 export const ESSENTIAL_COLLECTIONS: TemplateCollection[] = CATS.map((c) => ({
   id: c.id,

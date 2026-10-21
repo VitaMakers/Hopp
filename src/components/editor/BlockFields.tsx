@@ -278,5 +278,37 @@ export function BlockFields({ block, premium = "", onChange }: { block: Block; p
           <TextField label="Texto do botão" value={block.buttonText} maxLength={40} onChange={(buttonText) => onChange({ ...block, buttonText })} />
         </div>
       );
+    case "gallery":
+      return (
+        <div className="flex flex-col gap-3">
+          <TextField label="Título (opcional)" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
+          {block.items.map((item, index) => {
+            const setItem = (patch: Partial<typeof item>) =>
+              onChange({ ...block, items: block.items.map((it, i) => (i === index ? { ...it, ...patch } : it)) });
+            return (
+              <div key={index} className="flex flex-col gap-2 rounded-lg bg-stone-50 p-3">
+                <TextField label={`Foto ${index + 1} (link)`} type="url" value={item.imageUrl} maxLength={1000} placeholder="https://..." onChange={(imageUrl) => setItem({ imageUrl })} />
+                <TextField label="Abrir este link ao clicar (opcional)" type="url" value={item.url} maxLength={2000} placeholder="https://..." onChange={(url) => setItem({ url })} />
+                <button
+                  type="button"
+                  onClick={() => onChange({ ...block, items: block.items.filter((_, i) => i !== index) })}
+                  className="self-start text-xs text-red-600"
+                >
+                  Remover foto
+                </button>
+              </div>
+            );
+          })}
+          {block.items.length < 9 ? (
+            <button
+              type="button"
+              onClick={() => onChange({ ...block, items: [...block.items, { imageUrl: "", url: "" }] })}
+              className="self-start text-sm underline"
+            >
+              + Adicionar foto
+            </button>
+          ) : null}
+        </div>
+      );
   }
 }
