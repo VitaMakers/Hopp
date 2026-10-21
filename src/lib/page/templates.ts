@@ -1,5 +1,6 @@
 import { nanoid } from "nanoid";
 import { PREMIUM_DEFAULTS, type Block, type PageDoc, type SocialLink, type Theme } from "./schema";
+import { ESSENTIAL_COLLECTIONS, ESSENTIAL_TEMPLATES } from "./essentials";
 
 // Ready-made pages. Applying one replaces the whole page; the person then
 // swaps the sample texts, links and images for theirs.
@@ -30,6 +31,7 @@ export type TemplateCollection = {
 };
 
 export const TEMPLATE_COLLECTIONS: TemplateCollection[] = [
+  ...ESSENTIAL_COLLECTIONS,
   {
     id: "autoridade",
     tab: "premium",
@@ -111,7 +113,7 @@ const baseTheme: Theme = {
   premium: "",
 };
 
-function page(
+export function page(
   name: string,
   parts: {
     profile?: Partial<PageDoc["profile"]>;
@@ -123,7 +125,7 @@ function page(
 ): PageDoc {
   return {
     version: 1,
-    profile: { name, bio: "", avatarUrl: "", coverUrl: "", logo: "", verified: false, floatingWhatsapp: "", ...parts.profile },
+    profile: { name, bio: "", avatarUrl: "", coverUrl: "", coverVideo: "", logo: "", verified: false, floatingWhatsapp: "", ...parts.profile },
     socials: parts.socials ?? [],
     blocks: parts.blocks,
     theme: { ...baseTheme, ...parts.theme },
@@ -132,9 +134,10 @@ function page(
   };
 }
 
-// The four premium designs from Vita, with Vita's sample texts, colours and
-// photos. Each one is drawn by its own layout (theme.premium).
+// Every model the gallery can apply: the premium designs below plus the
+// essential (plan "basic") models grouped by category.
 export const TEMPLATES: PageTemplate[] = [
+  ...ESSENTIAL_TEMPLATES,
   {
     id: "autoridade",
     name: "Autoridade",

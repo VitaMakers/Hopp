@@ -35,12 +35,26 @@ export function ProfilePanel({ doc, onChange }: PanelProps) {
         />
 
         <TextField
-          label="Capa (link da imagem, usada no layout Com capa)"
+          label="Capa (link da imagem, usada nos layouts Com capa, Foto grande e Capa com nome)"
           type="url"
           value={doc.profile.coverUrl}
           placeholder="https://..."
           onChange={(coverUrl) => setProfile({ coverUrl })}
         />
+
+        <TextField
+          label="Capa em vídeo (link .mp4, opcional — toca no lugar da imagem)"
+          type="url"
+          value={doc.profile.coverVideo}
+          placeholder="https://... .mp4"
+          onChange={(coverVideo) => setProfile({ coverVideo })}
+        />
+        {doc.profile.coverVideo ? (
+          <p className="-mt-2 text-xs text-stone-500">
+            O vídeo toca sozinho, sem som e em loop. A imagem de capa acima é usada como pôster enquanto ele carrega. Para voltar à
+            foto, apague este link.
+          </p>
+        ) : null}
       </Card>
 
       <Card title="Redes sociais">

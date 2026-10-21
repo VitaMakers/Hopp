@@ -16,7 +16,7 @@ export function ModelThumb({ doc, width = 176, height = 320 }: { doc: PageDoc; w
       aria-hidden="true"
     >
       <div style={{ width: PHONE, transformOrigin: "top left", transform: `scale(${width / PHONE})` }}>
-        <PageView doc={doc} />
+        <PageView doc={doc} still />
       </div>
     </div>
   );

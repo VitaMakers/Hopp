@@ -57,3 +57,10 @@ export function imageSrc(url: string): string | null {
   if (/^\/assets\/[A-Za-z0-9._-]+$/.test(value)) return value;
   return safeHttpUrl(value);
 }
+
+// A video URL for a cover/hero: bundled sample loops or any http(s) mp4/webm.
+export function videoSrc(url: string): string | null {
+  const value = url.trim();
+  if (/^\/assets\/[A-Za-z0-9._-]+\.(mp4|webm)$/.test(value)) return value;
+  return safeHttpUrl(value);
+}

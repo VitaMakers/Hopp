@@ -4,7 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import type { Block, PageDoc } from "@/lib/page/schema";
 import { SOCIAL_LABELS } from "@/lib/page/catalog";
 import { spotifyEmbedUrl, youtubeEmbedUrl } from "@/lib/page/embed";
-import { imageSrc, linkHref, mapsDirectionsUrl, mapsEmbedUrl, socialHref, vCard, whatsappHref } from "@/lib/page/links";
+import { imageSrc, linkHref, mapsDirectionsUrl, mapsEmbedUrl, socialHref, vCard, videoSrc, whatsappHref } from "@/lib/page/links";
 import { PremiumView } from "./PremiumView";
 import { SocialIcon } from "./SocialIcon";
 import { startVisit, track } from "./track";
@@ -16,9 +16,12 @@ type Props = {
   // neither records analytics nor submits forms.
   handle?: string;
   footer?: React.ReactNode;
+  // In gallery thumbnails a video cover is drawn as a still (its poster), so
+  // dozens of previews don't autoplay at once.
+  still?: boolean;
 };
 
-export function PageView({ doc, handle, footer }: Props) {
+export function PageView({ doc, handle, footer, still }: Props) {
   const { theme } = doc;
   const blocks = doc.blocks.filter((block) => block.enabled);
 
@@ -31,7 +34,7 @@ export function PageView({ doc, handle, footer }: Props) {
 
   const content = (
     <>
-      <Header doc={doc} />
+      <Header doc={doc} still={still} />
       <Socials doc={doc} handle={handle} />
       <div className="mt-7 flex w-full flex-col gap-3.5">
         {blocks.map((block) => (
@@ -95,11 +98,48 @@ function Bio({ doc }: { doc: PageDoc }) {
   return <p className="mt-2 max-w-md whitespace-pre-line text-center text-[15px] opacity-80">{doc.profile.bio}</p>;
 }
 
-function Header({ doc }: { doc: PageDoc }) {
+// A cover/hero slot: plays the cover video when there is one, otherwise shows
+// the image. In thumbnails (still) the video is drawn as its poster instead.
+function CoverMedia({
+  video,
+  img,
+  alt,
+  className,
+  style,
+}: {
+  video: string | null;
+  img: string | null;
+  alt: string;
+  className: string;
+  style?: React.CSSProperties;
+}) {
+  if (video) {
+    return (
+      <video
+        src={video}
+        poster={img ?? undefined}
+        autoPlay
+        muted
+        loop
+        playsInline
+        className={className}
+        style={style}
+        aria-label={alt || undefined}
+      />
+    );
+  }
+  // eslint-disable-next-line @next/next/no-img-element
+  return img ? <img src={img} alt={alt} className={className} style={style} /> : null;
+}
+
+function Header({ doc, still }: { doc: PageDoc; still?: boolean }) {
   const { profile, theme } = doc;
-  const cover = theme.layout === "cover" ? imageSrc(profile.coverUrl) : null;
-  const hero = theme.layout === "hero" ? imageSrc(profile.avatarUrl) : null;
-  const poster = theme.layout === "poster" ? imageSrc(profile.coverUrl) ?? imageSrc(profile.avatarUrl) : null;
+  const video = still ? null : videoSrc(profile.coverVideo);
+  const coverImg = imageSrc(profile.coverUrl);
+  const avatarImg = imageSrc(profile.avatarUrl);
+  const cover = theme.layout === "cover" ? coverImg : null;
+  const hero = theme.layout === "hero" ? avatarImg : null;
+  const poster = theme.layout === "poster" ? coverImg ?? avatarImg : null;
 
   // The page starts straight with its blocks (a title block usually opens it).
   if (theme.layout === "blank") return <div className="pt-10" />;
@@ -114,12 +154,11 @@ function Header({ doc }: { doc: PageDoc }) {
     );
   }
 
-  if (poster) {
-    // Full-width photo with the name over its darkened bottom edge.
+  if (poster || (theme.layout === "poster" && video)) {
+    // Full-width media with the name over its darkened bottom edge.
     return (
       <div className="relative -mx-5 w-[calc(100%+2.5rem)]">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={poster} alt={profile.name} className="aspect-[4/5] max-h-[520px] w-full object-cover" />
+        <CoverMedia video={video} img={poster} alt={profile.name} className="aspect-[4/5] max-h-[520px] w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent from-40% via-black/40 to-[var(--page-bg)]" />
         <div className="absolute inset-x-0 bottom-4 px-6 text-center">
           <div className="uppercase">
@@ -131,13 +170,12 @@ function Header({ doc }: { doc: PageDoc }) {
     );
   }
 
-  if (hero) {
-    // Big photo across the top that fades into the page background.
+  if (hero || (theme.layout === "hero" && video)) {
+    // Big media across the top that fades into the page background.
     return (
       <div className="-mx-5 flex w-[calc(100%+2.5rem)] flex-col items-center">
         <div className="relative w-full">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={hero} alt={profile.name} className="aspect-[4/5] max-h-[460px] w-full object-cover" />
+          <CoverMedia video={video} img={hero} alt={profile.name} className="aspect-[4/5] max-h-[460px] w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent from-55% to-[var(--page-bg)]" />
           <div className="absolute inset-x-0 bottom-2 px-5">
             <Name doc={doc} big />
@@ -150,13 +188,18 @@ function Header({ doc }: { doc: PageDoc }) {
     );
   }
 
+  const bannerVideo = theme.layout === "cover" ? video : null;
   return (
     <>
-      {cover ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={cover} alt="" className="-mx-5 h-44 w-[calc(100%+2.5rem)] max-w-none object-cover sm:rounded-b-3xl" />
+      {cover || bannerVideo ? (
+        <CoverMedia
+          video={bannerVideo}
+          img={cover}
+          alt=""
+          className="-mx-5 h-44 w-[calc(100%+2.5rem)] max-w-none object-cover sm:rounded-b-3xl"
+        />
       ) : null}
-      <div className={`flex flex-col items-center ${cover ? "-mt-12" : theme.layout === "card" ? "" : "pt-12"}`}>
+      <div className={`flex flex-col items-center ${cover || bannerVideo ? "-mt-12" : theme.layout === "card" ? "" : "pt-12"}`}>
         <Avatar doc={doc} size="h-24 w-24" />
         <div className="mt-4">
           <Name doc={doc} />
