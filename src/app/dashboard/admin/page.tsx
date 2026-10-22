@@ -1,9 +1,8 @@
-import { PRO_PRICE_BRL, requireAdmin } from "@/lib/admin";
+import { requireAdmin } from "@/lib/admin";
+import { PLAN_LABEL, PLAN_PRICE_BRL, normalizePlan, type Plan } from "@/lib/plans";
 import { createAdminClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
-
-const PLAN_LABEL: Record<string, string> = { free: "Essencial", pro: "Profissional" };
 
 export default async function AdminPage() {
   await requireAdmin();
@@ -15,6 +14,8 @@ export default async function AdminPage() {
   // Counts (head-only, so no rows are transferred).
   const [
     totalClients,
+    freeClients,
+    essencialClients,
     proClients,
     stripeConnected,
     newClients30,
@@ -26,7 +27,9 @@ export default async function AdminPage() {
     recent,
   ] = await Promise.all([
     admin.from("profiles").select("*", { count: "exact", head: true }),
-    admin.from("profiles").select("*", { count: "exact", head: true }).eq("plan", "pro"),
+    admin.from("profiles").select("*", { count: "exact", head: true }).eq("plan", "free"),
+    admin.from("profiles").select("*", { count: "exact", head: true }).eq("plan", "essencial"),
+    admin.from("profiles").select("*", { count: "exact", head: true }).in("plan", ["pro", "profissional"]),
     admin.from("profiles").select("*", { count: "exact", head: true }).not("stripe_account_id", "is", null),
     admin.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", since30),
     admin.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", since60).lt("created_at", since30),
@@ -38,12 +41,20 @@ export default async function AdminPage() {
   ]);
 
   const total = totalClients.count ?? 0;
-  const pro = proClients.count ?? 0;
-  const free = Math.max(0, total - pro);
+  const freeN = freeClients.count ?? 0;
+  const essN = essencialClients.count ?? 0;
+  const proN = proClients.count ?? 0;
+  const paying = essN + proN;
   const connected = stripeConnected.count ?? 0;
   const new30 = newClients30.count ?? 0;
   const newPrev = newClientsPrev30.count ?? 0;
-  const mrr = pro * PRO_PRICE_BRL;
+  const mrr = essN * PLAN_PRICE_BRL.essencial + proN * PLAN_PRICE_BRL.profissional;
+  const conv = total ? Math.round((paying / total) * 100) : 0;
+  const byPlan: { key: Plan; count: number }[] = [
+    { key: "free", count: freeN },
+    { key: "essencial", count: essN },
+    { key: "profissional", count: proN },
+  ];
 
   const profiles = (recent.data ?? []) as { handle: string; display_name: string; plan: string; created_at: string }[];
   const days = 30;
@@ -68,10 +79,35 @@ export default async function AdminPage() {
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Card label="Clientes" value={num(total)} sub={`${num(new30)} novos em 30 dias`} delta={delta} />
-        <Card label="Plano Profissional" value={num(pro)} sub={`${num(free)} no Essencial`} />
-        <Card label="Receita mensal estimada" value={brl(mrr)} sub={`${num(pro)} × ${brl(PRO_PRICE_BRL)} · estimativa`} />
+        <Card label="Pagantes" value={num(paying)} sub={`${conv}% dos clientes`} />
+        <Card label="Receita mensal estimada" value={brl(mrr)} sub="Essencial + Profissional · estimativa" />
         <Card label="Páginas publicadas" value={num(publishedPages.count ?? 0)} sub={`${num(connected)} com Stripe conectado`} />
       </div>
+
+      <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
+        <h2 className="mb-3 font-semibold">Clientes por plano</h2>
+        <ul className="flex flex-col gap-3 text-sm">
+          {byPlan.map((row) => {
+            const share = total ? Math.round((row.count / total) * 100) : 0;
+            const barColor = row.key === "profissional" ? "bg-amber-500" : row.key === "essencial" ? "bg-sky-500" : "bg-stone-400";
+            return (
+              <li key={row.key} className="flex items-center gap-3">
+                <span className="w-44 shrink-0">
+                  {PLAN_LABEL[row.key]}
+                  <span className="ml-2 text-xs text-stone-400">{PLAN_PRICE_BRL[row.key] ? brl(PLAN_PRICE_BRL[row.key]) + "/mês" : "grátis"}</span>
+                </span>
+                <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-stone-100">
+                  <span className={`block h-full rounded-full ${barColor}`} style={{ width: `${share}%` }} />
+                </span>
+                <span className="w-24 text-right tabular-nums">
+                  <span className="font-semibold">{num(row.count)}</span>
+                  <span className="ml-1.5 text-xs text-stone-400">{share}%</span>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
 
       <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
         <h2 className="mb-4 font-semibold">Novos clientes por dia · 30 dias</h2>
@@ -109,9 +145,14 @@ export default async function AdminPage() {
                       <span className="ml-2 text-xs text-stone-400">/{p.handle}</span>
                     </td>
                     <td className="py-2.5">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${p.plan === "pro" ? "bg-amber-100 text-amber-800" : "bg-stone-100 text-stone-600"}`}>
-                        {PLAN_LABEL[p.plan] ?? p.plan}
-                      </span>
+                      {(() => {
+                        const plan = normalizePlan(p.plan);
+                        return (
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${plan === "profissional" ? "bg-amber-100 text-amber-800" : plan === "essencial" ? "bg-sky-100 text-sky-800" : "bg-stone-100 text-stone-600"}`}>
+                            {PLAN_LABEL[plan]}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="py-2.5 text-right tabular-nums text-stone-500">{p.created_at.slice(8, 10)}/{p.created_at.slice(5, 7)}/{p.created_at.slice(0, 4)}</td>
                   </tr>

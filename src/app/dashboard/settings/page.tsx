@@ -1,4 +1,5 @@
 import { getPaymentProvider, type AccountStatus } from "@/lib/payments";
+import { PLAN_LABEL, normalizePlan } from "@/lib/plans";
 import { getOwner } from "../context";
 
 export default async function SettingsPage({
@@ -31,7 +32,7 @@ export default async function SettingsPage({
           <dt className="text-stone-500">Endereço</dt>
           <dd>/{profile.handle}</dd>
           <dt className="text-stone-500">Plano</dt>
-          <dd>{profile.plan === "pro" ? "Pro" : "Grátis"}</dd>
+          <dd>{PLAN_LABEL[normalizePlan(profile.plan)]}</dd>
         </dl>
       </section>
 
