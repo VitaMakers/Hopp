@@ -78,6 +78,7 @@ const PREMIUM_NAMES: Record<Exclude<Theme["premium"], "">, string> = {
   spotlight: "Presença",
   ecosystem: "Ecossistema",
   catalog: "Vitrine",
+  experience: "Presença Profissional",
 };
 
 function PremiumPanel({ doc, onChange }: PanelProps) {
@@ -168,6 +169,27 @@ function PremiumPanel({ doc, onChange }: PanelProps) {
             <TextField label="Texto do contato" value={doc.premium.contactLabel} maxLength={60} onChange={(contactLabel) => setPremium({ contactLabel })} />
             <TextField label="E-mail de contato (opcional)" type="email" value={doc.premium.email} maxLength={120} onChange={(email) => setPremium({ email })} />
             <p className="text-xs text-stone-500">O número do WhatsApp fica em Perfil → WhatsApp flutuante.</p>
+          </>
+        ) : null}
+        {design === "experience" ? (
+          <>
+            <TextField
+              label="Logo / assinatura (link da imagem) — fica sobre a capa"
+              type="url"
+              value={doc.profile.logo}
+              placeholder="https://..."
+              onChange={(logo) => onChange({ ...doc, profile: { ...doc.profile, logo } })}
+            />
+            <TextField label="Frase de posicionamento" value={doc.premium.tagline} maxLength={120} onChange={(tagline) => setPremium({ tagline })} />
+            <TextField label="Registro / credencial (ex.: CRO 00000)" value={doc.premium.credential} maxLength={80} onChange={(credential) => setPremium({ credential })} />
+            <div className="grid grid-cols-2 gap-3">
+              <TextField label="Aba 1 (público)" value={doc.premium.audienceA} maxLength={40} onChange={(audienceA) => setPremium({ audienceA })} />
+              <TextField label="Aba 2 (público)" value={doc.premium.audienceB} maxLength={40} onChange={(audienceB) => setPremium({ audienceB })} />
+            </div>
+            <p className="text-xs text-stone-500">
+              A capa (foto ou vídeo) e o WhatsApp ficam em Perfil. Os números vêm do bloco Números. Na aba Blocos, cada bloco pode aparecer
+              para todos, só na Aba 1 ou só na Aba 2.
+            </p>
           </>
         ) : null}
         <button type="button" onClick={() => setTheme({ premium: "" })} className="self-start text-sm text-stone-500 underline">

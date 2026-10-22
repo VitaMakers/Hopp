@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import type { Block, PageDoc } from "@/lib/page/schema";
 import { SOCIAL_LABELS } from "@/lib/page/catalog";
-import { imageSrc, linkHref, socialHref, whatsappHref } from "@/lib/page/links";
+import { youtubeEmbedUrl } from "@/lib/page/embed";
+import { imageSrc, linkHref, socialHref, videoSrc, whatsappHref } from "@/lib/page/links";
 import { SocialIcon } from "./SocialIcon";
 import { track } from "./track";
 
@@ -57,6 +59,8 @@ export function PremiumView({ doc, handle }: Props) {
         return <Ecosystem doc={doc} handle={handle} />;
       case "catalog":
         return <Catalog doc={doc} handle={handle} />;
+      case "experience":
+        return <Experience doc={doc} handle={handle} />;
       default:
         return null;
     }
@@ -311,6 +315,160 @@ function Ecosystem({ doc, handle }: Props) {
         </footer>
       </div>
     </div>
+  );
+}
+
+function Experience({ doc, handle }: Props) {
+  const { profile, theme, premium } = doc;
+  const [mode, setMode] = useState<"a" | "b">("a");
+  const cover = imageSrc(profile.coverUrl);
+  const coverVideo = videoSrc(profile.coverVideo);
+  const logo = imageSrc(profile.logo);
+  const stats = visible(doc, "stats")[0]?.items.slice(0, 3) ?? [];
+
+  const inMode = (block: Block) =>
+    block.enabled && block.type !== "stats" && (!block.audience || block.audience === "all" || block.audience === mode);
+  // Group consecutive "card" links into a feature grid; everything else is a row.
+  const rows: (Block | Block[])[] = [];
+  for (const block of doc.blocks.filter(inMode)) {
+    const isCard = block.type === "link" && block.display === "card";
+    const last = rows[rows.length - 1];
+    if (isCard && Array.isArray(last)) last.push(block);
+    else rows.push(isCard ? [block] : block);
+  }
+
+  const toggle = (
+    <div className="mt-4 flex gap-1 rounded-full bg-white/10 p-1 text-sm font-semibold">
+      {(["a", "b"] as const).map((key) => (
+        <button
+          key={key}
+          type="button"
+          onClick={() => setMode(key)}
+          className={`flex-1 rounded-full px-4 py-2 transition ${mode === key ? "bg-white text-black" : "text-white/70"}`}
+        >
+          {key === "a" ? premium.audienceA : premium.audienceB}
+        </button>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="premium-experience mx-auto min-h-full max-w-[480px] px-4 pb-10 pt-5" style={{ background: theme.background, color: theme.text }}>
+      <header className="overflow-hidden rounded-[26px] bg-white/[0.04] ring-1 ring-white/10">
+        <div className="relative aspect-[5/6] w-full bg-black">
+          {coverVideo ? (
+            <video src={coverVideo} poster={cover ?? undefined} controls playsInline className="h-full w-full object-cover" />
+          ) : cover ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={cover} alt={profile.name} className="h-full w-full object-cover" />
+          ) : null}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-5 pb-4 text-center">
+            {logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logo} alt={profile.name} className="h-12 w-auto object-contain" />
+            ) : (
+              <h1 className="text-2xl font-bold">{profile.name}</h1>
+            )}
+          </div>
+        </div>
+        <div className="flex items-baseline justify-between gap-3 px-5 pt-3">
+          {premium.tagline ? <p className="text-sm font-medium opacity-90">{premium.tagline}</p> : <span />}
+          {premium.credential ? <span className="shrink-0 text-xs uppercase tracking-wide opacity-50">{premium.credential}</span> : null}
+        </div>
+        {stats.length ? (
+          <div className="mt-3 grid grid-cols-3 gap-2 border-t border-white/10 px-5 py-4 text-center">
+            {stats.map((stat, index) => (
+              <div key={index}>
+                <div className="text-2xl font-bold leading-none">{stat.value}</div>
+                <div className="mt-1 text-[11px] leading-tight opacity-55">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </header>
+
+      {toggle}
+
+      <div className="mt-5 flex flex-col gap-4">
+        {rows.map((row, index) => {
+          if (Array.isArray(row)) {
+            return (
+              <div key={index} className="grid grid-cols-2 gap-3">
+                {row.map((block) => {
+                  const card = block as LinkBlock;
+                  return (
+                    <ExpItem key={card.id} block={card} handle={handle} href={linkHref(card.url)} className="block rounded-2xl bg-white/[0.06] p-4 text-left ring-1 ring-white/10">
+                      {card.label ? <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: theme.accent }}>{card.label}</span> : null}
+                      <p className="font-semibold leading-snug">{card.title}</p>
+                      {card.subtitle ? <p className="mt-1 text-sm opacity-55">{card.subtitle}</p> : null}
+                    </ExpItem>
+                  );
+                })}
+              </div>
+            );
+          }
+          return <ExpBlock key={row.id} block={row} handle={handle} accent={theme.accent} />;
+        })}
+      </div>
+    </div>
+  );
+}
+
+// One block inside the "experience" body (headline, text, video, banner or CTA).
+function ExpBlock({ block, handle, accent }: { block: Block; handle?: string; accent: string }) {
+  if (block.type === "heading") {
+    return <h2 className="text-3xl font-bold leading-tight [font-family:var(--heading-font)]">{block.text}</h2>;
+  }
+  if (block.type === "text") {
+    return <p className={`whitespace-pre-line ${block.style === "footer" ? "text-xs opacity-40" : "text-[15px] opacity-70"}`}>{block.text}</p>;
+  }
+  if (block.type === "youtube") {
+    const src = youtubeEmbedUrl(block.url);
+    return src ? <iframe src={src} title="Vídeo" className="aspect-video w-full rounded-2xl" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowFullScreen loading="lazy" /> : null;
+  }
+  if (block.type === "link") {
+    const href = linkHref(block.url);
+    const wa = /wa\.me|whatsapp/i.test(block.url);
+    if (block.display === "banner") {
+      const image = imageSrc(block.imageUrl);
+      return (
+        <ExpItem block={block} handle={handle} href={href} className="relative flex min-h-[150px] flex-col items-start justify-end overflow-hidden rounded-2xl p-5 text-left ring-1 ring-white/10">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {image ? <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" /> : null}
+          <span className="absolute inset-0 bg-gradient-to-t from-black/85 to-black/20" />
+          <span className="relative">
+            {block.label ? <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: accent }}>{block.label}</span> : null}
+            <span className="block text-xl font-bold">{block.title}</span>
+            {block.buttonText ? <span className="mt-2 inline-block rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-black">{block.buttonText}</span> : null}
+          </span>
+        </ExpItem>
+      );
+    }
+    if (block.highlight) {
+      // Primary CTA: a white pill.
+      return (
+        <ExpItem block={block} handle={handle} href={href} className="flex items-center justify-center gap-2 rounded-full bg-white px-5 py-3.5 text-center font-semibold text-black">
+          {wa ? <SocialIcon platform="whatsapp" className="h-5 w-5" /> : null}
+          {block.title}
+        </ExpItem>
+      );
+    }
+    // Secondary link: text with an arrow.
+    return (
+      <ExpItem block={block} handle={handle} href={href} className="flex items-center gap-1 text-sm font-semibold opacity-80">
+        {block.title} <span aria-hidden="true">›</span>
+      </ExpItem>
+    );
+  }
+  return null;
+}
+
+function ExpItem({ block, handle, href, className, children }: { block: LinkBlock; handle?: string; href: string | null; className: string; children: React.ReactNode }) {
+  return (
+    <BlockLink block={block} handle={handle} href={href} className={className}>
+      {children}
+    </BlockLink>
   );
 }
 

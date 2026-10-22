@@ -28,6 +28,9 @@ export const socialLinkSchema = z.object({
 const blockBase = {
   id: z.string().min(1).max(64),
   enabled: z.boolean(),
+  // Which audience sees this block in the "experience" premium design that
+  // has a "Sou paciente / Sou dentista"-style toggle. Absent = everyone.
+  audience: z.enum(["all", "a", "b"]).optional(),
 };
 
 const color = z.string().regex(/^#[0-9a-fA-F]{6}$/);
@@ -207,7 +210,7 @@ export const AVATAR_SHAPES = ["circle", "rounded", "square"] as const;
 export const SOCIAL_STYLES = ["icons", "pills"] as const;
 // Vita premium designs: when set, the page is drawn by that template's own
 // layout (src/components/page-view/PremiumView.tsx) instead of the theme.
-export const PREMIUM_DESIGNS = ["", "authority", "spotlight", "ecosystem", "catalog"] as const;
+export const PREMIUM_DESIGNS = ["", "authority", "spotlight", "ecosystem", "catalog", "experience"] as const;
 
 export const themeSchema = z.object({
   layout: z.enum(LAYOUTS),
@@ -247,6 +250,12 @@ export const premiumFieldsSchema = z.object({
   footer: z.string().max(80).default(""),
   privacyUrl: z.string().max(2000).default(""),
   termsUrl: z.string().max(2000).default(""),
+  // "experience" design: a line under the logo, a credential line, and the
+  // two audience-toggle labels.
+  tagline: z.string().max(120).default(""),
+  credential: z.string().max(80).default(""),
+  audienceA: z.string().max(40).default("Sou paciente"),
+  audienceB: z.string().max(40).default("Sou dentista"),
 });
 
 export const PREMIUM_DEFAULTS = premiumFieldsSchema.parse({});

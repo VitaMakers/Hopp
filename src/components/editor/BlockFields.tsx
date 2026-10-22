@@ -36,6 +36,25 @@ function toLocalInput(iso: string): string {
 // Premium designs read the label, subtitle and button text of every link,
 // whatever its display; the regular theme only uses them on banners and cards.
 export function BlockFields({ block, premium = "", onChange }: { block: Block; premium?: string; onChange: (block: Block) => void }) {
+  const body = blockBody({ block, premium, onChange });
+  // The "experience" design has a two-audience toggle; each block picks where it shows.
+  if (premium === "experience") {
+    return (
+      <div className="flex flex-col gap-3">
+        <Options
+          label="Mostrar para"
+          value={block.audience ?? "all"}
+          options={{ all: "Todos", a: "Aba 1", b: "Aba 2" }}
+          onChange={(audience) => onChange({ ...block, audience })}
+        />
+        {body}
+      </div>
+    );
+  }
+  return body;
+}
+
+function blockBody({ block, premium, onChange }: { block: Block; premium: string; onChange: (block: Block) => void }) {
   switch (block.type) {
     case "link":
       return (
