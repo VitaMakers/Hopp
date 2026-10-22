@@ -25,12 +25,12 @@ export function TemplatesPanel({ doc, onChange, onGoToBlocks }: PanelProps) {
     const template = TEMPLATES.find((item) => item.id === id);
     if (!template) return;
     if (!window.confirm(`Usar o modelo "${template.name}"? Os blocos e o visual da sua página serão trocados pelos do modelo (o rascunho só vai ao ar quando você publicar).`)) return;
-    onChange({ ...template.build(doc.profile.name || "Sua Marca"), seo: doc.seo });
+    onChange({ ...template.build(doc.profile.name || "Adicione seu nome"), seo: doc.seo });
   }
 
   function startBlank() {
     if (!window.confirm("Começar uma página em branco? Os blocos e o visual atuais serão substituídos por uma página em branco.")) return;
-    onChange({ ...defaultPageDoc(doc.profile.name || "Sua Marca"), seo: doc.seo });
+    onChange({ ...defaultPageDoc(doc.profile.name || "Adicione seu nome"), seo: doc.seo });
     onGoToBlocks?.();
   }
 
@@ -75,7 +75,7 @@ export function TemplatesPanel({ doc, onChange, onGoToBlocks }: PanelProps) {
                   aria-label={`Usar o modelo ${template.name}`}
                   className="flex flex-col items-center gap-2 rounded-xl p-2 ring-1 ring-stone-200 transition hover:ring-stone-400"
                 >
-                  <ModelThumb doc={template.build(doc.profile.name || "Sua Marca")} />
+                  <ModelThumb doc={template.build("Adicione seu nome")} />
                   <span className="flex items-center gap-2">
                     <span className="text-sm font-medium">{template.name}</span>
                     {current.plan ? <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">{current.plan}</span> : null}

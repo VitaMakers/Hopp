@@ -65,7 +65,7 @@ export function OnboardingForm({ host }: { host: string }) {
                     className={`flex cursor-pointer flex-col items-center gap-2 rounded-xl p-2 ring-1 transition ${template === t.id ? "ring-2 ring-stone-900" : "ring-stone-200 hover:ring-stone-400"}`}
                   >
                     <input type="radio" name="templateId" value={t.id} checked={template === t.id} onChange={() => setTemplate(t.id)} className="sr-only" />
-                    <ModelThumb doc={t.build("Seu Nome")} />
+                    <ModelThumb doc={t.build("Adicione seu nome")} />
                     <span className="flex items-center gap-2">
                       <span className="text-sm font-medium">{t.name}</span>
                       {current.plan ? <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">{current.plan}</span> : null}
