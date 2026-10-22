@@ -168,6 +168,17 @@ export const galleryBlockSchema = z.object({
     .max(9),
 });
 
+// A grid (or carousel) of videos that play in place, each with a poster.
+export const videosBlockSchema = z.object({
+  ...blockBase,
+  type: z.literal("videos"),
+  title: z.string().max(120).default(""),
+  display: z.enum(["grid", "carousel"]).default("grid"),
+  items: z
+    .array(z.object({ url: z.string().max(1000), poster: z.string().max(1000).default("") }))
+    .max(9),
+});
+
 export const blockSchema = z.discriminatedUnion("type", [
   linkBlockSchema,
   headingBlockSchema,
@@ -184,6 +195,7 @@ export const blockSchema = z.discriminatedUnion("type", [
   contactBlockSchema,
   statsBlockSchema,
   galleryBlockSchema,
+  videosBlockSchema,
 ]);
 
 export const BUTTON_SHAPES = ["square", "rounded", "pill"] as const;

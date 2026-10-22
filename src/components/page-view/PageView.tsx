@@ -676,6 +676,43 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
         </section>
       );
     }
+    case "videos": {
+      const items = block.items.map((item) => ({ src: videoSrc(item.url), poster: imageSrc(item.poster) })).filter((item) => item.src);
+      if (items.length === 0) return <Placeholder handle={handle} className={`${softBox} block w-full py-10 text-center`}>Nenhum vídeo</Placeholder>;
+      const cell = (src: string, poster: string | null, cls: string) => (
+        <video
+          src={src}
+          poster={poster ?? undefined}
+          controls
+          playsInline
+          preload="metadata"
+          className={cls}
+          onPlay={() => click("video")}
+        />
+      );
+      if (block.display === "carousel") {
+        return (
+          <section className="-mx-5 w-[calc(100%+2.5rem)]">
+            {block.title ? <h2 className="mb-2.5 px-5 text-center font-semibold [font-family:var(--heading-font)]">{block.title}</h2> : null}
+            <div className="flex snap-x gap-2.5 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {items.map((item, index) => (
+                <div key={index} className="shrink-0">{cell(item.src!, item.poster, "aspect-[9/16] h-56 w-auto snap-start rounded-[calc(var(--box-radius)*0.8)] bg-black object-cover")}</div>
+              ))}
+            </div>
+          </section>
+        );
+      }
+      return (
+        <section className="w-full">
+          {block.title ? <h2 className="mb-2.5 text-center font-semibold [font-family:var(--heading-font)]">{block.title}</h2> : null}
+          <div className="grid grid-cols-2 gap-2">
+            {items.map((item, index) => (
+              <div key={index}>{cell(item.src!, item.poster, "aspect-[9/16] w-full rounded-[calc(var(--box-radius)*0.8)] bg-black object-cover")}</div>
+            ))}
+          </div>
+        </section>
+      );
+    }
   }
 }
 

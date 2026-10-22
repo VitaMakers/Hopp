@@ -17,6 +17,7 @@ export const BLOCK_CATALOG: Record<BlockType, { label: string; description: stri
   contact: { label: "Salvar contato", description: "Visitante salva seu contato no celular" },
   stats: { label: "Números", description: "Destaques como \"10+ anos\" e \"500+ clientes\"" },
   gallery: { label: "Galeria", description: "Grade de fotos, cada uma com link opcional" },
+  videos: { label: "Vídeos (grade)", description: "Vários vídeos em grade, cada um tocando na página" },
 };
 
 export const SOCIAL_LABELS: Record<SocialPlatform, string> = {
@@ -112,6 +113,8 @@ export function createBlock(type: BlockType): Block {
       };
     case "gallery":
       return { ...base, type, title: "", display: "grid", items: [{ imageUrl: "", url: "" }] };
+    case "videos":
+      return { ...base, type, title: "", display: "grid", items: [{ url: "", poster: "" }] };
   }
 }
 
@@ -270,6 +273,8 @@ export function blockSummary(block: Block): string {
       return block.title;
     case "gallery":
       return block.title || `Galeria (${block.items.length})`;
+    case "videos":
+      return block.title || `Vídeos (${block.items.length})`;
     case "whatsapp":
     case "contact":
       return block.buttonText;
