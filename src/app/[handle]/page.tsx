@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageView } from "@/components/page-view/PageView";
-import { APP_NAME } from "@/lib/env";
+import { APP_NAME, APP_TAGLINE } from "@/lib/env";
+import { normalizePlan } from "@/lib/plans";
 import { getPublishedPage } from "@/lib/public-data";
 
 type Params = { params: Promise<{ handle: string }> };
@@ -30,9 +31,12 @@ export default async function PublicPage({ params }: Params) {
       doc={page.doc}
       handle={page.handle}
       footer={
-        <Link href="/" className="mt-10 text-xs opacity-60 hover:opacity-100">
-          Feito com {APP_NAME}
-        </Link>
+        normalizePlan(page.plan) === "free" ? (
+          <Link href="/" className="mt-12 flex flex-col items-center gap-0.5 text-center opacity-70 transition hover:opacity-100">
+            <span className="text-sm font-semibold">{APP_NAME}</span>
+            <span className="text-xs">{APP_TAGLINE}</span>
+          </Link>
+        ) : null
       }
     />
   );
