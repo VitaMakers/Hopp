@@ -1,4 +1,4 @@
-# Linkbio (nome provisório)
+# Virtú.bio
 
 Página de link na bio no estilo do Hopp: cada pessoa monta uma página com
 blocos (links, WhatsApp, produtos, imagens, mapa, salvar contato, vídeos,

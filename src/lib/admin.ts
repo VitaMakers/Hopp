@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/supabase/server";
 
 // Who can see the platform admin area. Set ADMIN_EMAILS (comma-separated) to
-// change it; defaults to the virtu.bio owner.
+// change it; defaults to the Virtú.bio owner.
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "contato@vitamakers.com.br")
   .split(",")
   .map((email) => email.trim().toLowerCase())
