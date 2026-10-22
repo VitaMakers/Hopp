@@ -48,6 +48,12 @@ function mapB(title: string, address: string): Block {
 function embedB(e: { kind: "youtube" | "spotify"; url: string }): Block {
   return e.kind === "youtube" ? { id: bid(), enabled: true, type: "youtube", url: e.url } : { id: bid(), enabled: true, type: "spotify", url: e.url };
 }
+function waB(phone: string, buttonText: string): Block {
+  return { id: bid(), enabled: true, type: "whatsapp", phone, message: "Olá! Vim pela sua página.", buttonText };
+}
+function ytB(url: string): Block {
+  return { id: bid(), enabled: true, type: "youtube", url };
+}
 
 type Pal = { bg: string; text: string; btn: string; btnText: string; accent: string };
 const PAL = {
@@ -179,6 +185,18 @@ const RECIPES = {
     layout: "classic", shape: "rounded", style: "fill", logo: c.logo ?? "/assets/logo-sol.svg",
     blocks: [galB("Destaques", c.gal, "carousel"), lk(c.primary, { highlight: true, display: "button" }), lk(c.links[0], { display: "card" })],
   }),
+  // Dark bar/restaurant page: full photo cover, then bold buttons with icons
+  // (WhatsApp reservation, menu, delivery, location) and a video at the end.
+  botecoDark: (c): Piece => ({
+    layout: "fullscreen", shape: "rounded", style: "fill",
+    blocks: [
+      waB(c.wa ?? "(11) 90000-0000", "FAÇA SUA RESERVA"),
+      lk({ ...c.primary, t: c.primary.t.toUpperCase() }, { display: "button", imageUrl: "/assets/ic-cardapio.svg" }),
+      lk({ t: "PEÇA O DELIVERY", u: c.links[0].u }, { display: "button", imageUrl: "/assets/ic-delivery.svg" }),
+      lk({ t: "LOCALIZAÇÃO", u: "https://maps.google.com/" }, { display: "button", imageUrl: "/assets/ic-local.svg" }),
+      ytB("https://www.youtube.com/watch?v=aqz-KE-bpKQ"),
+    ],
+  }),
 } satisfies Record<string, Recipe>;
 type RecipeKey = keyof typeof RECIPES;
 
@@ -238,8 +256,8 @@ const CATS: Cat[] = [
     socials: [["instagram", "https://instagram.com/"]], wa: "(11) 95555-0000",
     pals: ["sun", "clay", "ink", "cream"], fonts: ["serif", "elegant", "condensed", "rounded"], vid: "sunset",
     bio: "Sabor de verdade, feito na hora. Confira o cardápio e peça 🍔",
-    names: ["Cardápio Digital", "Nossa Vitrine", "Onde Estamos", "Cantina", "Mesa Posta", "Sabor da Casa"],
-    kit: ["capaBanner", "vitrineProdutos", "localFaqMapa", "retratoGrande", "faixaGrade", "carrossel"],
+    names: ["Cardápio Digital", "Nossa Vitrine", "Onde Estamos", "Cantina", "Mesa Posta", "Sabor da Casa", "Boteco Noturno"],
+    kit: ["capaBanner", "vitrineProdutos", "localFaqMapa", "retratoGrande", "faixaGrade", "carrossel", "botecoDark"],
     primary: { t: "Ver cardápio", u: "https://example.com/cardapio", bt: "Abrir cardápio" },
     links: [{ t: "Pedir pelo WhatsApp", u: "https://wa.me/5511955550000" }, { t: "Peça no iFood", s: "Entrega rápida", u: "https://ifood.com.br/" }, { t: "Reservar mesa", u: "https://wa.me/5511955550000" }],
     gal: ["com-g1", "com-g2", "com-g3", "com-g4"],
