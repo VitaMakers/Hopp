@@ -198,6 +198,28 @@ const RECIPES = {
       ytB("https://www.youtube.com/watch?v=aqz-KE-bpKQ"),
     ],
   }),
+  // Same dark restaurant style, but with a video cover instead of a photo.
+  botecoVideo: (c): Piece => ({
+    layout: "capacheia", shape: "rounded", style: "fill", pal: "preto", video: c.vid,
+    blocks: [
+      waB(c.wa ?? "(11) 90000-0000", "FAÇA SUA RESERVA"),
+      lk({ t: "PEÇA O DELIVERY", u: c.links[0].u }, { display: "button", imageUrl: "/assets/ic-delivery.svg" }),
+      lk({ t: "CARDÁPIO DIGITAL", u: c.primary.u }, { display: "button", imageUrl: "/assets/ic-cardapio.svg" }),
+      lk({ t: "LOCALIZAÇÃO", u: "https://maps.google.com/" }, { display: "button", imageUrl: "/assets/ic-local.svg" }),
+      ytB("https://www.youtube.com/watch?v=aqz-KE-bpKQ"),
+    ],
+  }),
+  // Dark nightlife page: video cover, bold buttons for tickets, line-up and
+  // location, plus a video.
+  noiteDark: (c): Piece => ({
+    layout: "capacheia", shape: "rounded", style: "fill", pal: "preto", video: c.vid,
+    blocks: [
+      lk({ t: "COMPRAR INGRESSO", u: c.primary.u }, { display: "button", highlight: true }),
+      lk({ t: "LINE-UP DA NOITE", u: c.links[0].u }, { display: "button" }),
+      lk({ t: "LOCALIZAÇÃO", u: "https://maps.google.com/" }, { display: "button", imageUrl: "/assets/ic-local.svg" }),
+      ytB("https://www.youtube.com/watch?v=aqz-KE-bpKQ"),
+    ],
+  }),
 } satisfies Record<string, Recipe>;
 type RecipeKey = keyof typeof RECIPES;
 
@@ -257,8 +279,8 @@ const CATS: Cat[] = [
     socials: [["instagram", "https://instagram.com/"]], wa: "(11) 95555-0000",
     pals: ["sun", "clay", "ink", "cream"], fonts: ["serif", "elegant", "condensed", "rounded"], vid: "sunset",
     bio: "Sabor de verdade, feito na hora. Confira o cardápio e peça 🍔",
-    names: ["Cardápio Digital", "Nossa Vitrine", "Onde Estamos", "Cantina", "Mesa Posta", "Sabor da Casa", "Boteco Noturno"],
-    kit: ["capaBanner", "vitrineProdutos", "localFaqMapa", "retratoGrande", "faixaGrade", "carrossel", "botecoDark"],
+    names: ["Cardápio Digital", "Nossa Vitrine", "Onde Estamos", "Cantina", "Mesa Posta", "Sabor da Casa", "Boteco Noturno", "Boteco (vídeo)"],
+    kit: ["capaBanner", "vitrineProdutos", "localFaqMapa", "retratoGrande", "faixaGrade", "carrossel", "botecoDark", "botecoVideo"],
     primary: { t: "Ver cardápio", u: "https://example.com/cardapio", bt: "Abrir cardápio" },
     links: [{ t: "Pedir pelo WhatsApp", u: "https://wa.me/5511955550000" }, { t: "Peça no iFood", s: "Entrega rápida", u: "https://ifood.com.br/" }, { t: "Reservar mesa", u: "https://wa.me/5511955550000" }],
     gal: ["com-g1", "com-g2", "com-g3", "com-g4"],
@@ -348,8 +370,8 @@ const CATS: Cat[] = [
     socials: [["instagram", "https://instagram.com/"], ["youtube", "https://youtube.com/"], ["spotify", "https://open.spotify.com/"]],
     pals: ["berry", "night", "sun", "plum"], fonts: ["condensed", "tech", "serif", "sans"], vid: "sunset",
     bio: "Shows, próximos projetos e tudo sobre mim em um só lugar.",
-    names: ["Artista", "No Palco", "Stand-up", "DJ Set", "Em Turnê", "Nos Trends"],
-    kit: ["capaVideoBanner", "midiaEmbed", "recorteCartoes", "cartaoPilha", "telaCheia", "fotoGrandeStats"],
+    names: ["Artista", "No Palco", "Stand-up", "DJ Set", "Em Turnê", "Nos Trends", "Balada"],
+    kit: ["capaVideoBanner", "midiaEmbed", "recorteCartoes", "cartaoPilha", "telaCheia", "fotoGrandeStats", "noiteDark"],
     primary: { t: "Próximos shows", u: "https://example.com/agenda", bt: "Ver datas" },
     links: [{ t: "Assista agora", l: "NOVO", s: "Clipe recém-lançado", u: "https://youtube.com/" }, { t: "Contratação", s: "Festas e eventos", u: "https://example.com/contato" }, { t: "Cortes e vídeos", u: "https://youtube.com/" }],
     gal: ["ent-g1", "ent-g2", "ent-g3", "ent-g4"],
