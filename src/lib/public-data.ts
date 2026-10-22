@@ -4,7 +4,7 @@ import { normalizeHandle } from "@/lib/handles";
 import { pageDocSchema, type PageDoc } from "@/lib/page/schema";
 import { createAdminClient } from "@/lib/supabase/server";
 
-export type PublicPage = { ownerId: string; handle: string; doc: PageDoc };
+export type PublicPage = { ownerId: string; handle: string; plan: string; doc: PageDoc };
 
 // Only the published version is ever read here; drafts stay private.
 export const getPublishedPage = cache(async (rawHandle: string): Promise<PublicPage | null> => {
@@ -12,7 +12,7 @@ export const getPublishedPage = cache(async (rawHandle: string): Promise<PublicP
   const admin = createAdminClient();
   const { data: profile, error } = await admin
     .from("profiles")
-    .select("id, handle")
+    .select("id, handle, plan")
     .eq("handle", handle)
     .maybeSingle();
   if (error) throw serverError(error);
@@ -25,7 +25,7 @@ export const getPublishedPage = cache(async (rawHandle: string): Promise<PublicP
   if (pageError) throw serverError(pageError);
   const parsed = pageDocSchema.safeParse(page?.published);
   if (!parsed.success) return null;
-  return { ownerId: profile.id, handle: profile.handle, doc: parsed.data };
+  return { ownerId: profile.id, handle: profile.handle, plan: profile.plan, doc: parsed.data };
 });
 
 export async function ownerIdForHandle(rawHandle: string): Promise<string | null> {
