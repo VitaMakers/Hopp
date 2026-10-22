@@ -25,12 +25,12 @@ export function TemplatesPanel({ doc, onChange, onGoToBlocks }: PanelProps) {
     const template = TEMPLATES.find((item) => item.id === id);
     if (!template) return;
     if (!window.confirm(`Usar o modelo "${template.name}"? Os blocos e o visual da sua página serão trocados pelos do modelo (o rascunho só vai ao ar quando você publicar).`)) return;
-    onChange({ ...template.build(doc.profile.name || "Adicione seu nome"), seo: doc.seo });
+    onChange({ ...template.build("Adicione seu nome"), seo: doc.seo });
   }
 
   function startBlank() {
     if (!window.confirm("Começar uma página em branco? Os blocos e o visual atuais serão substituídos por uma página em branco.")) return;
-    onChange({ ...defaultPageDoc(doc.profile.name || "Adicione seu nome"), seo: doc.seo });
+    onChange({ ...defaultPageDoc("Adicione seu nome"), seo: doc.seo });
     onGoToBlocks?.();
   }
 
