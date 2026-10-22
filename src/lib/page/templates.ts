@@ -40,7 +40,7 @@ export const TEMPLATE_COLLECTIONS: TemplateCollection[] = [
     swatch: { background: "#080f1c", accent: "#3565ed", text: "#f5f6fa" },
     templateIds: ["autoridade", "presenca", "ecossistema", "vitrine"],
   },
-  { id: "presenca", tab: "premium", name: "Presença", description: "Em breve.", swatch: { background: "#000000", accent: "#d6ae58", text: "#ffffff" }, templateIds: [] },
+  { id: "presenca", tab: "premium", name: "Presença", description: "Perfil profissional com público duplo.", swatch: { background: "#0a0a0f", accent: "#a78bfa", text: "#f5f5f5" }, templateIds: ["experiencia"] },
   { id: "ecossistema", tab: "premium", name: "Ecossistema", description: "Em breve.", swatch: { background: "#030303", accent: "#ff3469", text: "#f7f7f7" }, templateIds: [] },
   { id: "vitrine", tab: "premium", name: "Vitrine", description: "Em breve.", swatch: { background: "#111d1f", accent: "#e6ff35", text: "#e7e9e8" }, templateIds: [] },
 ];
@@ -274,6 +274,59 @@ export const TEMPLATES: PageTemplate[] = [
             url: "https://example.com/video",
             imageUrl: unsplash("1492691527719-9d1e07e534b4", 1400),
           }),
+        ],
+      }),
+  },
+  {
+    id: "experiencia",
+    name: "Presença Profissional",
+    category: "Profissional",
+    plan: "premium",
+    tab: "premium",
+    description: "Perfil escuro com seletor de público (ex.: cliente / parceiro), números, vídeo e botões — tudo editável.",
+    swatch: { background: "#0a0a0f", accent: "#a78bfa", text: "#f5f5f5" },
+    build: (name) =>
+      page(name, {
+        profile: {
+          bio: "",
+          coverUrl: unsplash("1560250097-0b93528c311a", 1200),
+          logo: "/assets/logo-exemplo.svg",
+          floatingWhatsapp: "(11) 99999-0000",
+        },
+        theme: { premium: "experience", background: "#0a0a0f", text: "#f5f5f5", accent: "#a78bfa", font: "sans" },
+        premium: {
+          tagline: "Sua frase de posicionamento",
+          credential: "Seu registro profissional",
+          audienceA: "Sou cliente",
+          audienceB: "Sou parceiro",
+        },
+        blocks: [
+          {
+            id: id(),
+            enabled: true,
+            type: "stats",
+            items: [
+              { value: "+10", label: "anos de experiência" },
+              { value: "+5 mil", label: "atendimentos" },
+              { value: "Sua cidade", label: "onde você atua" },
+            ],
+          },
+          // Público A (ex.: cliente)
+          { id: id(), enabled: true, type: "heading", text: "Um atendimento para cada pessoa.", style: "display", audience: "a" },
+          { id: id(), enabled: true, type: "youtube", url: "https://www.youtube.com/watch?v=aqz-KE-bpKQ", audience: "a" },
+          { id: id(), enabled: true, type: "text", text: "Depoimentos e nomes de quem já passou por aqui.", style: "plain", title: "", audience: "a" },
+          { id: id(), enabled: true, type: "text", text: "Conte como funciona o seu atendimento e por que ele é diferente.", style: "plain", title: "", audience: "a" },
+          link({ display: "button", highlight: true, title: "Agendar avaliação", buttonText: "", url: "https://wa.me/5511999990000", audience: "a" }),
+          link({ display: "button", title: "Atendimento para outras cidades", url: "https://example.com/outras-cidades", audience: "a" }),
+          // Público B (ex.: parceiro / profissional)
+          { id: id(), enabled: true, type: "heading", text: "Mais que um curso. Uma imersão real.", style: "display", audience: "b" },
+          { id: id(), enabled: true, type: "youtube", url: "https://www.youtube.com/watch?v=aqz-KE-bpKQ", audience: "b" },
+          link({ display: "card", label: "AO VIVO", title: "Prática supervisionada", subtitle: "Acompanhe casos reais em tempo real", url: "https://example.com/pratica", audience: "b" }),
+          link({ display: "card", label: "MÉTODO", title: "Do diagnóstico à decisão", subtitle: "Um sistema claro e replicável", url: "https://example.com/metodo", audience: "b" }),
+          link({ display: "card", label: "DIGITAL", title: "Ferramentas e tecnologia", subtitle: "Fluxo de trabalho moderno", url: "https://example.com/digital", audience: "b" }),
+          link({ display: "card", label: "APLICAÇÃO", title: "Use no dia seguinte", subtitle: "Para colocar em prática já", url: "https://example.com/aplicacao", audience: "b" }),
+          link({ display: "button", highlight: true, title: "Próxima turma", buttonText: "", url: "https://wa.me/5511999990000", audience: "b" }),
+          link({ display: "button", title: "Conheça o instituto", url: "https://example.com/instituto", audience: "b" }),
         ],
       }),
   },
