@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { APP_NAME } from "@/lib/env";
+import { APP_NAME, APP_TAGLINE } from "@/lib/env";
 
 const FEATURES = [
   ["Tudo em um link", "Links, vídeos, músicas, perguntas frequentes e contagem regressiva numa página só."],
@@ -20,7 +20,7 @@ export default function Home() {
         </Link>
       </header>
       <section className="mx-auto max-w-3xl px-5 pb-16 pt-12 text-center">
-        <h1 className="text-4xl font-bold leading-tight sm:text-5xl">Sua bio merece mais que um link</h1>
+        <h1 className="text-4xl font-bold leading-tight sm:text-5xl">{APP_TAGLINE}</h1>
         <p className="mx-auto mt-5 max-w-xl text-lg text-stone-600">
           Monte em minutos uma página com tudo o que você faz e acompanhe quem clica em quê.
         </p>

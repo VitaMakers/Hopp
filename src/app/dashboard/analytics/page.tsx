@@ -68,7 +68,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Estatísticas</h1>
-          <p className="text-sm text-stone-500">Veja como o seu Linkbio está performando.</p>
+          <p className="text-sm text-stone-500">Veja como a sua página está performando.</p>
         </div>
         <div className="flex gap-1 rounded-lg bg-stone-100 p-1">
           {WINDOWS.map((w) => (
