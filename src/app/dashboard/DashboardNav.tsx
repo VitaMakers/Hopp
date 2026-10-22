@@ -11,11 +11,12 @@ const ITEMS = [
   { href: "/dashboard/settings", label: "Configurações" },
 ];
 
-export function DashboardNav() {
+export function DashboardNav({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
+  const items = isAdmin ? [...ITEMS, { href: "/dashboard/admin", label: "Admin" }] : ITEMS;
   return (
     <nav className="flex flex-wrap gap-1 text-sm">
-      {ITEMS.map((item) => {
+      {items.map((item) => {
         const active = item.href === "/dashboard" ? pathname === item.href : pathname.startsWith(item.href);
         return (
           <Link
