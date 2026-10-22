@@ -18,6 +18,7 @@ const LAYOUT_LABELS: Record<Theme["layout"], string> = {
   cutout: "Recorte",
   fullscreen: "Tela cheia",
   portrait: "Retrato",
+  capacheia: "Capa cheia (sem texto)",
 };
 const BACKGROUND_LABELS: Record<Theme["backgroundType"], string> = { solid: "Cor", gradient: "Degradê", image: "Imagem" };
 const AVATAR_LABELS: Record<Theme["avatarShape"], string> = { circle: "Redonda", rounded: "Arredondada", square: "Quadrada" };

@@ -219,6 +219,20 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
     );
   }
 
+  if (theme.layout === "capacheia") {
+    // A clean full-bleed photo/video cover with no text over it; the blocks
+    // follow below on the page background.
+    const media = coverImg ?? avatarImg;
+    return (
+      <div className="-mx-5 w-[calc(100%+2.5rem)]">
+        <div className="relative aspect-[3/4] max-h-[560px] w-full">
+          <CoverMedia video={video} img={media} alt={profile.name} className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[var(--page-bg)]" />
+        </div>
+      </div>
+    );
+  }
+
   if (theme.layout === "portrait") {
     // A large framed portrait at the top, name and bio below (profile-large).
     const media = coverImg ?? avatarImg;
