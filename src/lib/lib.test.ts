@@ -187,6 +187,7 @@ describe("summarize", () => {
     block_id: null,
     short_link_id: null,
     target: null,
+    referrer: null,
     visit_id: null,
     created_at,
     ...extra,
