@@ -12,7 +12,10 @@ export const env = {
   siteUrl: () => process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
 };
 
-export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "Linkbio";
+export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "virtu.bio";
+
+// The brand signature line, shown on the landing and login pages.
+export const APP_TAGLINE = process.env.NEXT_PUBLIC_APP_TAGLINE ?? "Uma página. Todas as suas possibilidades.";
 
 export function serviceRoleKey(): string {
   return required("SUPABASE_SERVICE_ROLE_KEY", process.env.SUPABASE_SERVICE_ROLE_KEY);

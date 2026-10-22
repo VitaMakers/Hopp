@@ -1,3 +1,4 @@
+import { APP_NAME } from "@/lib/env";
 import { PLAN_LABEL, PLAN_PRICE_BRL, PLANS, normalizePlan, type Plan } from "@/lib/plans";
 import { getOwner } from "../context";
 
@@ -8,11 +9,11 @@ const FEATURES: Record<Plan, string[]> = {
     "Modelos essenciais (básicos)",
     "Estatísticas básicas",
     "1 link curto",
-    "Selo “Feito com Hopp”",
+    `Selo “Feito com ${APP_NAME}”`,
   ],
   essencial: [
     "Tudo do Grátis",
-    "Sem o selo “Feito com Hopp”",
+    `Sem o selo “Feito com ${APP_NAME}”`,
     "Todos os modelos essenciais",
     "Estatísticas completas",
     "Links curtos ilimitados",

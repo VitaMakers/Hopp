@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
+import { APP_NAME, APP_TAGLINE } from "@/lib/env";
 import { signIn, signUp, type AuthState } from "./actions";
 
 export default function LoginPage() {
@@ -17,7 +18,11 @@ export default function LoginPage() {
         <Link href="/" className="text-sm text-stone-500">
           ← Voltar
         </Link>
-        <h1 className="mt-4 text-2xl font-bold text-stone-900">
+        <div className="mt-4">
+          <p className="text-lg font-bold text-stone-900">{APP_NAME}</p>
+          <p className="text-sm text-stone-500">{APP_TAGLINE}</p>
+        </div>
+        <h1 className="mt-5 text-2xl font-bold text-stone-900">
           {mode === "signin" ? "Entrar" : "Criar conta grátis"}
         </h1>
         <form action={mode === "signin" ? signInAction : signUpAction} className="mt-6 flex flex-col gap-3">
