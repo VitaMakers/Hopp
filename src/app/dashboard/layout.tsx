@@ -4,9 +4,10 @@ import { isAdmin } from "@/lib/admin";
 import { signOut } from "@/app/login/actions";
 import { getOwner } from "./context";
 import { DashboardNav } from "./DashboardNav";
+import { ClientSwitcher } from "./ClientSwitcher";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, profile } = await getOwner();
+  const { user, profile, clients } = await getOwner();
   const admin = isAdmin(user.email);
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900">
@@ -15,6 +16,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <Link href="/dashboard" className="font-bold">
             {APP_NAME}
           </Link>
+          <ClientSwitcher clients={clients} currentId={profile.id} />
           <DashboardNav isAdmin={admin} />
           <div className="ml-auto flex items-center gap-3 text-sm">
             <a href={`/${profile.handle}`} target="_blank" rel="noreferrer" className="text-stone-600 underline">

@@ -23,3 +23,23 @@ export function normalizePlan(value: string | null | undefined): Plan {
   if (value === "pro") return "profissional";
   return (PLANS as readonly string[]).includes(value ?? "") ? (value as Plan) : "free";
 }
+
+// Agency model: an account keeps one client free; each additional client is
+// billed. The entry price for an extra client is the Essencial tier.
+export const FREE_CLIENTS = Number(process.env.FREE_CLIENTS ?? 1) || 1;
+
+// The price a new client beyond the free allowance adds to the monthly bill.
+export function nextClientPriceBRL(): number {
+  return PLAN_PRICE_BRL.essencial;
+}
+
+// Estimated monthly total for an account, from its clients' plans. Clients
+// within the free allowance don't count; paid tiers bill at their price.
+export function accountMonthlyBRL(plans: Array<string | null | undefined>): number {
+  const billable = plans.slice(FREE_CLIENTS);
+  return billable.reduce((sum, p) => sum + PLAN_PRICE_BRL[normalizePlan(p)], 0);
+}
+
+export function formatBRL(value: number): string {
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}

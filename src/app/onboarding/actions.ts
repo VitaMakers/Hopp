@@ -17,7 +17,10 @@ export async function createProfile(_: OnboardingState, form: FormData): Promise
   const invalid = handleError(handle);
   if (invalid) return { error: invalid };
 
-  const { error } = await supabase.from("profiles").insert({ id: user.id, handle, display_name: name });
+  // The first site is self-managed: id and account are the same login.
+  const { error } = await supabase
+    .from("profiles")
+    .insert({ id: user.id, account_id: user.id, handle, display_name: name });
   if (error) {
     // 23505: unique violation, i.e. the handle is taken (or the profile exists).
     return { error: error.code === "23505" ? "Este endereço já está em uso." : "Não foi possível salvar." };

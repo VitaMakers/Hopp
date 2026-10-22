@@ -6,7 +6,8 @@ import { OnboardingForm } from "./OnboardingForm";
 export default async function OnboardingPage() {
   const { supabase, user } = await requireUser();
   if (!user) redirect("/login");
-  const { data: profile } = await supabase.from("profiles").select("id").eq("id", user.id).maybeSingle();
+  // Already manages at least one client? Go straight to the dashboard.
+  const { data: profile } = await supabase.from("profiles").select("id").eq("account_id", user.id).limit(1).maybeSingle();
   if (profile) redirect("/dashboard");
 
   return (

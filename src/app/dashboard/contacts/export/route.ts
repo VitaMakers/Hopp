@@ -1,13 +1,12 @@
 import { toCsv } from "@/lib/csv";
-import { requireUser } from "@/lib/supabase/server";
+import { getOwner } from "../../context";
 
 export async function GET() {
-  const { supabase, user } = await requireUser();
-  if (!user) return new Response("Unauthorized", { status: 401 });
+  const { supabase, profile } = await getOwner();
   const { data: contacts, error } = await supabase
     .from("contacts")
     .select("email, phone, created_at")
-    .eq("owner_id", user.id)
+    .eq("owner_id", profile.id)
     .order("created_at", { ascending: false });
   if (error) return new Response("Erro ao exportar", { status: 500 });
 
