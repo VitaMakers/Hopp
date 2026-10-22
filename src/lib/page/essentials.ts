@@ -51,8 +51,18 @@ function embedB(e: { kind: "youtube" | "spotify"; url: string }): Block {
 function waB(phone: string, buttonText: string): Block {
   return { id: bid(), enabled: true, type: "whatsapp", phone, message: "Olá! Vim pela sua página.", buttonText };
 }
-function ytB(url: string): Block {
-  return { id: bid(), enabled: true, type: "youtube", url };
+// A grid of placeholder videos (bundled gradient loops + photo posters),
+// in the style of a "most ordered / highlights" reel. All swappable.
+function vidsB(title: string): Block {
+  const vids: Video[] = ["aurora", "sunset", "forest", "mono"];
+  return {
+    id: bid(),
+    enabled: true,
+    type: "videos",
+    title,
+    display: "grid",
+    items: vids.map((v, i) => ({ url: `/assets/cover-${v}.mp4`, poster: pic(`reel-${v}-${i}`, 500, 880) })),
+  };
 }
 
 type Pal = { bg: string; text: string; btn: string; btnText: string; accent: string };
@@ -195,7 +205,7 @@ const RECIPES = {
       lk({ t: "PEÇA O DELIVERY", u: c.links[0].u }, { display: "button", imageUrl: "/assets/ic-delivery.svg" }),
       lk({ t: "CARDÁPIO DIGITAL", u: c.primary.u }, { display: "button", imageUrl: "/assets/ic-cardapio.svg" }),
       lk({ t: "LOCALIZAÇÃO", u: "https://maps.google.com/" }, { display: "button", imageUrl: "/assets/ic-local.svg" }),
-      ytB("https://www.youtube.com/watch?v=aqz-KE-bpKQ"),
+      vidsB("Os mais pedidos"),
     ],
   }),
   // Same dark restaurant style, but with a video cover instead of a photo.
@@ -206,7 +216,7 @@ const RECIPES = {
       lk({ t: "PEÇA O DELIVERY", u: c.links[0].u }, { display: "button", imageUrl: "/assets/ic-delivery.svg" }),
       lk({ t: "CARDÁPIO DIGITAL", u: c.primary.u }, { display: "button", imageUrl: "/assets/ic-cardapio.svg" }),
       lk({ t: "LOCALIZAÇÃO", u: "https://maps.google.com/" }, { display: "button", imageUrl: "/assets/ic-local.svg" }),
-      ytB("https://www.youtube.com/watch?v=aqz-KE-bpKQ"),
+      vidsB("Os mais pedidos"),
     ],
   }),
   // Dark nightlife page: video cover, bold buttons for tickets, line-up and
@@ -217,7 +227,7 @@ const RECIPES = {
       lk({ t: "COMPRAR INGRESSO", u: c.primary.u }, { display: "button", highlight: true }),
       lk({ t: "LINE-UP DA NOITE", u: c.links[0].u }, { display: "button" }),
       lk({ t: "LOCALIZAÇÃO", u: "https://maps.google.com/" }, { display: "button", imageUrl: "/assets/ic-local.svg" }),
-      ytB("https://www.youtube.com/watch?v=aqz-KE-bpKQ"),
+      vidsB("Line-up e melhores momentos"),
     ],
   }),
 } satisfies Record<string, Recipe>;

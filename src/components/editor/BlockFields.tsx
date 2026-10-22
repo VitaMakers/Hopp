@@ -316,5 +316,43 @@ export function BlockFields({ block, premium = "", onChange }: { block: Block; p
           ) : null}
         </div>
       );
+    case "videos":
+      return (
+        <div className="flex flex-col gap-3">
+          <TextField label="Título (opcional)" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
+          <Options
+            label="Formato"
+            value={block.display}
+            options={{ grid: "Grade", carousel: "Carrossel" }}
+            onChange={(display) => onChange({ ...block, display })}
+          />
+          {block.items.map((item, index) => {
+            const setItem = (patch: Partial<typeof item>) =>
+              onChange({ ...block, items: block.items.map((it, i) => (i === index ? { ...it, ...patch } : it)) });
+            return (
+              <div key={index} className="flex flex-col gap-2 rounded-lg bg-stone-50 p-3">
+                <TextField label={`Vídeo ${index + 1} (link .mp4)`} type="url" value={item.url} maxLength={1000} placeholder="https://... .mp4" onChange={(url) => setItem({ url })} />
+                <TextField label="Imagem de capa do vídeo (opcional)" type="url" value={item.poster} maxLength={1000} placeholder="https://..." onChange={(poster) => setItem({ poster })} />
+                <button
+                  type="button"
+                  onClick={() => onChange({ ...block, items: block.items.filter((_, i) => i !== index) })}
+                  className="self-start text-xs text-red-600"
+                >
+                  Remover vídeo
+                </button>
+              </div>
+            );
+          })}
+          {block.items.length < 9 ? (
+            <button
+              type="button"
+              onClick={() => onChange({ ...block, items: [...block.items, { url: "", poster: "" }] })}
+              className="self-start text-sm underline"
+            >
+              + Adicionar vídeo
+            </button>
+          ) : null}
+        </div>
+      );
   }
 }
