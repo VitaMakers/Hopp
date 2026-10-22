@@ -73,6 +73,7 @@ const PAL = {
   slate: { bg: "#0f172a", text: "#e2e8f0", btn: "#e2e8f0", btnText: "#0f172a", accent: "#38bdf8" },
   blush: { bg: "#fdf2f8", text: "#500724", btn: "#db2777", btnText: "#ffffff", accent: "#ec4899" },
   lime: { bg: "#141a07", text: "#f7ffe0", btn: "#a3e635", btnText: "#141a07", accent: "#bef264" },
+  preto: { bg: "#000000", text: "#ffffff", btn: "#ffffff", btnText: "#0a0a0a", accent: "#f59e0b" },
 } satisfies Record<string, Pal>;
 
 type Video = "aurora" | "sunset" | "forest" | "mono";
@@ -101,7 +102,7 @@ type Cat = {
   embed?: { kind: "youtube" | "spotify"; url: string };
 };
 
-type Piece = { layout: Theme["layout"]; blocks: Block[]; video?: Video; logo?: string; shape?: Theme["buttonShape"]; style?: Theme["buttonStyle"] };
+type Piece = { layout: Theme["layout"]; blocks: Block[]; video?: Video; logo?: string; shape?: Theme["buttonShape"]; style?: Theme["buttonStyle"]; pal?: keyof typeof PAL };
 type Recipe = (c: Cat, mid: string) => Piece;
 
 const g4 = (c: Cat) => c.gal.slice(0, 4);
@@ -188,11 +189,11 @@ const RECIPES = {
   // Dark bar/restaurant page: full photo cover, then bold buttons with icons
   // (WhatsApp reservation, menu, delivery, location) and a video at the end.
   botecoDark: (c): Piece => ({
-    layout: "fullscreen", shape: "rounded", style: "fill",
+    layout: "capacheia", shape: "rounded", style: "fill", pal: "preto",
     blocks: [
       waB(c.wa ?? "(11) 90000-0000", "FAÇA SUA RESERVA"),
-      lk({ ...c.primary, t: c.primary.t.toUpperCase() }, { display: "button", imageUrl: "/assets/ic-cardapio.svg" }),
       lk({ t: "PEÇA O DELIVERY", u: c.links[0].u }, { display: "button", imageUrl: "/assets/ic-delivery.svg" }),
+      lk({ t: "CARDÁPIO DIGITAL", u: c.primary.u }, { display: "button", imageUrl: "/assets/ic-cardapio.svg" }),
       lk({ t: "LOCALIZAÇÃO", u: "https://maps.google.com/" }, { display: "button", imageUrl: "/assets/ic-local.svg" }),
       ytB("https://www.youtube.com/watch?v=aqz-KE-bpKQ"),
     ],
@@ -420,7 +421,7 @@ const CATS: Cat[] = [
 function toTemplate(c: Cat, k: number): PageTemplate {
   const mid = `${c.id}-${k}`;
   const piece = RECIPES[c.kit[k]](c, mid);
-  const palKey = c.pals[k % c.pals.length];
+  const palKey = piece.pal ?? c.pals[k % c.pals.length];
   const p: Pal = PAL[palKey];
   const font = c.fonts[k % c.fonts.length];
   const photoSeed = mid;
@@ -436,7 +437,7 @@ function toTemplate(c: Cat, k: number): PageTemplate {
     build: (name) => {
       const profile: Partial<PageDoc["profile"]> = { bio: c.bio, floatingWhatsapp: c.wa ?? "", logo: piece.logo ?? "" };
       if (piece.layout === "hero") profile.avatarUrl = photo;
-      else if (piece.layout === "poster" || piece.layout === "cover" || piece.layout === "fullscreen" || piece.layout === "portrait") {
+      else if (piece.layout === "poster" || piece.layout === "cover" || piece.layout === "fullscreen" || piece.layout === "portrait" || piece.layout === "capacheia") {
         profile.coverUrl = photo;
         profile.avatarUrl = pic(`${photoSeed}-a`, 240, 240);
       } else profile.avatarUrl = pic(photoSeed, 240, 240);
