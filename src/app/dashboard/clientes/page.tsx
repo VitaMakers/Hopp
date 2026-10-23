@@ -20,7 +20,7 @@ export default async function ClientsPage({
 }: {
   searchParams: Promise<{ assinado?: string; cancelado?: string; erro?: string }>;
 }) {
-  const { supabase, clients, profile } = await getOwner();
+  const { supabase, clients, profile, accountId } = await getOwner();
   const { assinado, cancelado, erro } = await searchParams;
   const ids = clients.map((c) => c.id);
 
@@ -151,6 +151,15 @@ export default async function ClientsPage({
                     </a>
                   </div>
                 </div>
+              ) : null}
+
+              {client.id !== accountId ? (
+                <Link
+                  href={`/dashboard/clientes/${client.id}/desvincular`}
+                  className="text-center text-xs text-stone-400 transition hover:text-stone-700 hover:underline"
+                >
+                  Desvincular (dar acesso ao cliente)
+                </Link>
               ) : null}
             </div>
           );
