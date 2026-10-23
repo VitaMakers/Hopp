@@ -5,6 +5,7 @@ import { canUseVerified } from "@/lib/entitlements";
 import { SOCIAL_LABELS } from "@/lib/page/catalog";
 import { SOCIAL_PLATFORMS, type PageDoc, type SocialPlatform } from "@/lib/page/schema";
 import { Card, TextArea, TextField, Toggle } from "./fields";
+import { UploadButton } from "./UploadButton";
 
 type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void; plan: string };
 
@@ -39,20 +40,22 @@ export function ProfilePanel({ doc, onChange, plan }: PanelProps) {
         />
         <TextArea label="Bio" value={doc.profile.bio} maxLength={300} onChange={(bio) => setProfile({ bio })} />
         <TextField
-          label="Foto (link da imagem)"
+          label="Foto (envie do seu dispositivo ou cole um link)"
           type="url"
           value={doc.profile.avatarUrl}
           placeholder="https://..."
           onChange={(avatarUrl) => setProfile({ avatarUrl })}
         />
+        <UploadButton label="Enviar foto" onUploaded={(avatarUrl) => setProfile({ avatarUrl })} />
 
         <TextField
-          label="Capa (link da imagem, usada nos layouts Com capa, Foto grande e Capa com nome)"
+          label="Capa (envie do seu dispositivo ou cole um link)"
           type="url"
           value={doc.profile.coverUrl}
           placeholder="https://..."
           onChange={(coverUrl) => setProfile({ coverUrl })}
         />
+        <UploadButton label="Enviar capa" onUploaded={(coverUrl) => setProfile({ coverUrl })} />
 
         <TextField
           label="Capa em vídeo (link .mp4, opcional — toca no lugar da imagem)"
@@ -67,6 +70,15 @@ export function ProfilePanel({ doc, onChange, plan }: PanelProps) {
             foto, apague este link.
           </p>
         ) : null}
+
+        <TextField
+          label="Logo (opcional — aparece em alguns layouts)"
+          type="url"
+          value={doc.profile.logo}
+          placeholder="https://..."
+          onChange={(logo) => setProfile({ logo })}
+        />
+        <UploadButton label="Enviar logo" onUploaded={(logo) => setProfile({ logo })} />
       </Card>
 
       <Card title="Redes sociais">
