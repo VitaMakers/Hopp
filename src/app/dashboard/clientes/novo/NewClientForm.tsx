@@ -6,10 +6,21 @@ import { TEMPLATE_COLLECTIONS, TEMPLATE_TABS, collectionModels } from "@/lib/pag
 import { ModelThumb } from "@/components/page-view/ModelThumb";
 import { addClient, type AddClientState } from "../actions";
 
-export function NewClientForm({ host }: { host: string }) {
+export function NewClientForm({
+  host,
+  paid,
+  essencialPrice,
+  profissionalPrice,
+}: {
+  host: string;
+  paid: boolean;
+  essencialPrice: string;
+  profissionalPrice: string;
+}) {
   const [state, action, pending] = useActionState<AddClientState, FormData>(addClient, {});
   const [handle, setHandle] = useState("");
   const [template, setTemplate] = useState("");
+  const [plan, setPlan] = useState("essencial");
   const [tab, setTab] = useState("premium");
   const [openCollection, setOpenCollection] = useState<string | null>(null);
   const normalized = normalizeHandle(handle);
@@ -93,6 +104,27 @@ export function NewClientForm({ host }: { host: string }) {
         )}
       </div>
 
+      {paid ? (
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1 text-sm font-medium text-stone-700">Plano deste cliente</legend>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { id: "essencial", name: "Essencial", price: essencialPrice },
+              { id: "profissional", name: "Profissional", price: profissionalPrice },
+            ].map((opt) => (
+              <label
+                key={opt.id}
+                className={`cursor-pointer rounded-xl p-3 text-center ring-1 transition ${plan === opt.id ? "ring-2 ring-stone-900" : "ring-stone-200 hover:ring-stone-400"}`}
+              >
+                <input type="radio" name="plan" value={opt.id} checked={plan === opt.id} onChange={() => setPlan(opt.id)} className="sr-only" />
+                <span className="block font-semibold">{opt.name}</span>
+                <span className="text-sm text-stone-500">{opt.price}/mês</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ) : null}
+
       <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
         Nome do cliente ou da marca
         <input name="name" required maxLength={80} className="field" />
@@ -114,7 +146,7 @@ export function NewClientForm({ host }: { host: string }) {
       </label>
       {localError || state.error ? <p className="text-sm text-red-600">{localError ?? state.error}</p> : null}
       <button type="submit" disabled={pending || !!localError} className="btn-primary">
-        {pending ? "Criando..." : "Criar cliente"}
+        {pending ? "Criando..." : paid ? "Criar e ir para o pagamento" : "Criar cliente"}
       </button>
     </form>
   );

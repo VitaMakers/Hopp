@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { accountMonthlyBRL, formatBRL, FREE_CLIENTS, normalizePlan, PLAN_LABEL } from "@/lib/plans";
+import { accountMonthlyBRL, formatBRL, FREE_CLIENTS, normalizePlan, PLAN_LABEL, PLAN_PRICE_BRL } from "@/lib/plans";
 import { getOwner } from "../context";
 import { selectClient } from "./actions";
 
@@ -15,8 +15,13 @@ function initials(name: string) {
   return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
 }
 
-export default async function ClientsPage() {
+export default async function ClientsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ assinado?: string; cancelado?: string; erro?: string }>;
+}) {
   const { supabase, clients, profile } = await getOwner();
+  const { assinado, cancelado, erro } = await searchParams;
   const ids = clients.map((c) => c.id);
 
   // Last 30 days of activity, counted per client in one query.
@@ -38,6 +43,21 @@ export default async function ClientsPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      {assinado ? (
+        <p className="rounded-xl bg-emerald-50 p-3 text-sm font-medium text-emerald-800 ring-1 ring-emerald-200">
+          Assinatura confirmada! O cliente é ativado em instantes, assim que o Stripe avisa o sistema.
+        </p>
+      ) : null}
+      {cancelado ? (
+        <p className="rounded-xl bg-stone-100 p-3 text-sm text-stone-600 ring-1 ring-stone-200">
+          Pagamento cancelado. O cliente foi criado, mas segue sem assinatura — você pode assinar quando quiser.
+        </p>
+      ) : null}
+      {erro ? (
+        <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700 ring-1 ring-red-200">
+          Não foi possível iniciar a cobrança. Confira a configuração do Stripe e tente de novo.
+        </p>
+      ) : null}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Meus clientes</h1>
@@ -66,9 +86,11 @@ export default async function ClientsPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {clients.map((client) => {
+        {clients.map((client, i) => {
           const selected = client.id === profile.id;
           const plan = normalizePlan(client.plan);
+          // A free client past the free allowance still needs a subscription.
+          const needsPlan = plan === "free" && i >= FREE_CLIENTS;
           return (
             <div
               key={client.id}
@@ -116,6 +138,20 @@ export default async function ClientsPage() {
                   </button>
                 </form>
               )}
+
+              {needsPlan ? (
+                <div className="rounded-xl bg-amber-50 p-3 text-xs ring-1 ring-amber-200">
+                  <p className="font-medium text-amber-900">Cliente sem assinatura — ative para manter no ar:</p>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <a href={`/dashboard/clientes/${client.id}/assinar?plan=essencial`} className="rounded-lg bg-white py-1.5 text-center font-medium ring-1 ring-amber-300 hover:ring-amber-500">
+                      Essencial<br />{formatBRL(PLAN_PRICE_BRL.essencial)}
+                    </a>
+                    <a href={`/dashboard/clientes/${client.id}/assinar?plan=profissional`} className="rounded-lg bg-white py-1.5 text-center font-medium ring-1 ring-amber-300 hover:ring-amber-500">
+                      Profissional<br />{formatBRL(PLAN_PRICE_BRL.profissional)}
+                    </a>
+                  </div>
+                </div>
+              ) : null}
             </div>
           );
         })}
