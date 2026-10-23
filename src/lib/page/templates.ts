@@ -28,6 +28,9 @@ export type TemplateCollection = {
   description: string;
   swatch: { background: string; accent: string; text: string };
   templateIds: string[];
+  // Minimum plan to USE a model from this collection. Omitted = the tab's
+  // default (premium tab → profissional; essencial tab → free/everyone).
+  requiresPlan?: "free" | "essencial" | "profissional";
 };
 
 export const TEMPLATE_COLLECTIONS: TemplateCollection[] = [
@@ -42,7 +45,7 @@ export const TEMPLATE_COLLECTIONS: TemplateCollection[] = [
   },
   { id: "presenca", tab: "premium", name: "Presença", description: "Perfil profissional com público duplo.", swatch: { background: "#0a0a0f", accent: "#a78bfa", text: "#f5f5f5" }, templateIds: ["experiencia"] },
   { id: "ecossistema", tab: "premium", name: "Ecossistema", description: "Em breve.", swatch: { background: "#030303", accent: "#ff3469", text: "#f7f7f7" }, templateIds: [] },
-  { id: "vitrine", tab: "premium", name: "Vitrine", description: "Em breve.", swatch: { background: "#111d1f", accent: "#e6ff35", text: "#e7e9e8" }, templateIds: [] },
+  { id: "vitrine", tab: "premium", name: "Vitrine", description: "Em breve.", swatch: { background: "#111d1f", accent: "#e6ff35", text: "#e7e9e8" }, templateIds: [], requiresPlan: "essencial" },
 ];
 
 // The models inside a collection, in its listed order.
