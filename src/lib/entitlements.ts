@@ -36,6 +36,14 @@ export function canUseVerified(plan: string | null | undefined): boolean {
   return normalizePlan(plan) === "profissional";
 }
 
+// Plan ranking, so "has at least this plan" checks are simple comparisons.
+const PLAN_RANK: Record<string, number> = { free: 0, essencial: 1, profissional: 2 };
+
+// True when the user's plan is at least the required tier.
+export function planAllows(userPlan: string | null | undefined, requiredPlan: string | null | undefined): boolean {
+  return PLAN_RANK[normalizePlan(userPlan)] >= PLAN_RANK[normalizePlan(requiredPlan)];
+}
+
 // Which paid-only features a page uses beyond its plan, as human labels.
 // Empty means the page is fine to publish on that plan.
 export function planViolations(doc: PageDoc, plan: string | null | undefined): string[] {
