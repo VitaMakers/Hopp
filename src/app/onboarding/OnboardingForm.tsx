@@ -10,7 +10,7 @@ export function OnboardingForm({ host }: { host: string }) {
   const [state, action, pending] = useActionState<OnboardingState, FormData>(createProfile, {});
   const [handle, setHandle] = useState("");
   const [template, setTemplate] = useState(""); // "" = página em branco
-  const [tab, setTab] = useState("premium");
+  const [tab, setTab] = useState("essencial");
   const [openCollection, setOpenCollection] = useState<string | null>(null);
   const normalized = normalizeHandle(handle);
   const localError = handle ? handleError(normalized) : null;
@@ -28,7 +28,7 @@ export function OnboardingForm({ host }: { host: string }) {
     <form action={action} className="mt-6 flex flex-col gap-5">
       <div className="flex flex-col gap-3">
         <div className="flex gap-1 rounded-lg bg-stone-100 p-1">
-          {TEMPLATE_TABS.map((item) => (
+          {TEMPLATE_TABS.filter((item) => item.id !== "premium").map((item) => (
             <button
               key={item.id}
               type="button"

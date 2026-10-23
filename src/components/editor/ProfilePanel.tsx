@@ -1,12 +1,14 @@
 "use client";
 
+import Link from "next/link";
+import { canUseVerified } from "@/lib/entitlements";
 import { SOCIAL_LABELS } from "@/lib/page/catalog";
 import { SOCIAL_PLATFORMS, type PageDoc, type SocialPlatform } from "@/lib/page/schema";
 import { Card, TextArea, TextField, Toggle } from "./fields";
 
-type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void };
+type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void; plan: string };
 
-export function ProfilePanel({ doc, onChange }: PanelProps) {
+export function ProfilePanel({ doc, onChange, plan }: PanelProps) {
   const setProfile = (patch: Partial<PageDoc["profile"]>) =>
     onChange({ ...doc, profile: { ...doc.profile, ...patch } });
   const used = new Set(doc.socials.map((social) => social.platform));
@@ -16,7 +18,17 @@ export function ProfilePanel({ doc, onChange }: PanelProps) {
     <div className="flex flex-col gap-4">
       <Card title="Perfil">
         <TextField label="Nome" value={doc.profile.name} maxLength={80} onChange={(name) => setProfile({ name })} />
-        <Toggle label="Mostrar selo de verificado" checked={doc.profile.verified} onChange={(verified) => setProfile({ verified })} />
+        {canUseVerified(plan) ? (
+          <Toggle label="Mostrar selo de verificado" checked={doc.profile.verified} onChange={(verified) => setProfile({ verified })} />
+        ) : (
+          <p className="flex items-center gap-1.5 rounded-lg bg-stone-50 px-3 py-2 text-xs text-stone-500 ring-1 ring-stone-200">
+            🔒 Selo de verificado — disponível no{" "}
+            <Link href="/dashboard/plans" className="font-semibold text-stone-700 underline">
+              plano Profissional
+            </Link>
+            .
+          </p>
+        )}
         <TextField
           label="WhatsApp flutuante (número com DDD, opcional)"
           type="tel"

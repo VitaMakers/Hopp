@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageView } from "@/components/page-view/PageView";
 import { APP_NAME, APP_TAGLINE } from "@/lib/env";
-import { normalizePlan } from "@/lib/plans";
+import { showsBadge } from "@/lib/entitlements";
 import { getPublishedPage } from "@/lib/public-data";
 
 type Params = { params: Promise<{ handle: string }> };
@@ -31,7 +31,7 @@ export default async function PublicPage({ params }: Params) {
       doc={page.doc}
       handle={page.handle}
       footer={
-        normalizePlan(page.plan) === "free" ? (
+        showsBadge(page.plan) ? (
           <Link href="/" className="mt-12 flex flex-col items-center gap-0.5 text-center opacity-70 transition hover:opacity-100">
             <span className="text-sm font-semibold">{APP_NAME}</span>
             <span className="text-xs">{APP_TAGLINE}</span>

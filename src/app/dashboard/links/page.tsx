@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { env } from "@/lib/env";
+import { shortLinkLimit } from "@/lib/entitlements";
 import { deleteShortLink } from "../actions";
 import { getOwner } from "../context";
 import { NewLinkForm } from "./NewLinkForm";
@@ -11,6 +13,9 @@ export default async function LinksPage() {
     .eq("owner_id", profile.id)
     .order("created_at", { ascending: false });
   const base = env.siteUrl();
+  const limit = shortLinkLimit(profile.plan);
+  const used = links?.length ?? 0;
+  const full = used >= limit;
 
   return (
     <div className="flex flex-col gap-6">
@@ -18,9 +23,25 @@ export default async function LinksPage() {
         <h1 className="text-2xl font-bold">Links curtos</h1>
         <p className="text-sm text-stone-600">
           Links rastreáveis para divulgar em qualquer lugar. Os cliques aparecem em Estatísticas.
+          {limit > 0 ? <span className="ml-1 font-medium text-stone-700">Usados {used} de {limit}.</span> : null}
         </p>
       </div>
-      <NewLinkForm base={base} />
+      {limit === 0 ? (
+        <div className="rounded-xl bg-stone-900 p-5 text-center text-white">
+          <p className="font-semibold">Links curtos não estão no plano Grátis.</p>
+          <p className="mt-1 text-sm text-stone-300">Tenha 3 no Essencial e 7 no Profissional.</p>
+          <Link href="/dashboard/plans" className="mt-4 inline-block rounded-lg bg-white px-4 py-2 text-sm font-semibold text-stone-900">
+            Ver planos
+          </Link>
+        </div>
+      ) : full ? (
+        <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200">
+          Você atingiu o limite de {limit} links curtos do seu plano. Exclua um ou{" "}
+          <Link href="/dashboard/plans" className="font-semibold underline">faça upgrade</Link>.
+        </p>
+      ) : (
+        <NewLinkForm base={base} />
+      )}
       <div className="overflow-x-auto rounded-xl bg-white ring-1 ring-stone-200">
         <table className="w-full text-left text-sm">
           <thead className="text-stone-500">
