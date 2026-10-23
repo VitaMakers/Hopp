@@ -24,3 +24,15 @@ export function serviceRoleKey(): string {
 export function stripeSecretKey(): string {
   return required("STRIPE_SECRET_KEY", process.env.STRIPE_SECRET_KEY);
 }
+
+// Verifies Stripe webhook signatures. From Dashboard → Developers → Webhooks.
+export function stripeWebhookSecret(): string {
+  return required("STRIPE_WEBHOOK_SECRET", process.env.STRIPE_WEBHOOK_SECRET);
+}
+
+// The recurring price for each paid client tier. Set them to the Stripe price
+// ids (price_...) so changing a price never needs a deploy.
+export function stripePriceId(plan: "essencial" | "profissional"): string {
+  const name = plan === "profissional" ? "STRIPE_PRICE_PROFISSIONAL" : "STRIPE_PRICE_ESSENCIAL";
+  return required(name, process.env[name]);
+}
