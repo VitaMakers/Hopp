@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { handleError, normalizeHandle } from "@/lib/handles";
 import { defaultPageDoc } from "@/lib/page/catalog";
 import { TEMPLATES } from "@/lib/page/templates";
+import { FREE_CLIENTS } from "@/lib/plans";
 import { requireUser } from "@/lib/supabase/server";
 import { CLIENT_COOKIE } from "../context";
 
@@ -31,9 +32,18 @@ export async function addClient(_: AddClientState, form: FormData): Promise<AddC
   const invalid = handleError(handle);
   if (invalid) return { error: invalid };
 
+  // Beyond the free allowance, the new client is a paid slot and goes through
+  // Stripe Checkout right after being created.
+  const { count } = await supabase
+    .from("profiles")
+    .select("id", { count: "exact", head: true })
+    .eq("account_id", user.id);
+  const paidSlot = (count ?? 0) >= FREE_CLIENTS;
+  const plan = String(form.get("plan") ?? "essencial") === "profissional" ? "profissional" : "essencial";
+
   // A new client is a new profile owned by this account (no login of its own).
   // The billing trigger forces plan 'free' on insert; paid activation happens
-  // later through the account's subscription.
+  // through the account's subscription (webhook) after checkout.
   const { data: profile, error } = await supabase
     .from("profiles")
     .insert({ account_id: user.id, handle, display_name: name })
@@ -50,5 +60,6 @@ export async function addClient(_: AddClientState, form: FormData): Promise<AddC
   if (pageError) return { error: "Não foi possível criar a página do cliente." };
 
   (await cookies()).set(CLIENT_COOKIE, profile.id, COOKIE_OPTS);
+  if (paidSlot) redirect(`/dashboard/clientes/${profile.id}/assinar?plan=${plan}`);
   redirect("/dashboard");
 }
