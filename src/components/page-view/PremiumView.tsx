@@ -7,6 +7,7 @@ import { youtubeEmbedUrl } from "@/lib/page/embed";
 import { imageSrc, linkHref, socialHref, videoSrc, whatsappHref } from "@/lib/page/links";
 import { SocialIcon } from "./SocialIcon";
 import { track } from "./track";
+import { VerifiedCheck } from "./VerifiedCheck";
 
 // The four Vita premium designs. Each one mirrors the markup of the
 // original template so src/app/premium.css styles it the same way.
@@ -76,7 +77,7 @@ function Authority({ doc, handle }: Props) {
       style={{ "--premium-bg": theme.background, "--premium-text": theme.text, "--premium-accent": theme.accent } as React.CSSProperties}
     >
       <header className="premium-profile">
-        <h1>{profile.name}</h1>
+        <h1>{profile.name}{profile.verified ? <VerifiedCheck className="ml-1.5 inline h-[0.8em] w-[0.8em] align-middle" /> : null}</h1>
         {profile.bio ? <p>{profile.bio}</p> : null}
         <div className="premium-divider">LINKS</div>
       </header>
@@ -141,7 +142,7 @@ function Spotlight({ doc, handle }: Props) {
             // eslint-disable-next-line @next/next/no-img-element
             <img className="spotlight-logo" src={logo} alt={profile.name} />
           ) : (
-            <h1>{profile.name}</h1>
+            <h1>{profile.name}{profile.verified ? <VerifiedCheck className="ml-1.5 inline h-[0.8em] w-[0.8em] align-middle" /> : null}</h1>
           )}
           <div className="spotlight-actions">
             <nav aria-label="Redes sociais">
@@ -230,7 +231,7 @@ function Ecosystem({ doc, handle }: Props) {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logo} alt={profile.name} />
             ) : (
-              <h1>{profile.name}</h1>
+              <h1>{profile.name}{profile.verified ? <VerifiedCheck className="ml-1.5 inline h-[0.8em] w-[0.8em] align-middle" /> : null}</h1>
             )}
             {profile.bio ? <p>{profile.bio}</p> : null}
           </div>

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { canUseVerified, planViolations, shortLinkLimit } from "@/lib/entitlements";
 import { safeHttpUrl, shortCodeError } from "@/lib/handles";
 import { pageDocSchema } from "@/lib/page/schema";
 import { getOwner } from "./context";
@@ -24,6 +25,13 @@ export async function publish(input: unknown): Promise<ActionResult> {
   const parsed = pageDocSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "A página tem campos inválidos." };
   const { supabase, profile } = await getOwner();
+  // Enforce the plan: a page using paid-only features can't be published.
+  const violations = planViolations(parsed.data, profile.plan);
+  if (violations.length) {
+    return { ok: false, error: `Seu plano não inclui: ${violations.join("; ")}. Faça upgrade em Planos para publicar.` };
+  }
+  // The verified badge is Profissional only; strip it for other plans.
+  if (!canUseVerified(profile.plan)) parsed.data.profile.verified = false;
   const now = new Date().toISOString();
   const { data: page, error } = await supabase
     .from("pages")
@@ -48,6 +56,19 @@ export async function createShortLink(_: LinkFormState, form: FormData): Promise
   if (!target) return { error: "Informe um destino que comece com http:// ou https://." };
 
   const { supabase, profile } = await getOwner();
+  const limit = shortLinkLimit(profile.plan);
+  const { count } = await supabase
+    .from("short_links")
+    .select("id", { count: "exact", head: true })
+    .eq("owner_id", profile.id);
+  if ((count ?? 0) >= limit) {
+    return {
+      error:
+        limit === 0
+          ? "Links curtos não estão disponíveis no plano Grátis. Faça upgrade em Planos para criar."
+          : `Você atingiu o limite de ${limit} links curtos do seu plano.`,
+    };
+  }
   const { error } = await supabase
     .from("short_links")
     .insert({ owner_id: profile.id, code, title, target_url: target });

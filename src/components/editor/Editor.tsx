@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { publish, saveDraft } from "@/app/dashboard/actions";
 import { PageView } from "@/components/page-view/PageView";
+import { APP_NAME, APP_TAGLINE } from "@/lib/env";
+import { showsBadge } from "@/lib/entitlements";
 import type { PageDoc } from "@/lib/page/schema";
 import { BlocksPanel } from "./BlocksPanel";
 import { ProfilePanel } from "./ProfilePanel";
@@ -23,10 +25,12 @@ type Status = "saved" | "dirty" | "saving" | "error";
 export function Editor({
   initialDoc,
   handle,
+  plan,
   publishedAt: initialPublishedAt,
 }: {
   initialDoc: PageDoc;
   handle: string;
+  plan: string;
   publishedAt: string | null;
 }) {
   const [doc, setDoc] = useState(initialDoc);
@@ -104,9 +108,9 @@ export function Editor({
         </div>
         {message ? <p className="mb-3 text-sm text-stone-700">{message}</p> : null}
 
-        {tab === "templates" ? <TemplatesPanel doc={doc} onChange={setDoc} onGoToBlocks={() => setTab("blocks")} /> : null}
+        {tab === "templates" ? <TemplatesPanel doc={doc} onChange={setDoc} plan={plan} onGoToBlocks={() => setTab("blocks")} /> : null}
         {tab === "blocks" ? <BlocksPanel doc={doc} onChange={setDoc} /> : null}
-        {tab === "profile" ? <ProfilePanel doc={doc} onChange={setDoc} /> : null}
+        {tab === "profile" ? <ProfilePanel doc={doc} onChange={setDoc} plan={plan} /> : null}
         {tab === "theme" ? <ThemePanel doc={doc} onChange={setDoc} /> : null}
         {tab === "seo" ? <SeoPanel doc={doc} onChange={setDoc} handle={handle} /> : null}
       </section>
@@ -114,7 +118,17 @@ export function Editor({
       <aside className="lg:sticky lg:top-20 lg:self-start">
         <p className="mb-2 text-center text-xs text-stone-500">Prévia</p>
         <div className="mx-auto h-[680px] w-full max-w-[360px] overflow-y-auto rounded-[2.2rem] border-[10px] border-stone-900 bg-white shadow-xl">
-          <PageView doc={doc} />
+          <PageView
+            doc={doc}
+            footer={
+              showsBadge(plan) ? (
+                <div className="mt-12 flex flex-col items-center gap-0.5 text-center opacity-70">
+                  <span className="text-sm font-semibold">{APP_NAME}</span>
+                  <span className="text-xs">{APP_TAGLINE}</span>
+                </div>
+              ) : null
+            }
+          />
         </div>
       </aside>
     </div>

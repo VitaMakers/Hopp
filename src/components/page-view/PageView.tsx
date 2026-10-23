@@ -7,6 +7,7 @@ import { spotifyEmbedUrl, youtubeEmbedUrl } from "@/lib/page/embed";
 import { imageSrc, linkHref, mapsDirectionsUrl, mapsEmbedUrl, socialHref, vCard, videoSrc, whatsappHref } from "@/lib/page/links";
 import { PremiumView } from "./PremiumView";
 import { SocialIcon } from "./SocialIcon";
+import { VerifiedCheck } from "./VerifiedCheck";
 import { startVisit, track } from "./track";
 import { AVATAR_RADII, buttonClass, themeVars } from "./theme";
 
@@ -80,15 +81,7 @@ function Name({ doc, big = false }: { doc: PageDoc; big?: boolean }) {
   return (
     <h1 className={`flex items-center justify-center gap-1.5 text-center font-bold [font-family:var(--heading-font)] ${big ? "text-4xl leading-tight tracking-tight" : "text-xl"}`}>
       {doc.profile.name}
-      {doc.profile.verified ? (
-        <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" role="img" aria-label="Verificado">
-          <path
-            fill="#1d9bf0"
-            d="M12 1.5l2.6 1.9 3.2-.1 1 3 2.6 1.9-1 3.1 1 3.1-2.6 1.9-1 3-3.2-.1L12 22.5l-2.6-1.9-3.2.1-1-3-2.6-1.9 1-3.1-1-3.1 2.6-1.9 1-3 3.2.1z"
-          />
-          <path fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" d="M7.8 12.3l2.8 2.8 5.6-5.8" />
-        </svg>
-      ) : null}
+      {doc.profile.verified ? <VerifiedCheck /> : null}
     </h1>
   );
 }
@@ -169,7 +162,10 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
       <div className="-mx-5 w-[calc(100%+2.5rem)] overflow-hidden">
         <div className="px-6 py-8 text-center" style={{ background: "var(--page-accent)", color: "var(--btn-text)" }}>
           <Logo doc={doc} className="mx-auto mb-3 h-12 w-auto object-contain" />
-          <h1 className="text-3xl font-extrabold uppercase leading-tight tracking-tight [font-family:var(--heading-font)]">{profile.name}</h1>
+          <h1 className="flex items-center justify-center gap-1.5 text-3xl font-extrabold uppercase leading-tight tracking-tight [font-family:var(--heading-font)]">
+            {profile.name}
+            {profile.verified ? <VerifiedCheck className="h-6 w-6" /> : null}
+          </h1>
         </div>
         {profile.bio ? (
           <div className="px-6 py-3 text-center text-sm font-medium" style={{ background: "color-mix(in srgb, var(--page-accent) 20%, var(--page-bg))" }}>
@@ -210,7 +206,10 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
           <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/15 to-[var(--page-bg)]" />
           <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white">
             <Logo doc={doc} className="mb-3 h-12 w-auto object-contain" />
-            <h1 className="text-4xl font-bold leading-tight tracking-tight [font-family:var(--heading-font)] drop-shadow">{profile.name}</h1>
+            <h1 className="flex items-center justify-center gap-1.5 text-4xl font-bold leading-tight tracking-tight [font-family:var(--heading-font)] drop-shadow">
+              {profile.name}
+              {profile.verified ? <VerifiedCheck className="h-7 w-7" /> : null}
+            </h1>
             {profile.bio ? <p className="mt-2 max-w-xs whitespace-pre-line text-sm opacity-90 drop-shadow">{profile.bio}</p> : null}
             <span className="mt-5 text-2xl opacity-80" aria-hidden="true">↓</span>
           </div>

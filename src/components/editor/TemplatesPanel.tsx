@@ -1,20 +1,24 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { defaultPageDoc } from "@/lib/page/catalog";
+import { canUsePremium } from "@/lib/entitlements";
 import type { PageDoc } from "@/lib/page/schema";
 import { TEMPLATES, TEMPLATE_COLLECTIONS, TEMPLATE_TABS, collectionModels } from "@/lib/page/templates";
 import { ModelThumb } from "@/components/page-view/ModelThumb";
 import { Card } from "./fields";
 
-type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void; onGoToBlocks?: () => void };
+type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void; plan: string; onGoToBlocks?: () => void };
 
-export function TemplatesPanel({ doc, onChange, onGoToBlocks }: PanelProps) {
+export function TemplatesPanel({ doc, onChange, plan, onGoToBlocks }: PanelProps) {
   const [tab, setTab] = useState("premium");
   const [openCollection, setOpenCollection] = useState<string | null>(null);
   const current = TEMPLATE_TABS.find((item) => item.id === tab) ?? TEMPLATE_TABS[0];
   const collections = TEMPLATE_COLLECTIONS.filter((c) => c.tab === tab);
   const open = collections.find((c) => c.id === openCollection) ?? null;
+  // Premium models are Profissional only; lock the tab for everyone else.
+  const premiumLocked = tab === "premium" && !canUsePremium(plan);
 
   function selectTab(id: string) {
     setTab(id);
@@ -24,6 +28,7 @@ export function TemplatesPanel({ doc, onChange, onGoToBlocks }: PanelProps) {
   function apply(id: string) {
     const template = TEMPLATES.find((item) => item.id === id);
     if (!template) return;
+    if (template.plan === "premium" && !canUsePremium(plan)) return;
     if (!window.confirm(`Usar o modelo "${template.name}"? Os blocos e o visual da sua página serão trocados pelos do modelo (o rascunho só vai ao ar quando você publicar).`)) return;
     onChange({ ...template.build("Adicione seu nome"), seo: doc.seo });
   }
@@ -49,7 +54,16 @@ export function TemplatesPanel({ doc, onChange, onGoToBlocks }: PanelProps) {
         ))}
       </div>
 
-      {current.kind === "scratch" ? (
+      {premiumLocked ? (
+        <div className="rounded-xl bg-stone-900 p-6 text-center text-white">
+          <p className="text-2xl">🔒</p>
+          <p className="mt-1 font-semibold">Modelos Premium</p>
+          <p className="mt-1 text-sm text-stone-300">Disponíveis no plano Profissional.</p>
+          <Link href="/dashboard/plans" className="mt-4 inline-block rounded-lg bg-white px-4 py-2 text-sm font-semibold text-stone-900">
+            Ver planos
+          </Link>
+        </div>
+      ) : current.kind === "scratch" ? (
         <>
           <p className="-mt-1 text-xs text-stone-500">{current.note}</p>
           <button type="button" onClick={startBlank} className="rounded-xl border border-dashed border-stone-300 p-6 text-center transition hover:border-stone-500">

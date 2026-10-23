@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { pctChange, referrerName, summarize, type EventRow, type Summary } from "@/lib/analytics";
+import { hasFullAnalytics } from "@/lib/entitlements";
 import { BLOCK_CATALOG, SOCIAL_LABELS, blockSummary } from "@/lib/page/catalog";
 import { pageDocSchema, type BlockType, type SocialPlatform } from "@/lib/page/schema";
 import { getOwner } from "../context";
@@ -12,6 +13,16 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   const params = await searchParams;
   const days = WINDOWS.includes(Number(params.days) as (typeof WINDOWS)[number]) ? Number(params.days) : 30;
   const { supabase, profile } = await getOwner();
+
+  // Free plan: only the total visit count, nothing else.
+  if (!hasFullAnalytics(profile.plan)) {
+    const { count } = await supabase
+      .from("events")
+      .select("id", { count: "exact", head: true })
+      .eq("owner_id", profile.id)
+      .eq("kind", "page_view");
+    return <FreeAnalytics visits={count ?? 0} />;
+  }
 
   const now = new Date();
   const windowStart = new Date(now.getTime() - days * 86_400_000);
@@ -334,6 +345,28 @@ function relativeTime(iso: string): string {
   if (hours < 24) return `${hours} h`;
   const days = Math.floor(hours / 24);
   return `${days} d`;
+}
+
+function FreeAnalytics({ visits }: { visits: number }) {
+  return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <h1 className="text-2xl font-bold">Estatísticas</h1>
+        <p className="text-sm text-stone-500">Acompanhe as visitas da sua página.</p>
+      </div>
+      <div className="rounded-2xl bg-white p-8 text-center ring-1 ring-stone-200">
+        <p className="text-sm text-stone-500">Total de visitas</p>
+        <p className="mt-1 text-5xl font-bold tabular-nums">{visits.toLocaleString("pt-BR")}</p>
+      </div>
+      <div className="rounded-xl bg-stone-900 p-5 text-center text-white">
+        <p className="font-semibold">Quer ver cliques, visitantes, origem do tráfego e mais?</p>
+        <p className="mt-1 text-sm text-stone-300">As estatísticas completas estão nos planos Essencial e Profissional.</p>
+        <Link href="/dashboard/plans" className="mt-4 inline-block rounded-lg bg-white px-4 py-2 text-sm font-semibold text-stone-900">
+          Ver planos
+        </Link>
+      </div>
+    </div>
+  );
 }
 
 function Ranking({ title, rows }: { title: string; rows: [string, number][] }) {

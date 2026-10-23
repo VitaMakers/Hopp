@@ -15,5 +15,5 @@ export default async function EditorPage() {
   // Onboarding writes the profile and the page separately; if the second
   // write failed, create the page now so saving and publishing have a row.
   if (!page) await supabase.from("pages").insert({ owner_id: profile.id, draft: doc });
-  return <Editor initialDoc={doc} handle={profile.handle} publishedAt={page?.published_at ?? null} />;
+  return <Editor initialDoc={doc} handle={profile.handle} plan={profile.plan} publishedAt={page?.published_at ?? null} />;
 }
