@@ -5,31 +5,40 @@ import { useState } from "react";
 import { defaultPageDoc } from "@/lib/page/catalog";
 import { canUsePremium } from "@/lib/entitlements";
 import type { PageDoc } from "@/lib/page/schema";
-import { TEMPLATES, TEMPLATE_COLLECTIONS, TEMPLATE_TABS, collectionModels } from "@/lib/page/templates";
+import { TEMPLATES, TEMPLATE_COLLECTIONS, TEMPLATE_TABS, collectionModels, type PageTemplate } from "@/lib/page/templates";
 import { ModelThumb } from "@/components/page-view/ModelThumb";
 import { Card } from "./fields";
 
 type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void; plan: string; onGoToBlocks?: () => void };
 
 export function TemplatesPanel({ doc, onChange, plan, onGoToBlocks }: PanelProps) {
-  const [tab, setTab] = useState("premium");
+  const [tab, setTab] = useState("essencial");
   const [openCollection, setOpenCollection] = useState<string | null>(null);
+  const [lockedMsg, setLockedMsg] = useState<string | null>(null);
   const current = TEMPLATE_TABS.find((item) => item.id === tab) ?? TEMPLATE_TABS[0];
   const collections = TEMPLATE_COLLECTIONS.filter((c) => c.tab === tab);
   const open = collections.find((c) => c.id === openCollection) ?? null;
-  // Premium models are Profissional only; lock the tab for everyone else.
-  const premiumLocked = tab === "premium" && !canUsePremium(plan);
+
+  // Premium models need the Profissional plan; everything else is included.
+  const allowed = (template: PageTemplate) => (template.plan === "premium" ? canUsePremium(plan) : true);
+  const requiredLabel = (template: PageTemplate) => (template.plan === "premium" ? "Profissional" : "Essencial");
 
   function selectTab(id: string) {
     setTab(id);
     setOpenCollection(null);
+    setLockedMsg(null);
   }
 
   function apply(id: string) {
     const template = TEMPLATES.find((item) => item.id === id);
     if (!template) return;
-    if (template.plan === "premium" && !canUsePremium(plan)) return;
+    // Locked model: don't apply, show the upgrade message instead.
+    if (!allowed(template)) {
+      setLockedMsg(`O modelo "${template.name}" é do plano ${requiredLabel(template)}. Faça upgrade para usar este modelo.`);
+      return;
+    }
     if (!window.confirm(`Usar o modelo "${template.name}"? Os blocos e o visual da sua página serão trocados pelos do modelo (o rascunho só vai ao ar quando você publicar).`)) return;
+    setLockedMsg(null);
     onChange({ ...template.build("Adicione seu nome"), seo: doc.seo });
   }
 
@@ -38,6 +47,10 @@ export function TemplatesPanel({ doc, onChange, plan, onGoToBlocks }: PanelProps
     onChange({ ...defaultPageDoc("Adicione seu nome"), seo: doc.seo });
     onGoToBlocks?.();
   }
+
+  // The access note under the tabs: what this tab means for the current plan.
+  const premiumTab = tab === "premium";
+  const canPremium = canUsePremium(plan);
 
   return (
     <Card title="Modelos prontos">
@@ -54,16 +67,33 @@ export function TemplatesPanel({ doc, onChange, plan, onGoToBlocks }: PanelProps
         ))}
       </div>
 
-      {premiumLocked ? (
-        <div className="rounded-xl bg-stone-900 p-6 text-center text-white">
-          <p className="text-2xl">🔒</p>
-          <p className="mt-1 font-semibold">Modelos Premium</p>
-          <p className="mt-1 text-sm text-stone-300">Disponíveis no plano Profissional.</p>
-          <Link href="/dashboard/plans" className="mt-4 inline-block rounded-lg bg-white px-4 py-2 text-sm font-semibold text-stone-900">
-            Ver planos
-          </Link>
+      {/* Positive/locked access note for the current tab. */}
+      {tab === "essencial" ? (
+        <p className="flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800 ring-1 ring-emerald-200">
+          <span>✅</span> Incluídos no seu plano — use à vontade.
+        </p>
+      ) : premiumTab && !canPremium ? (
+        <p className="flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900 ring-1 ring-amber-200">
+          <span>🔒</span> Você pode ver todos, mas usar um modelo Premium precisa do plano Profissional.
+        </p>
+      ) : null}
+
+      {/* Upgrade message when a locked model is clicked. */}
+      {lockedMsg ? (
+        <div className="rounded-lg bg-stone-900 px-3 py-2.5 text-xs text-white">
+          <p>{lockedMsg}</p>
+          <div className="mt-2 flex items-center gap-3">
+            <Link href="/dashboard/plans" className="rounded-md bg-white px-2.5 py-1 font-semibold text-stone-900">
+              Ver planos
+            </Link>
+            <button type="button" onClick={() => setLockedMsg(null)} className="text-stone-300 hover:text-white">
+              Fechar
+            </button>
+          </div>
         </div>
-      ) : current.kind === "scratch" ? (
+      ) : null}
+
+      {current.kind === "scratch" ? (
         <>
           <p className="-mt-1 text-xs text-stone-500">{current.note}</p>
           <button type="button" onClick={startBlank} className="rounded-xl border border-dashed border-stone-300 p-6 text-center transition hover:border-stone-500">
@@ -81,21 +111,35 @@ export function TemplatesPanel({ doc, onChange, plan, onGoToBlocks }: PanelProps
             <p className="rounded-xl border border-dashed border-stone-300 p-6 text-center text-sm text-stone-500">Novos modelos em breve.</p>
           ) : (
             <div className="grid grid-cols-2 gap-3">
-              {collectionModels(open).map((template) => (
-                <button
-                  key={template.id}
-                  type="button"
-                  onClick={() => apply(template.id)}
-                  aria-label={`Usar o modelo ${template.name}`}
-                  className="flex flex-col items-center gap-2 rounded-xl p-2 ring-1 ring-stone-200 transition hover:ring-stone-400"
-                >
-                  <ModelThumb doc={template.build("Adicione seu nome")} />
-                  <span className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{template.name}</span>
-                    {current.plan ? <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">{current.plan}</span> : null}
-                  </span>
-                </button>
-              ))}
+              {collectionModels(open).map((template) => {
+                const ok = allowed(template);
+                return (
+                  <button
+                    key={template.id}
+                    type="button"
+                    onClick={() => apply(template.id)}
+                    aria-label={ok ? `Usar o modelo ${template.name}` : `${template.name} — requer plano ${requiredLabel(template)}`}
+                    className="flex flex-col items-center gap-2 rounded-xl p-2 ring-1 ring-stone-200 transition hover:ring-stone-400"
+                  >
+                    <div className="relative">
+                      <div className={ok ? "" : "opacity-60"}>
+                        <ModelThumb doc={template.build("Adicione seu nome")} />
+                      </div>
+                      {!ok ? (
+                        <span className="absolute right-1 top-1 rounded-full bg-stone-900/90 px-1.5 py-0.5 text-[10px] font-semibold text-white">🔒</span>
+                      ) : null}
+                    </div>
+                    <span className="flex items-center gap-1.5">
+                      <span className="text-sm font-medium">{template.name}</span>
+                      {ok ? (
+                        <span className="text-emerald-600">✓</span>
+                      ) : (
+                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">{requiredLabel(template)}</span>
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           )}
         </>
