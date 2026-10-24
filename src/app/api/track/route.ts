@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { ownerIdForHandle } from "@/lib/public-data";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/server";
 
 const bodySchema = z.object({
@@ -13,6 +14,9 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: Request) {
+  if (!rateLimit(`track:${clientIp(request)}`, 120, 60_000)) {
+    return NextResponse.json({ ok: false }, { status: 429 });
+  }
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ ok: false }, { status: 400 });
   const { handle, kind, blockId, target, referrer, visitId } = parsed.data;
