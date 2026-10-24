@@ -796,6 +796,13 @@ function SubscribeForm({
       <button type="submit" disabled={state === "sending"} className={buttonClassName}>
         {state === "sending" ? "Enviando..." : block.buttonText}
       </button>
+      <p className="text-center text-[11px] opacity-70">
+        Ao enviar, você concorda em receber contato e com a{" "}
+        <a href="/privacidade" target="_blank" rel="noreferrer" className="underline">
+          Política de Privacidade
+        </a>
+        .
+      </p>
       {state === "error" ? <p className="text-center text-sm">Não deu certo. Tente de novo.</p> : null}
     </form>
   );
