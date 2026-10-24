@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { env } from "@/lib/env";
+import { siteOrigin } from "@/lib/request";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthState = { error?: string; message?: string };
@@ -38,7 +38,7 @@ export async function signUp(_: AuthState, form: FormData): Promise<AuthState> {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo: `${env.siteUrl()}/auth/callback` },
+    options: { emailRedirectTo: `${await siteOrigin()}/auth/callback` },
   });
   if (error) {
     console.error("signUp failed:", error.code, error.message);

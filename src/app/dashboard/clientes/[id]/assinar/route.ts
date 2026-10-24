@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { env, stripePriceId } from "@/lib/env";
+import { stripePriceId } from "@/lib/env";
+import { siteOrigin } from "@/lib/request";
 import { createCustomer, createClientSubscriptionCheckout } from "@/lib/payments/billing";
 import { createAdminClient } from "@/lib/supabase/server";
 import { normalizePlan } from "@/lib/plans";
@@ -10,7 +11,7 @@ import { getOwner } from "../../../context";
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { user, clients } = await getOwner();
   const { id } = await params;
-  const base = env.siteUrl();
+  const base = await siteOrigin();
 
   // Only a client this account manages, and only a real paid tier.
   const client = clients.find((c) => c.id === id);
