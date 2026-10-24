@@ -1,6 +1,6 @@
 "use server";
 
-import { env } from "@/lib/env";
+import { siteOrigin } from "@/lib/request";
 import { createAdminClient } from "@/lib/supabase/server";
 import { getOwner } from "../../../context";
 
@@ -22,7 +22,7 @@ export async function detachClient(clientId: string, _prev: DetachState, form: F
   if (email === (user.email ?? "").toLowerCase()) return { error: "Use o e-mail do cliente, não o seu." };
 
   const admin = createAdminClient();
-  const redirectTo = `${env.siteUrl()}/auth/callback`;
+  const redirectTo = `${await siteOrigin()}/auth/callback`;
 
   // Create the client's login, or reuse it if the e-mail already has one.
   let userId: string | null = null;

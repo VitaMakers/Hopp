@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { env } from "@/lib/env";
+import { siteOrigin } from "@/lib/request";
 import { requireUser } from "@/lib/supabase/server";
 import { OnboardingForm } from "./OnboardingForm";
 
@@ -17,7 +17,7 @@ export default async function OnboardingPage() {
         <p className="mt-2 text-sm text-stone-600">
           Escolha um modelo e o endereço que você vai colocar na bio das redes sociais.
         </p>
-        <OnboardingForm host={new URL(env.siteUrl()).host} />
+        <OnboardingForm host={new URL(await siteOrigin()).host} />
       </div>
     </main>
   );

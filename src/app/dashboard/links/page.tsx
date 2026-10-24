@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { env } from "@/lib/env";
+import { siteOrigin } from "@/lib/request";
 import { shortLinkLimit } from "@/lib/entitlements";
 import { deleteShortLink } from "../actions";
 import { getOwner } from "../context";
@@ -12,7 +12,7 @@ export default async function LinksPage() {
     .select("id, code, title, target_url, created_at")
     .eq("owner_id", profile.id)
     .order("created_at", { ascending: false });
-  const base = env.siteUrl();
+  const base = await siteOrigin();
   const limit = shortLinkLimit(profile.plan);
   const used = links?.length ?? 0;
   const full = used >= limit;

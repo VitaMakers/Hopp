@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { env } from "@/lib/env";
+import { siteOrigin } from "@/lib/request";
 import { getPaymentProvider } from "@/lib/payments";
 import { createAdminClient } from "@/lib/supabase/server";
 import { getOwner } from "../../../context";
@@ -9,7 +9,7 @@ import { getOwner } from "../../../context";
 // settings page.
 export async function GET() {
   const { user, profile } = await getOwner();
-  const base = env.siteUrl();
+  const base = await siteOrigin();
 
   try {
     const provider = getPaymentProvider();

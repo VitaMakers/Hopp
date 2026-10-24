@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { env } from "@/lib/env";
+import { siteOrigin } from "@/lib/request";
 import { formatBRL, FREE_CLIENTS, PLAN_PRICE_BRL } from "@/lib/plans";
 import { getOwner } from "../../context";
 import { NewClientForm } from "./NewClientForm";
@@ -27,7 +27,7 @@ export default async function NewClientPage() {
           </p>
         )}
         <NewClientForm
-          host={new URL(env.siteUrl()).host}
+          host={new URL(await siteOrigin()).host}
           paid={paid}
           essencialPrice={formatBRL(PLAN_PRICE_BRL.essencial)}
           profissionalPrice={formatBRL(PLAN_PRICE_BRL.profissional)}
