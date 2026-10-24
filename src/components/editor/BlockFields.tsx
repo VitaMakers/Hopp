@@ -278,6 +278,31 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
             placeholder="https://... (Mercado Pago, Hotmart, Stripe...)"
             onChange={(url) => onChange({ ...block, url })}
           />
+          <Toggle
+            label="Vender com Stripe (beta)"
+            checked={block.payWithStripe}
+            onChange={(payWithStripe) => onChange({ ...block, payWithStripe })}
+          />
+          {block.payWithStripe ? (
+            <>
+              <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+                Preço de venda (R$)
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={block.amountCents ? (block.amountCents / 100).toString() : ""}
+                  onChange={(e) => onChange({ ...block, amountCents: Math.max(0, Math.round((parseFloat(e.target.value) || 0) * 100)) })}
+                  className="field"
+                  placeholder="49,90"
+                />
+              </label>
+              <p className="-mt-1 text-xs text-stone-500">
+                O cliente paga pelo Stripe e o dinheiro cai direto na sua conta. Você precisa conectar o Stripe em
+                Configurações. Quando isto está ligado, o &quot;Link de pagamento&quot; acima é ignorado.
+              </p>
+            </>
+          ) : null}
         </div>
       );
     case "map":

@@ -585,10 +585,20 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
             ) : null}
             <div className="flex items-start justify-between gap-3">
               <h2 className="font-semibold">{block.title}</h2>
-              {block.price ? <span className="shrink-0 font-bold">{block.price}</span> : null}
+              {(() => {
+                const label =
+                  block.payWithStripe && block.amountCents > 0
+                    ? (block.amountCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                    : block.price;
+                return label ? <span className="shrink-0 font-bold">{label}</span> : null;
+              })()}
             </div>
             {block.description ? <p className="whitespace-pre-line text-[15px] opacity-80">{block.description}</p> : null}
-            {href ? (
+            {block.payWithStripe && block.amountCents > 0 ? (
+              <BuyButton handle={handle} blockId={block.id} className={`${btn} mt-2`}>
+                {block.buttonText || "Comprar"}
+              </BuyButton>
+            ) : href ? (
               <a href={href} target="_blank" rel="noopener noreferrer" className={`${btn} mt-2`} onClick={() => click(href)}>
                 {block.buttonText || "Comprar"}
               </a>
@@ -748,6 +758,49 @@ function Countdown({ title, endsAt }: { title: string; endsAt: string }) {
         ))}
       </div>
     </section>
+  );
+}
+
+function BuyButton({
+  handle,
+  blockId,
+  className,
+  children,
+}: {
+  handle?: string;
+  blockId: string;
+  className: string;
+  children: React.ReactNode;
+}) {
+  const [state, setState] = useState<"idle" | "loading" | "error" | "unavailable">("idle");
+
+  async function buy() {
+    if (!handle) return; // Editor preview: no real checkout.
+    setState("loading");
+    const res = await fetch("/api/buy", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ handle, blockId }),
+    }).catch(() => null);
+    const data = (await res?.json().catch(() => null)) as { ok?: boolean; url?: string; error?: string } | null;
+    if (data?.ok && data.url) {
+      window.location.href = data.url;
+      return;
+    }
+    setState(data?.error === "sem_pagamento" ? "unavailable" : "error");
+  }
+
+  return (
+    <>
+      <button type="button" onClick={buy} disabled={state === "loading"} className={className}>
+        {state === "loading" ? "Abrindo pagamento..." : children}
+      </button>
+      {state === "unavailable" ? (
+        <p className="text-center text-xs opacity-70">Pagamento indisponível no momento.</p>
+      ) : state === "error" ? (
+        <p className="text-center text-xs opacity-70">Não deu certo. Tente de novo.</p>
+      ) : null}
+    </>
   );
 }
 

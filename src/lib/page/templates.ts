@@ -93,7 +93,7 @@ function link(fields: Partial<Extract<Block, { type: "link" }>> & { title: strin
 }
 
 function product(fields: { label: string; title: string; description: string; imageUrl: string; buttonText: string; url: string }): Block {
-  return { id: id(), enabled: true, type: "product", price: "", ...fields };
+  return { id: id(), enabled: true, type: "product", price: "", payWithStripe: false, amountCents: 0, ...fields };
 }
 
 const baseTheme: Theme = {

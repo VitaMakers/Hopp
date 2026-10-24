@@ -140,6 +140,10 @@ export const productBlockSchema = z.object({
   imageUrl: z.string().max(1000),
   buttonText: z.string().max(40),
   url: z.string().max(2000),
+  // Sell with Stripe (beta): charges the buyer on the creator's connected
+  // Stripe account. amountCents is the price in centavos used for the charge.
+  payWithStripe: z.boolean().default(false),
+  amountCents: z.number().int().min(0).max(100_000_000).default(0),
 });
 
 export const mapBlockSchema = z.object({

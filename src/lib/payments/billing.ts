@@ -45,3 +45,34 @@ export async function createClientSubscriptionCheckout(input: {
 export function constructWebhookEvent(payload: string, signature: string): Stripe.Event {
   return client().webhooks.constructEvent(payload, signature, stripeWebhookSecret());
 }
+
+// One-time product sale: a direct charge on the creator's connected account, so
+// the money goes straight to the creator. The price comes from the server.
+export async function createProductCheckout(input: {
+  accountId: string;
+  name: string;
+  amountCents: number;
+  successUrl: string;
+  cancelUrl: string;
+}): Promise<string> {
+  const session = await client().checkout.sessions.create(
+    {
+      mode: "payment",
+      line_items: [
+        {
+          price_data: {
+            currency: "brl",
+            product_data: { name: input.name.slice(0, 120) || "Produto" },
+            unit_amount: input.amountCents,
+          },
+          quantity: 1,
+        },
+      ],
+      success_url: input.successUrl,
+      cancel_url: input.cancelUrl,
+    },
+    { stripeAccount: input.accountId },
+  );
+  if (!session.url) throw new Error("Stripe não retornou a URL do checkout.");
+  return session.url;
+}

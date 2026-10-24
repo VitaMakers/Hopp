@@ -28,7 +28,7 @@ function sub(title: string, buttonText: string, collectPhone = false): Block {
   return { id: bid(), enabled: true, type: "subscribe", title, buttonText, collectPhone, thankYouMessage: "Prontinho! Recebi seus dados e já já falo com você." };
 }
 function prodB(p: { label?: string; title: string; description: string; price?: string; seed: string; buttonText: string; url: string }): Block {
-  return { id: bid(), enabled: true, type: "product", label: p.label ?? "", price: p.price ?? "", title: p.title, description: p.description, imageUrl: pic(p.seed, 900, 700), buttonText: p.buttonText, url: p.url };
+  return { id: bid(), enabled: true, type: "product", label: p.label ?? "", price: p.price ?? "", title: p.title, description: p.description, imageUrl: pic(p.seed, 900, 700), buttonText: p.buttonText, url: p.url, payWithStripe: false, amountCents: 0 };
 }
 function statsB(items: [string, string][]): Block {
   return { id: bid(), enabled: true, type: "stats", items: items.map(([value, label]) => ({ value, label })) };
