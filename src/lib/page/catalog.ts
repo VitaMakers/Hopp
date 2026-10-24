@@ -96,6 +96,8 @@ export function createBlock(type: BlockType): Block {
         imageUrl: "",
         buttonText: "Comprar",
         url: "https://",
+        payWithStripe: false,
+        amountCents: 0,
       };
     case "map":
       return { ...base, type, title: "Onde estamos", address: "" };
