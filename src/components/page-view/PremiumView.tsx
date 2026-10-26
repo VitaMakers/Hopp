@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { APP_NAME } from "@/lib/env";
+import { showsBadge } from "@/lib/entitlements";
 import type { Block, PageDoc } from "@/lib/page/schema";
 import { SOCIAL_LABELS } from "@/lib/page/catalog";
 import { youtubeEmbedUrl } from "@/lib/page/embed";
@@ -13,7 +14,14 @@ import { VerifiedCheck } from "./VerifiedCheck";
 // The four Vita premium designs. Each one mirrors the markup of the
 // original template so src/app/premium.css styles it the same way.
 
-type Props = { doc: PageDoc; handle?: string };
+type Props = { doc: PageDoc; handle?: string; plan?: string };
+
+// The footer credit. Profissional keeps its own brand; every other plan
+// carries the Virtú.bio name (same rule as the badge).
+function footerOwner(plan: string | undefined, name: string, handle?: string): string {
+  if (showsBadge(plan)) return APP_NAME;
+  return name.trim() || handle || APP_NAME;
+}
 type LinkBlock = Extract<Block, { type: "link" }>;
 type ProductBlock = Extract<Block, { type: "product" }>;
 
@@ -50,19 +58,19 @@ function BlockLink({
   );
 }
 
-export function PremiumView({ doc, handle }: Props) {
+export function PremiumView({ doc, handle, plan }: Props) {
   const page = (() => {
     switch (doc.theme.premium) {
       case "authority":
-        return <Authority doc={doc} handle={handle} />;
+        return <Authority doc={doc} handle={handle} plan={plan} />;
       case "spotlight":
-        return <Spotlight doc={doc} handle={handle} />;
+        return <Spotlight doc={doc} handle={handle} plan={plan} />;
       case "ecosystem":
-        return <Ecosystem doc={doc} handle={handle} />;
+        return <Ecosystem doc={doc} handle={handle} plan={plan} />;
       case "catalog":
-        return <Catalog doc={doc} handle={handle} />;
+        return <Catalog doc={doc} handle={handle} plan={plan} />;
       case "experience":
-        return <Experience doc={doc} handle={handle} />;
+        return <Experience doc={doc} handle={handle} plan={plan} />;
       default:
         return null;
     }
@@ -70,7 +78,7 @@ export function PremiumView({ doc, handle }: Props) {
   return <div className="vita-page min-h-full">{page}</div>;
 }
 
-function Authority({ doc, handle }: Props) {
+function Authority({ doc, handle, plan }: Props) {
   const { profile, theme, premium } = doc;
   return (
     <div
@@ -110,14 +118,14 @@ function Authority({ doc, handle }: Props) {
       <footer className="premium-footer">
         <strong>{premium.footer || profile.name || APP_NAME}</strong>
         <p>
-          {profile.name || APP_NAME} · © {year}. Todos os direitos reservados.
+          {footerOwner(plan, profile.name, handle)} · © {year}. Todos os direitos reservados.
         </p>
       </footer>
     </div>
   );
 }
 
-function Spotlight({ doc, handle }: Props) {
+function Spotlight({ doc, handle, plan }: Props) {
   const { profile, theme, premium } = doc;
   const cover = imageSrc(profile.coverUrl);
   const site = linkHref(premium.siteUrl);
@@ -200,7 +208,7 @@ function Spotlight({ doc, handle }: Props) {
       </div>
       <footer className="spotlight-footer">
         <p>
-          © {year} {profile.name || APP_NAME}. Todos os direitos reservados.
+          © {year} {footerOwner(plan, profile.name, handle)}. Todos os direitos reservados.
         </p>
         <nav aria-label="Informações legais">
           {privacy ? <a href={privacy}>Política de Privacidade</a> : null}
@@ -211,7 +219,7 @@ function Spotlight({ doc, handle }: Props) {
   );
 }
 
-function Ecosystem({ doc, handle }: Props) {
+function Ecosystem({ doc, handle, plan }: Props) {
   const { profile, theme, premium } = doc;
   const cover = imageSrc(profile.coverUrl);
   const logo = imageSrc(profile.logo);
@@ -312,7 +320,7 @@ function Ecosystem({ doc, handle }: Props) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           {premium.header !== "none" && logo ? <img src={logo} alt={profile.name} /> : <strong>{profile.name || APP_NAME}</strong>}
           <p>
-            © {year} {profile.name || APP_NAME}. Todos os direitos reservados.
+            © {year} {footerOwner(plan, profile.name, handle)}. Todos os direitos reservados.
           </p>
         </footer>
       </div>
@@ -474,7 +482,7 @@ function ExpItem({ block, handle, href, className, children }: { block: LinkBloc
   );
 }
 
-function Catalog({ doc, handle }: Props) {
+function Catalog({ doc, handle, plan }: Props) {
   const { profile, theme, premium } = doc;
   const lines = (premium.heading || "Conheça meus produtos").split("\n").filter(Boolean).slice(0, 6);
   const whatsapp = whatsappHref(profile.floatingWhatsapp, "");
@@ -548,7 +556,7 @@ function Catalog({ doc, handle }: Props) {
             </p>
           ) : null}
           <p>
-            © {profile.name || APP_NAME} · Todos os direitos reservados · {year}
+            © {footerOwner(plan, profile.name, handle)} · Todos os direitos reservados · {year}
           </p>
           {whatsapp ? <p>{premium.contactLabel || "Fale comigo"}</p> : null}
         </footer>

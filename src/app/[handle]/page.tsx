@@ -35,6 +35,7 @@ export default async function PublicPage({ params }: Params) {
     <PageView
       doc={page.doc}
       handle={page.handle}
+      plan={page.plan}
       footer={
         showsBadge(page.plan) ? (
           <Link href="/" className="mt-12 flex flex-col items-center gap-0.5 text-center opacity-70 transition hover:opacity-100">
