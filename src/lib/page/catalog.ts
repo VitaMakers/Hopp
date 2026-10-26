@@ -10,6 +10,7 @@ export const BLOCK_CATALOG: Record<BlockType, { label: string; description: stri
   faq: { label: "Perguntas frequentes", description: "Perguntas que abrem e fecham" },
   countdown: { label: "Contagem regressiva", description: "Conta o tempo até uma data" },
   subscribe: { label: "Captar contatos", description: "Formulário de e-mail e telefone" },
+  form: { label: "Formulário", description: "Perguntas personalizadas que enviam as respostas pro seu WhatsApp" },
   whatsapp: { label: "WhatsApp", description: "Botão que abre uma conversa com mensagem pronta" },
   image: { label: "Imagem", description: "Foto ou banner, com link opcional" },
   product: { label: "Produto", description: "Foto, preço e botão de compra" },
@@ -83,6 +84,21 @@ export function createBlock(type: BlockType): Block {
       };
     case "whatsapp":
       return { ...base, type, phone: "", message: "Olá! Vim pela sua página.", buttonText: "Falar no WhatsApp" };
+    case "form":
+      return {
+        ...base,
+        type,
+        title: "Fale conosco",
+        intro: "Preencha os campos e falaremos com você no WhatsApp.",
+        whatsapp: "",
+        buttonText: "Enviar",
+        thankYouMessage: "Recebemos suas respostas. Obrigado!",
+        fields: [
+          { label: "Nome", type: "text", required: true, options: [] },
+          { label: "Telefone", type: "phone", required: true, options: [] },
+          { label: "Mensagem", type: "textarea", required: false, options: [] },
+        ],
+      };
     case "image":
       return { ...base, type, imageUrl: "", alt: "", url: "" };
     case "product":
@@ -273,6 +289,8 @@ export function blockSummary(block: Block): string {
     case "product":
     case "map":
       return block.title;
+    case "form":
+      return block.title || `Formulário (${block.fields.length} campos)`;
     case "gallery":
       return block.title || `Galeria (${block.items.length})`;
     case "videos":

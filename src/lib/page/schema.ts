@@ -186,6 +186,27 @@ export const videosBlockSchema = z.object({
     .max(9),
 });
 
+// A multi-field form (WhatsForm style): the visitor fills it in and, on
+// submit, the answers open a pre-filled WhatsApp chat with `whatsapp`. The
+// answers are also saved to the panel.
+export const FORM_FIELD_TYPES = ["text", "email", "phone", "textarea", "select"] as const;
+export const formFieldSchema = z.object({
+  label: z.string().max(120),
+  type: z.enum(FORM_FIELD_TYPES).default("text"),
+  required: z.boolean().default(false),
+  options: z.array(z.string().max(120)).max(20).default([]),
+});
+export const formBlockSchema = z.object({
+  ...blockBase,
+  type: z.literal("form"),
+  title: z.string().max(120).default(""),
+  intro: z.string().max(500).default(""),
+  whatsapp: z.string().max(30).default(""),
+  buttonText: z.string().max(40).default("Enviar"),
+  thankYouMessage: z.string().max(300).default("Recebemos suas respostas. Obrigado!"),
+  fields: z.array(formFieldSchema).max(20).default([]),
+});
+
 export const blockSchema = z.discriminatedUnion("type", [
   linkBlockSchema,
   headingBlockSchema,
@@ -203,6 +224,7 @@ export const blockSchema = z.discriminatedUnion("type", [
   statsBlockSchema,
   galleryBlockSchema,
   videosBlockSchema,
+  formBlockSchema,
 ]);
 
 export const BUTTON_SHAPES = ["square", "rounded", "pill"] as const;
