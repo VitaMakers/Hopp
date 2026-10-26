@@ -66,6 +66,56 @@ export async function addClient(_: AddClientState, form: FormData): Promise<AddC
   redirect("/dashboard");
 }
 
+export type DeleteClientState = { error?: string };
+
+// Permanently deletes a managed client and everything that keys on it: page,
+// published site, revisions, short links, events and captured contacts all
+// cascade from the profile row. Cancels any active subscription first so the
+// account stops being billed. Irreversible.
+export async function deleteClient(
+  clientId: string,
+  _prev: DeleteClientState,
+  form: FormData,
+): Promise<DeleteClientState> {
+  const { clients, accountId } = await getOwner();
+  const client = clients.find((c) => c.id === clientId);
+  if (!client) return { error: "Cliente não encontrado." };
+  if (client.id === accountId) {
+    return { error: "Esta é a sua página principal. Para excluí-la, use Configurações → Excluir conta." };
+  }
+
+  // Strong confirmation: the handle must be typed exactly.
+  const typed = String(form.get("confirm") ?? "").trim().toLowerCase();
+  if (typed !== client.handle.toLowerCase()) {
+    return { error: `Digite exatamente "${client.handle}" para confirmar a exclusão.` };
+  }
+
+  const admin = createAdminClient();
+
+  // Stop any billing tied to this client before removing it.
+  const { data } = await admin.from("profiles").select("stripe_subscription_id").eq("id", clientId).maybeSingle();
+  if (data?.stripe_subscription_id) {
+    try {
+      await cancelSubscription(data.stripe_subscription_id);
+    } catch (error) {
+      console.error("cancel subscription on delete failed", error);
+    }
+  }
+
+  // Scoped to this account as defense in depth on top of the ownership check.
+  const { error } = await admin.from("profiles").delete().eq("id", clientId).eq("account_id", accountId);
+  if (error) return { error: "Não foi possível excluir o cliente. Tente de novo." };
+
+  // Forget the selection if it pointed at the client just deleted.
+  const cookieStore = await cookies();
+  if (cookieStore.get(CLIENT_COOKIE)?.value === clientId) {
+    cookieStore.set(CLIENT_COOKIE, "", { ...COOKIE_OPTS, maxAge: 0 });
+  }
+
+  revalidatePath("/dashboard/clientes");
+  redirect("/dashboard/clientes?excluido=1");
+}
+
 // Cancels a client's subscription (if any) and drops it back to the free plan.
 export async function cancelClientSubscription(clientId: string) {
   const { clients } = await getOwner();
