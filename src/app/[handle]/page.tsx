@@ -8,6 +8,11 @@ import { getPublishedPage } from "@/lib/public-data";
 
 type Params = { params: Promise<{ handle: string }> };
 
+// Serve the published page from cache instead of hitting the database on every
+// visit. Publishing already revalidates this path on demand, so edits still
+// show immediately; this revalidate is just a safety refresh.
+export const revalidate = 300;
+
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const page = await getPublishedPage((await params).handle);
   if (!page) return { title: "Página não encontrada" };
