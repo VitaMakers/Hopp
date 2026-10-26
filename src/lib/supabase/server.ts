@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createPlainClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
@@ -30,10 +31,12 @@ export function createAdminClient() {
   });
 }
 
-export async function requireUser() {
+// Cached per request: the layout and the page both need the signed-in user,
+// and without this each would re-validate the session with Supabase Auth.
+export const requireUser = cache(async () => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   return { supabase, user };
-}
+});

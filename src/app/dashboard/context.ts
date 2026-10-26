@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/supabase/server";
@@ -18,7 +19,7 @@ export type Client = {
 // The account's clients plus the one currently selected. All dashboard reads
 // and writes go through `profile`, so switching the cookie switches the whole
 // panel to another client without touching any downstream query.
-export async function getOwner() {
+export const getOwner = cache(async () => {
   const { supabase, user } = await requireUser();
   if (!user) redirect("/login");
 
@@ -34,4 +35,4 @@ export async function getOwner() {
   const profile = clients.find((c) => c.id === selectedId) ?? clients[0];
 
   return { supabase, user, profile, clients, accountId: user.id };
-}
+});
