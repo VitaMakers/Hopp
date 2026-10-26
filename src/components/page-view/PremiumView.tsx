@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { APP_NAME } from "@/lib/env";
 import type { Block, PageDoc } from "@/lib/page/schema";
 import { SOCIAL_LABELS } from "@/lib/page/catalog";
 import { youtubeEmbedUrl } from "@/lib/page/embed";
@@ -77,7 +78,7 @@ function Authority({ doc, handle }: Props) {
       style={{ "--premium-bg": theme.background, "--premium-text": theme.text, "--premium-accent": theme.accent } as React.CSSProperties}
     >
       <header className="premium-profile">
-        <h1>{profile.name}{profile.verified ? <VerifiedCheck className="ml-1.5 inline h-[0.8em] w-[0.8em] align-middle" /> : null}</h1>
+        <h1>{profile.name || APP_NAME}{profile.verified ? <VerifiedCheck className="ml-1.5 inline h-[0.8em] w-[0.8em] align-middle" /> : null}</h1>
         {profile.bio ? <p>{profile.bio}</p> : null}
         <div className="premium-divider">LINKS</div>
       </header>
@@ -107,9 +108,9 @@ function Authority({ doc, handle }: Props) {
         })}
       </div>
       <footer className="premium-footer">
-        <strong>{premium.footer || profile.name}</strong>
+        <strong>{premium.footer || profile.name || APP_NAME}</strong>
         <p>
-          {profile.name} · © {year}. Todos os direitos reservados.
+          {profile.name || APP_NAME} · © {year}. Todos os direitos reservados.
         </p>
       </footer>
     </div>
@@ -142,7 +143,7 @@ function Spotlight({ doc, handle }: Props) {
             // eslint-disable-next-line @next/next/no-img-element
             <img className="spotlight-logo" src={logo} alt={profile.name} />
           ) : (
-            <h1>{profile.name}{profile.verified ? <VerifiedCheck className="ml-1.5 inline h-[0.8em] w-[0.8em] align-middle" /> : null}</h1>
+            <h1>{profile.name || APP_NAME}{profile.verified ? <VerifiedCheck className="ml-1.5 inline h-[0.8em] w-[0.8em] align-middle" /> : null}</h1>
           )}
           <div className="spotlight-actions">
             <nav aria-label="Redes sociais">
@@ -199,7 +200,7 @@ function Spotlight({ doc, handle }: Props) {
       </div>
       <footer className="spotlight-footer">
         <p>
-          © {year} {profile.name}. Todos os direitos reservados.
+          © {year} {profile.name || APP_NAME}. Todos os direitos reservados.
         </p>
         <nav aria-label="Informações legais">
           {privacy ? <a href={privacy}>Política de Privacidade</a> : null}
@@ -231,7 +232,7 @@ function Ecosystem({ doc, handle }: Props) {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logo} alt={profile.name} />
             ) : (
-              <h1>{profile.name}{profile.verified ? <VerifiedCheck className="ml-1.5 inline h-[0.8em] w-[0.8em] align-middle" /> : null}</h1>
+              <h1>{profile.name || APP_NAME}{profile.verified ? <VerifiedCheck className="ml-1.5 inline h-[0.8em] w-[0.8em] align-middle" /> : null}</h1>
             )}
             {profile.bio ? <p>{profile.bio}</p> : null}
           </div>
@@ -309,9 +310,9 @@ function Ecosystem({ doc, handle }: Props) {
         </section>
         <footer className="ecosystem-footer">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          {premium.header !== "none" && logo ? <img src={logo} alt={profile.name} /> : <strong>{profile.name}</strong>}
+          {premium.header !== "none" && logo ? <img src={logo} alt={profile.name} /> : <strong>{profile.name || APP_NAME}</strong>}
           <p>
-            © {year} {profile.name}. Todos os direitos reservados.
+            © {year} {profile.name || APP_NAME}. Todos os direitos reservados.
           </p>
         </footer>
       </div>
@@ -369,7 +370,7 @@ function Experience({ doc, handle }: Props) {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logo} alt={profile.name} className="h-12 w-auto object-contain" />
             ) : (
-              <h1 className="text-2xl font-bold">{profile.name}</h1>
+              <h1 className="text-2xl font-bold">{profile.name || APP_NAME}</h1>
             )}
           </div>
         </div>
@@ -547,7 +548,7 @@ function Catalog({ doc, handle }: Props) {
             </p>
           ) : null}
           <p>
-            © {profile.name} · Todos os direitos reservados · {year}
+            © {profile.name || APP_NAME} · Todos os direitos reservados · {year}
           </p>
           {whatsapp ? <p>{premium.contactLabel || "Fale comigo"}</p> : null}
         </footer>
