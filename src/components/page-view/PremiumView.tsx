@@ -143,7 +143,7 @@ function Spotlight({ doc, handle, plan }: Props) {
       <header className="spotlight-hero">
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img className="spotlight-portrait" src={cover} alt="" />
+          <img className="spotlight-portrait" src={cover} alt="" style={{ objectPosition: `${premium.coverX}% ${premium.coverY}%` }} />
         ) : null}
         <div className="spotlight-hero-shade" />
         <div className="spotlight-identity">

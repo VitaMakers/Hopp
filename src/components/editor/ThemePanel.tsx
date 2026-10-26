@@ -1,6 +1,7 @@
 "use client";
 
 import { THEME_PRESETS } from "@/lib/page/catalog";
+import { imageSrc } from "@/lib/page/links";
 import type { PageDoc, Theme } from "@/lib/page/schema";
 import { Card, TextArea, TextField, Toggle } from "./fields";
 
@@ -85,6 +86,8 @@ function PremiumPanel({ doc, onChange }: PanelProps) {
   const design = doc.theme.premium as Exclude<Theme["premium"], "">;
   const setTheme = (patch: Partial<Theme>) => onChange({ ...doc, theme: { ...doc.theme, ...patch } });
   const setPremium = (patch: Partial<PageDoc["premium"]>) => onChange({ ...doc, premium: { ...doc.premium, ...patch } });
+  const coverSrc = imageSrc(doc.profile.coverUrl);
+  const coverPos = `${doc.premium.coverX}% ${doc.premium.coverY}%`;
   const colors: [keyof Theme, string][] = [
     ["background", "Fundo"],
     ["text", "Texto"],
@@ -145,10 +148,40 @@ function PremiumPanel({ doc, onChange }: PanelProps) {
             <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
               Posição da foto (horizontal)
               <input type="range" min={0} max={100} value={doc.premium.coverX} onChange={(event) => setPremium({ coverX: Number(event.target.value) })} />
+              <div className="mt-1 aspect-video w-full overflow-hidden rounded-lg bg-stone-100 ring-1 ring-stone-200">
+                {coverSrc ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={coverSrc}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    style={{ objectPosition: coverPos }}
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center px-2 text-center text-[10px] text-stone-400">
+                    Defina a capa em Perfil
+                  </div>
+                )}
+              </div>
             </label>
             <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
               Posição da foto (vertical)
               <input type="range" min={0} max={100} value={doc.premium.coverY} onChange={(event) => setPremium({ coverY: Number(event.target.value) })} />
+              <div className="mt-1 aspect-[3/4] w-full overflow-hidden rounded-lg bg-stone-100 ring-1 ring-stone-200">
+                {coverSrc ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={coverSrc}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    style={{ objectPosition: coverPos }}
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center px-2 text-center text-[10px] text-stone-400">
+                    Defina a capa em Perfil
+                  </div>
+                )}
+              </div>
             </label>
           </div>
         ) : null}
