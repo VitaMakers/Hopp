@@ -46,6 +46,12 @@ export function constructWebhookEvent(payload: string, signature: string): Strip
   return client().webhooks.constructEvent(payload, signature, stripeWebhookSecret());
 }
 
+// Cancels a client's subscription immediately. The webhook then confirms the
+// downgrade to free.
+export async function cancelSubscription(subscriptionId: string): Promise<void> {
+  await client().subscriptions.cancel(subscriptionId);
+}
+
 // One-time product sale: a direct charge on the creator's connected account, so
 // the money goes straight to the creator. The price comes from the server.
 export async function createProductCheckout(input: {

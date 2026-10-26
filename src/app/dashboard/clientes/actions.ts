@@ -1,13 +1,15 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { handleError, normalizeHandle } from "@/lib/handles";
 import { defaultPageDoc } from "@/lib/page/catalog";
+import { cancelSubscription } from "@/lib/payments/billing";
 import { TEMPLATES } from "@/lib/page/templates";
 import { FREE_CLIENTS } from "@/lib/plans";
-import { requireUser } from "@/lib/supabase/server";
-import { CLIENT_COOKIE } from "../context";
+import { createAdminClient, requireUser } from "@/lib/supabase/server";
+import { CLIENT_COOKIE, getOwner } from "../context";
 
 const COOKIE_OPTS = { httpOnly: true, sameSite: "lax" as const, path: "/", maxAge: 60 * 60 * 24 * 365 };
 
@@ -62,4 +64,21 @@ export async function addClient(_: AddClientState, form: FormData): Promise<AddC
   (await cookies()).set(CLIENT_COOKIE, profile.id, COOKIE_OPTS);
   if (paidSlot) redirect(`/dashboard/clientes/${profile.id}/assinar?plan=${plan}`);
   redirect("/dashboard");
+}
+
+// Cancels a client's subscription (if any) and drops it back to the free plan.
+export async function cancelClientSubscription(clientId: string) {
+  const { clients } = await getOwner();
+  if (!clients.find((c) => c.id === clientId)) return;
+  const admin = createAdminClient();
+  const { data } = await admin.from("profiles").select("stripe_subscription_id").eq("id", clientId).maybeSingle();
+  if (data?.stripe_subscription_id) {
+    try {
+      await cancelSubscription(data.stripe_subscription_id);
+    } catch (error) {
+      console.error("cancel subscription failed", error);
+    }
+  }
+  await admin.from("profiles").update({ plan: "free", stripe_subscription_id: null }).eq("id", clientId);
+  revalidatePath("/dashboard/clientes");
 }
