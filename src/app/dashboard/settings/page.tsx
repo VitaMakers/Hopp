@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { getPaymentProvider, type AccountStatus } from "@/lib/payments";
 import { PLAN_LABEL, normalizePlan } from "@/lib/plans";
 import { getOwner } from "../context";
+import { SecurityForm } from "./SecurityForm";
 
 export default async function SettingsPage({
   searchParams,
@@ -59,6 +61,19 @@ export default async function SettingsPage({
           </>
         )}
       </section>
+
+      <section className="rounded-xl bg-white p-5 ring-1 ring-stone-200">
+        <h2 className="font-semibold">Segurança da conta</h2>
+        <div className="mt-3">
+          <SecurityForm />
+        </div>
+      </section>
+
+      <p className="text-center text-xs text-stone-400">
+        <Link href="/privacidade" className="underline">Política de Privacidade</Link>
+        {" · "}
+        <Link href="/termos" className="underline">Termos de Uso</Link>
+      </p>
     </div>
   );
 }
