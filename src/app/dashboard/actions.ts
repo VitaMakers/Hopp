@@ -90,3 +90,9 @@ export async function deleteContact(id: string) {
   await supabase.from("contacts").delete().eq("id", id);
   revalidatePath("/dashboard/contacts");
 }
+
+export async function deleteFormResponse(id: string) {
+  const { supabase } = await getOwner();
+  await supabase.from("form_responses").delete().eq("id", id);
+  revalidatePath("/dashboard/formularios");
+}

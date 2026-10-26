@@ -247,6 +247,74 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
           <p className="text-xs text-stone-500">Os contatos aparecem em Contatos, no menu do painel.</p>
         </div>
       );
+    case "form":
+      return (
+        <div className="flex flex-col gap-3">
+          <TextField label="Título" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
+          <TextArea label="Texto de introdução" value={block.intro} maxLength={500} onChange={(intro) => onChange({ ...block, intro })} />
+          <TextField
+            label="WhatsApp que recebe (com DDD)"
+            type="tel"
+            value={block.whatsapp}
+            maxLength={30}
+            placeholder="(11) 99999-9999"
+            onChange={(whatsapp) => onChange({ ...block, whatsapp })}
+          />
+          <TextField label="Texto do botão" value={block.buttonText} maxLength={40} onChange={(buttonText) => onChange({ ...block, buttonText })} />
+          <TextField
+            label="Mensagem de agradecimento"
+            value={block.thankYouMessage}
+            maxLength={300}
+            onChange={(thankYouMessage) => onChange({ ...block, thankYouMessage })}
+          />
+          <p className="pt-1 text-xs font-semibold uppercase tracking-wide text-stone-500">Campos do formulário</p>
+          {block.fields.map((field, index) => {
+            const setField = (patch: Partial<typeof field>) =>
+              onChange({ ...block, fields: block.fields.map((f, i) => (i === index ? { ...f, ...patch } : f)) });
+            return (
+              <div key={index} className="flex flex-col gap-2 rounded-lg bg-stone-50 p-3">
+                <TextField label={`Campo ${index + 1}`} value={field.label} maxLength={120} onChange={(label) => setField({ label })} />
+                <Options
+                  label="Tipo"
+                  value={field.type}
+                  options={{ text: "Texto", email: "E-mail", phone: "Telefone", textarea: "Texto longo", select: "Escolha" }}
+                  onChange={(type) => setField({ type })}
+                />
+                {field.type === "select" ? (
+                  <TextArea
+                    label="Opções (uma por linha)"
+                    value={field.options.join("\n")}
+                    maxLength={800}
+                    onChange={(value) =>
+                      setField({ options: value.split("\n").map((o) => o.trim()).filter(Boolean).slice(0, 20) })
+                    }
+                  />
+                ) : null}
+                <Toggle label="Obrigatório" checked={field.required} onChange={(required) => setField({ required })} />
+                <button
+                  type="button"
+                  onClick={() => onChange({ ...block, fields: block.fields.filter((_, i) => i !== index) })}
+                  className="self-start text-xs text-red-600"
+                >
+                  Remover campo
+                </button>
+              </div>
+            );
+          })}
+          {block.fields.length < 20 ? (
+            <button
+              type="button"
+              onClick={() =>
+                onChange({ ...block, fields: [...block.fields, { label: "", type: "text", required: false, options: [] }] })
+              }
+              className="self-start text-sm underline"
+            >
+              + Adicionar campo
+            </button>
+          ) : null}
+          <p className="text-xs text-stone-500">As respostas aparecem em Formulários, no menu do painel.</p>
+        </div>
+      );
     case "whatsapp":
       return (
         <div className="flex flex-col gap-3">

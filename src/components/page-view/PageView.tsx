@@ -545,6 +545,8 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
       return <Countdown title={block.title} endsAt={block.endsAt} />;
     case "subscribe":
       return <SubscribeForm block={block} handle={handle} buttonClassName={btn} />;
+    case "form":
+      return <FormBlock block={block} handle={handle} buttonClassName={btn} />;
     case "whatsapp": {
       const href = whatsappHref(block.phone, block.message);
       const label = (
@@ -860,6 +862,102 @@ function SubscribeForm({
         .
       </p>
       {state === "error" ? <p className="text-center text-sm">Não deu certo. Tente de novo.</p> : null}
+    </form>
+  );
+}
+
+function FormBlock({
+  block,
+  handle,
+  buttonClassName,
+}: {
+  block: Extract<Block, { type: "form" }>;
+  handle?: string;
+  buttonClassName: string;
+}) {
+  const [state, setState] = useState<"idle" | "sending" | "done">("idle");
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const answers = block.fields.map((f, i) => ({
+      label: f.label || `Campo ${i + 1}`,
+      value: String(data.get(`f${i}`) ?? "").trim(),
+    }));
+
+    // In the editor preview there is no page to submit to, so just simulate.
+    if (!handle) {
+      setState("done");
+      return;
+    }
+
+    // Save the response to the panel (best-effort).
+    setState("sending");
+    fetch("/api/form", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ handle, blockId: block.id, answers }),
+    }).catch(() => null);
+
+    // Open WhatsApp with the answers pre-filled.
+    const lines = answers.filter((a) => a.value).map((a) => `*${a.label}:* ${a.value}`);
+    const message = [block.title, ...lines].filter(Boolean).join("\n");
+    const href = whatsappHref(block.whatsapp, message);
+    if (href) window.open(href, "_blank", "noopener");
+
+    setState("done");
+  }
+
+  const input =
+    "w-full rounded-[var(--btn-radius)] border border-current/25 bg-transparent px-4 py-3 outline-none focus:border-current/60";
+
+  if (state === "done") {
+    return <p className="rounded-[var(--btn-radius)] p-4 text-center font-medium">{block.thankYouMessage}</p>;
+  }
+
+  return (
+    <form onSubmit={onSubmit} className="flex w-full flex-col gap-2.5 text-left">
+      {block.title ? <p className="text-center font-semibold">{block.title}</p> : null}
+      {block.intro ? <p className="text-center text-sm opacity-80">{block.intro}</p> : null}
+      {block.fields.map((f, i) => (
+        <label key={i} className="flex flex-col gap-1 text-sm">
+          <span className="font-medium">
+            {f.label}
+            {f.required ? " *" : ""}
+          </span>
+          {f.type === "textarea" ? (
+            <textarea name={`f${i}`} required={f.required} rows={3} className={input} />
+          ) : f.type === "select" ? (
+            <select name={`f${i}`} required={f.required} defaultValue="" className={input}>
+              <option value="" disabled>
+                Selecione...
+              </option>
+              {f.options.map((o, oi) => (
+                <option key={oi} value={o}>
+                  {o}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              name={`f${i}`}
+              required={f.required}
+              type={f.type === "email" ? "email" : f.type === "phone" ? "tel" : "text"}
+              className={input}
+            />
+          )}
+        </label>
+      ))}
+      <button type="submit" disabled={state === "sending"} className={buttonClassName}>
+        {block.buttonText || "Enviar"}
+      </button>
+      <p className="text-center text-[11px] opacity-70">
+        Ao enviar, você concorda com a{" "}
+        <a href="/privacidade" target="_blank" rel="noreferrer" className="underline">
+          Política de Privacidade
+        </a>
+        .
+      </p>
     </form>
   );
 }
