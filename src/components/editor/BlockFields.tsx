@@ -23,6 +23,7 @@ function Options<T extends string>({ label, value, options, onChange }: { label:
   );
 }
 import { TextArea, TextField, Toggle } from "./fields";
+import { UploadButton } from "./UploadButton";
 
 // datetime-local works in local time without seconds or zone; the document
 // stores an ISO instant.
@@ -100,6 +101,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
             placeholder="https://..."
             onChange={(imageUrl) => onChange({ ...block, imageUrl })}
           />
+          <UploadButton label="Enviar imagem" onUploaded={(imageUrl) => onChange({ ...block, imageUrl })} />
           <Toggle label="Destacar (o botão balança de tempos em tempos)" checked={block.highlight} onChange={(highlight) => onChange({ ...block, highlight })} />
         </div>
       );
@@ -257,6 +259,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
       return (
         <div className="flex flex-col gap-3">
           <TextField label="Imagem (link)" type="url" value={block.imageUrl} maxLength={1000} placeholder="https://..." onChange={(imageUrl) => onChange({ ...block, imageUrl })} />
+          <UploadButton label="Enviar imagem" onUploaded={(imageUrl) => onChange({ ...block, imageUrl })} />
           <TextField label="Descrição da imagem" value={block.alt} maxLength={200} onChange={(alt) => onChange({ ...block, alt })} />
           <TextField label="Abrir este link ao clicar (opcional)" type="url" value={block.url} maxLength={2000} placeholder="https://..." onChange={(url) => onChange({ ...block, url })} />
         </div>
@@ -269,6 +272,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
           <TextField label="Preço" value={block.price} maxLength={40} placeholder="R$ 49,90" onChange={(price) => onChange({ ...block, price })} />
           <TextArea label="Descrição" value={block.description} maxLength={500} onChange={(description) => onChange({ ...block, description })} />
           <TextField label="Foto (link da imagem)" type="url" value={block.imageUrl} maxLength={1000} placeholder="https://..." onChange={(imageUrl) => onChange({ ...block, imageUrl })} />
+          <UploadButton label="Enviar foto" onUploaded={(imageUrl) => onChange({ ...block, imageUrl })} />
           <TextField label="Texto do botão" value={block.buttonText} maxLength={40} onChange={(buttonText) => onChange({ ...block, buttonText })} />
           <TextField
             label="Link de pagamento"
@@ -338,6 +342,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
             return (
               <div key={index} className="flex flex-col gap-2 rounded-lg bg-stone-50 p-3">
                 <TextField label={`Foto ${index + 1} (link)`} type="url" value={item.imageUrl} maxLength={1000} placeholder="https://..." onChange={(imageUrl) => setItem({ imageUrl })} />
+                <UploadButton label="Enviar foto" onUploaded={(imageUrl) => setItem({ imageUrl })} />
                 <TextField label="Abrir este link ao clicar (opcional)" type="url" value={item.url} maxLength={2000} placeholder="https://..." onChange={(url) => setItem({ url })} />
                 <button
                   type="button"
