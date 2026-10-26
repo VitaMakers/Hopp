@@ -113,6 +113,7 @@ export async function deleteClient(
   }
 
   revalidatePath("/dashboard/clientes");
+  revalidatePath(`/${client.handle}`);
   redirect("/dashboard/clientes?excluido=1");
 }
 
