@@ -47,6 +47,11 @@ export default function LoginPage() {
             {pending ? "Aguarde..." : mode === "signin" ? "Entrar" : "Criar conta"}
           </button>
         </form>
+        {mode === "signin" ? (
+          <Link href="/recuperar-senha" className="mt-3 block text-center text-sm text-stone-500 underline">
+            Esqueci minha senha
+          </Link>
+        ) : null}
         <button
           type="button"
           onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
