@@ -43,13 +43,19 @@ export function TemplatesPanel({ doc, onChange, plan, onGoToBlocks }: PanelProps
     const template = TEMPLATES.find((item) => item.id === id);
     if (!template || !openAllowed) return;
     if (!window.confirm(`Usar o modelo "${template.name}"? Os blocos e o visual da sua página serão trocados pelos do modelo (o rascunho só vai ao ar quando você publicar).`)) return;
-    onChange({ ...template.build("Adicione seu nome"), seo: doc.seo });
+    // Keep the name the person already set instead of overwriting it with the
+    // placeholder used in previews.
+    const current = doc.profile.name?.trim();
+    const keepName = current && current !== "Adicione seu nome" ? current : "";
+    onChange({ ...template.build(keepName), seo: doc.seo });
     setPreviewId(null);
   }
 
   function startBlank() {
     if (!window.confirm("Começar uma página em branco? Os blocos e o visual atuais serão substituídos por uma página em branco.")) return;
-    onChange({ ...defaultPageDoc("Adicione seu nome"), seo: doc.seo });
+    const current = doc.profile.name?.trim();
+    const keepName = current && current !== "Adicione seu nome" ? current : "";
+    onChange({ ...defaultPageDoc(keepName), seo: doc.seo });
     onGoToBlocks?.();
   }
 
