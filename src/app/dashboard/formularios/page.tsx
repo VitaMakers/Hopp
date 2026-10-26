@@ -1,5 +1,7 @@
+import { pageDocSchema } from "@/lib/page/schema";
 import { deleteFormResponse } from "../actions";
 import { getOwner } from "../context";
+import { FormsManager } from "./FormsManager";
 
 const TIME_ZONE = "America/Sao_Paulo";
 
@@ -7,24 +9,32 @@ type Answer = { label: string; value: string };
 
 export default async function FormulariosPage() {
   const { supabase, profile } = await getOwner();
-  const { data: responses } = await supabase
-    .from("form_responses")
-    .select("id, answers, created_at")
-    .eq("owner_id", profile.id)
-    .order("created_at", { ascending: false })
-    .limit(500);
+  const [{ data: responses }, { data: page }] = await Promise.all([
+    supabase
+      .from("form_responses")
+      .select("id, answers, created_at")
+      .eq("owner_id", profile.id)
+      .order("created_at", { ascending: false })
+      .limit(500),
+    supabase.from("pages").select("draft").eq("owner_id", profile.id).maybeSingle(),
+  ]);
 
   const rows = (responses ?? []) as { id: string; answers: Answer[]; created_at: string }[];
+  const parsedDoc = pageDocSchema.safeParse(page?.draft);
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold">Formulários</h1>
         <p className="text-sm text-stone-600">
-          Respostas enviadas pelos blocos de formulário da sua página. Cada envio também abre o WhatsApp do visitante com os
-          dados preenchidos.
+          Crie formulários aqui (eles aparecem na sua página) e veja as respostas. Cada envio também abre o WhatsApp do
+          visitante com os dados preenchidos.
         </p>
       </div>
+
+      {parsedDoc.success ? <FormsManager initialDoc={parsedDoc.data} handle={profile.handle} /> : null}
+
+      <h2 className="text-lg font-bold">Respostas</h2>
 
       {rows.length === 0 ? (
         <div className="rounded-xl bg-white p-8 text-center text-sm text-stone-500 ring-1 ring-stone-200">
