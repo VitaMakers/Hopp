@@ -2,6 +2,7 @@ import Link from "next/link";
 import { accountMonthlyBRL, formatBRL, FREE_CLIENTS, normalizePlan, PLAN_LABEL, PLAN_PRICE_BRL } from "@/lib/plans";
 import { getOwner } from "../context";
 import { selectClient } from "./actions";
+import { CancelSubscriptionButton } from "./CancelSubscriptionButton";
 
 const PLAN_BADGE: Record<string, string> = {
   free: "bg-stone-100 text-stone-600",
@@ -150,6 +151,12 @@ export default async function ClientsPage({
                       Profissional<br />{formatBRL(PLAN_PRICE_BRL.profissional)}
                     </a>
                   </div>
+                </div>
+              ) : null}
+
+              {plan !== "free" ? (
+                <div className="text-center">
+                  <CancelSubscriptionButton clientId={client.id} />
                 </div>
               ) : null}
 
