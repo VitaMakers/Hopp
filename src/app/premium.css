@@ -185,13 +185,17 @@
   width: 68%;
   height: 100%;
   object-fit: cover;
+  /* Anchor to the top so faces stay in frame; wide screens then crop the
+     lower body, which the shade below fades into the background. */
+  object-position: var(--spotlight-cover-x, 65%) top;
   filter: saturate(0.75);
   z-index: 0;
 }
 .spotlight-hero-shade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #000 0%, #000d 28%, #0002 70%), linear-gradient(0deg, var(--spotlight-bg, #000), transparent 45%);
+  background: linear-gradient(90deg, #000 0%, #000d 28%, #0002 70%),
+    linear-gradient(0deg, var(--spotlight-bg, #000) 0%, var(--spotlight-bg, #000) 8%, transparent 58%);
   z-index: 1;
 }
 .spotlight-identity { position: relative; z-index: 2; max-width: 1120px; margin: auto; padding: 110px 45px 145px; }
