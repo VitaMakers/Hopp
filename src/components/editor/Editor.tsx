@@ -40,6 +40,22 @@ export function Editor({
   const [message, setMessage] = useState<string | null>(null);
   const [publishing, startPublish] = useTransition();
   const firstRender = useRef(true);
+  const [origin, setOrigin] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  // Build the public URL from the current domain, so it works on virttu.tech
+  // or any other domain the app is served from.
+  useEffect(() => setOrigin(window.location.origin), []);
+
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(`${origin}/${handle}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  }
 
   // Autosave the draft a moment after the last change.
   useEffect(() => {
@@ -105,6 +121,30 @@ export function Editor({
               {publishing ? "Publicando..." : "Publicar"}
             </button>
           </div>
+        </div>
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl bg-white p-3 ring-1 ring-stone-200">
+          <span className="text-xs font-medium text-stone-500">Seu link:</span>
+          <code className="min-w-0 flex-1 truncate text-sm text-stone-800">
+            {origin ? `${origin.replace(/^https?:\/\//, "")}/${handle}` : `/${handle}`}
+          </code>
+          <button
+            type="button"
+            onClick={copyLink}
+            className="rounded-lg bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-stone-700"
+          >
+            {copied ? "Copiado!" : "Copiar link"}
+          </button>
+          <a
+            href={`/${handle}`}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-lg px-3 py-1.5 text-xs font-semibold text-stone-700 ring-1 ring-stone-300 transition hover:ring-stone-900"
+          >
+            Abrir
+          </a>
+          {!publishedAt ? (
+            <span className="w-full text-xs text-amber-700">Clique em Publicar para o link ficar no ar.</span>
+          ) : null}
         </div>
         {message ? <p className="mb-3 text-sm text-stone-700">{message}</p> : null}
 
