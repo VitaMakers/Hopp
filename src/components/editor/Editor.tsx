@@ -160,6 +160,7 @@ export function Editor({
         <div className="mx-auto h-[680px] w-full max-w-[360px] overflow-y-auto rounded-[2.2rem] border-[10px] border-stone-900 bg-white shadow-xl">
           <PageView
             doc={doc}
+            plan={plan}
             footer={
               showsBadge(plan) ? (
                 <div className="mt-12 flex flex-col items-center gap-0.5 text-center opacity-70">

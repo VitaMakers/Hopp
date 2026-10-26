@@ -16,13 +16,16 @@ type Props = {
   // Set on the published page; omitted in the editor preview, which then
   // neither records analytics nor submits forms.
   handle?: string;
+  // The owner's plan, so the footer credit can follow it (Profissional keeps
+  // its own name; other plans show the Virtú.bio brand).
+  plan?: string;
   footer?: React.ReactNode;
   // In gallery thumbnails a video cover is drawn as a still (its poster), so
   // dozens of previews don't autoplay at once.
   still?: boolean;
 };
 
-export function PageView({ doc, handle, footer, still }: Props) {
+export function PageView({ doc, handle, plan, footer, still }: Props) {
   const { theme } = doc;
   const blocks = doc.blocks.filter((block) => block.enabled);
 
@@ -31,7 +34,7 @@ export function PageView({ doc, handle, footer, still }: Props) {
     track(handle, { kind: "page_view", referrer: document.referrer });
   }, [handle]);
 
-  if (theme.premium) return <PremiumView doc={doc} handle={handle} />;
+  if (theme.premium) return <PremiumView doc={doc} handle={handle} plan={plan} />;
 
   const content = (
     <>
