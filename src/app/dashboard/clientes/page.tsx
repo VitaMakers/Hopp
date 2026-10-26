@@ -19,10 +19,10 @@ function initials(name: string) {
 export default async function ClientsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ assinado?: string; cancelado?: string; erro?: string }>;
+  searchParams: Promise<{ assinado?: string; cancelado?: string; excluido?: string; erro?: string }>;
 }) {
   const { supabase, clients, profile, accountId } = await getOwner();
-  const { assinado, cancelado, erro } = await searchParams;
+  const { assinado, cancelado, excluido, erro } = await searchParams;
   const ids = clients.map((c) => c.id);
 
   // Last 30 days of activity, counted per client in one query.
@@ -52,6 +52,11 @@ export default async function ClientsPage({
       {cancelado ? (
         <p className="rounded-xl bg-stone-100 p-3 text-sm text-stone-600 ring-1 ring-stone-200">
           Pagamento cancelado. O cliente foi criado, mas segue sem assinatura — você pode assinar quando quiser.
+        </p>
+      ) : null}
+      {excluido ? (
+        <p className="rounded-xl bg-stone-100 p-3 text-sm text-stone-600 ring-1 ring-stone-200">
+          Cliente excluído permanentemente. A página, o link e todos os dados dele foram apagados.
         </p>
       ) : null}
       {erro ? (
@@ -161,12 +166,20 @@ export default async function ClientsPage({
               ) : null}
 
               {client.id !== accountId ? (
-                <Link
-                  href={`/dashboard/clientes/${client.id}/desvincular`}
-                  className="text-center text-xs text-stone-400 transition hover:text-stone-700 hover:underline"
-                >
-                  Desvincular (dar acesso ao cliente)
-                </Link>
+                <div className="flex flex-col gap-1.5">
+                  <Link
+                    href={`/dashboard/clientes/${client.id}/desvincular`}
+                    className="text-center text-xs text-stone-400 transition hover:text-stone-700 hover:underline"
+                  >
+                    Desvincular (dar acesso ao cliente)
+                  </Link>
+                  <Link
+                    href={`/dashboard/clientes/${client.id}/excluir`}
+                    className="text-center text-xs text-stone-400 transition hover:text-red-600 hover:underline"
+                  >
+                    Excluir cliente permanentemente
+                  </Link>
+                </div>
               ) : null}
             </div>
           );
