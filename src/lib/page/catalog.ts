@@ -94,9 +94,9 @@ export function createBlock(type: BlockType): Block {
         buttonText: "Enviar",
         thankYouMessage: "Recebemos suas respostas. Obrigado!",
         fields: [
-          { label: "Nome", type: "text", required: true, options: [] },
-          { label: "Telefone", type: "phone", required: true, options: [] },
-          { label: "Mensagem", type: "textarea", required: false, options: [] },
+          { label: "Nome", type: "text", required: true, placeholder: "", options: [] },
+          { label: "Telefone", type: "phone", required: true, placeholder: "", options: [] },
+          { label: "Mensagem", type: "textarea", required: false, placeholder: "", options: [] },
         ],
       };
     case "image":

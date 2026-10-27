@@ -277,10 +277,20 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
                 <Options
                   label="Tipo"
                   value={field.type}
-                  options={{ text: "Texto", email: "E-mail", phone: "Telefone", textarea: "Texto longo", select: "Escolha" }}
+                  options={{
+                    text: "Texto",
+                    email: "E-mail",
+                    phone: "Telefone",
+                    number: "Número",
+                    date: "Data",
+                    textarea: "Texto longo",
+                    select: "Lista suspensa",
+                    radio: "Escolha única",
+                    checkbox: "Múltipla escolha",
+                  }}
                   onChange={(type) => setField({ type })}
                 />
-                {field.type === "select" ? (
+                {field.type === "select" || field.type === "radio" || field.type === "checkbox" ? (
                   <TextArea
                     label="Opções (uma por linha)"
                     value={field.options.join("\n")}
@@ -289,7 +299,14 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
                       setField({ options: value.split("\n").map((o) => o.trim()).filter(Boolean).slice(0, 20) })
                     }
                   />
-                ) : null}
+                ) : (
+                  <TextField
+                    label="Texto de dica (placeholder)"
+                    value={field.placeholder}
+                    maxLength={120}
+                    onChange={(placeholder) => setField({ placeholder })}
+                  />
+                )}
                 <Toggle label="Obrigatório" checked={field.required} onChange={(required) => setField({ required })} />
                 <button
                   type="button"
@@ -305,7 +322,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
             <button
               type="button"
               onClick={() =>
-                onChange({ ...block, fields: [...block.fields, { label: "", type: "text", required: false, options: [] }] })
+                onChange({ ...block, fields: [...block.fields, { label: "", type: "text", required: false, placeholder: "", options: [] }] })
               }
               className="self-start text-sm underline"
             >
