@@ -136,6 +136,96 @@ export function createBlock(type: BlockType): Block {
   }
 }
 
+// Ready-made forms the user picks from when creating one, so a full form (like
+// a buffet quote request) is one click instead of building each field.
+type FormBlock = Extract<Block, { type: "form" }>;
+type FormField = FormBlock["fields"][number];
+
+function field(
+  label: string,
+  type: FormField["type"],
+  required = false,
+  options: string[] = [],
+  placeholder = "",
+): FormField {
+  return { label, type, required, placeholder, options };
+}
+
+function formWith(patch: Partial<FormBlock>): FormBlock {
+  return { ...(createBlock("form") as FormBlock), ...patch };
+}
+
+export const FORM_PRESETS: { id: string; name: string; description: string; build: () => FormBlock }[] = [
+  {
+    id: "blank",
+    name: "Em branco",
+    description: "Comece do zero, com nome, telefone e mensagem.",
+    build: () => createBlock("form") as FormBlock,
+  },
+  {
+    id: "orcamento",
+    name: "Solicitação de orçamento",
+    description: "Para buffets, festas e eventos. Campos completos prontos.",
+    build: () =>
+      formWith({
+        title: "Solicitação de orçamento",
+        intro: "Preencha os campos e falaremos com você no WhatsApp.",
+        buttonText: "Enviar solicitação",
+        fields: [
+          field("Nome do casal ou Empresa", "text", true),
+          field("Tipo de evento", "text", true),
+          field("Local do evento", "text", true),
+          field("Data do evento", "date", true),
+          field("Tempo de duração do evento", "text", true),
+          field("Número mínimo de convidados que atendemos", "number", true, [], "Mínimo de 30 convidados."),
+          field("Número máximo de convidados", "number", true),
+          field("Qual a pretensão de investimento por pessoa?", "radio", true, ["R$ 260,00", "R$ 290,00", "R$ 330,00"]),
+          field("Qual o tempo estimado para o fechamento?", "radio", true, [
+            "Imediato",
+            "De 3 a 6 meses",
+            "De 6 meses a 1 ano",
+            "Mais de 1 ano",
+          ]),
+          field("Como nos conheceu", "checkbox", false, ["Instagram", "Facebook", "Google", "Site", "Anúncio", "Outros"]),
+          field("Qual seria o seu cardápio ideal?", "radio", false, ["Premium", "Tradicional", "Essencial", "Temático"]),
+          field("Cite abaixo o que considerar importante para o seu grande dia.", "textarea", false),
+        ],
+      }),
+  },
+  {
+    id: "contato",
+    name: "Contato",
+    description: "Nome, e-mail, telefone e mensagem.",
+    build: () =>
+      formWith({
+        title: "Fale conosco",
+        fields: [
+          field("Nome", "text", true),
+          field("E-mail", "email", false),
+          field("Telefone", "phone", true),
+          field("Mensagem", "textarea", false),
+        ],
+      }),
+  },
+  {
+    id: "agendamento",
+    name: "Agendamento",
+    description: "Nome, telefone, data e serviço desejado.",
+    build: () =>
+      formWith({
+        title: "Agende seu horário",
+        buttonText: "Quero agendar",
+        fields: [
+          field("Nome", "text", true),
+          field("Telefone", "phone", true),
+          field("Data desejada", "date", true),
+          field("Serviço", "select", true, ["Serviço 1", "Serviço 2", "Serviço 3"]),
+          field("Observações", "textarea", false),
+        ],
+      }),
+  },
+];
+
 // Options the presets don't set, so each preset only lists what makes it distinct.
 const THEME_BASE = {
   layout: "classic",

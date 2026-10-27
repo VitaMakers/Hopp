@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { publish, saveDraft } from "@/app/dashboard/actions";
 import { BlockFields } from "@/components/editor/BlockFields";
-import { createBlock } from "@/lib/page/catalog";
+import { FORM_PRESETS } from "@/lib/page/catalog";
 import type { Block, PageDoc } from "@/lib/page/schema";
 
 type Status = "saved" | "dirty" | "saving" | "error";
@@ -13,6 +13,7 @@ export function FormsManager({ initialDoc, handle }: { initialDoc: PageDoc; hand
   const [status, setStatus] = useState<Status>("saved");
   const [message, setMessage] = useState<string | null>(null);
   const [publishing, startPublish] = useTransition();
+  const [picking, setPicking] = useState(false);
   const firstRender = useRef(true);
 
   // Autosave the draft shortly after the last change (same as the main editor).
@@ -35,8 +36,11 @@ export function FormsManager({ initialDoc, handle }: { initialDoc: PageDoc; hand
   function updateBlock(updated: Block) {
     setDoc({ ...doc, blocks: doc.blocks.map((b) => (b.id === updated.id ? updated : b)) });
   }
-  function addForm() {
-    setDoc({ ...doc, blocks: [...doc.blocks, createBlock("form")] });
+  function addForm(presetId: string) {
+    const preset = FORM_PRESETS.find((p) => p.id === presetId);
+    if (!preset) return;
+    setDoc({ ...doc, blocks: [...doc.blocks, preset.build()] });
+    setPicking(false);
   }
   function removeForm(id: string) {
     if (!window.confirm("Remover este formulário da página? As respostas já recebidas continuam salvas.")) return;
@@ -96,13 +100,37 @@ export function FormsManager({ initialDoc, handle }: { initialDoc: PageDoc; hand
           ))
         )}
 
-        <button
-          type="button"
-          onClick={addForm}
-          className="self-start rounded-lg border border-dashed border-stone-300 px-4 py-2 text-sm font-medium text-stone-600 transition hover:border-stone-900 hover:text-stone-900"
-        >
-          + Criar formulário
-        </button>
+        {picking ? (
+          <div className="rounded-xl border border-stone-200 p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-sm font-semibold">Escolha um modelo</p>
+              <button type="button" onClick={() => setPicking(false)} className="text-xs text-stone-500 hover:underline">
+                Cancelar
+              </button>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {FORM_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => addForm(preset.id)}
+                  className="flex flex-col gap-1 rounded-lg border border-stone-200 p-3 text-left transition hover:border-stone-900"
+                >
+                  <span className="text-sm font-semibold">{preset.name}</span>
+                  <span className="text-xs text-stone-500">{preset.description}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setPicking(true)}
+            className="self-start rounded-lg border border-dashed border-stone-300 px-4 py-2 text-sm font-medium text-stone-600 transition hover:border-stone-900 hover:text-stone-900"
+          >
+            + Criar formulário
+          </button>
+        )}
       </div>
     </div>
   );
