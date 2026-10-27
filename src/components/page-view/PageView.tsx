@@ -880,10 +880,14 @@ function FormBlock({
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const answers = block.fields.map((f, i) => ({
-      label: f.label || `Campo ${i + 1}`,
-      value: String(data.get(`f${i}`) ?? "").trim(),
-    }));
+    const answers = block.fields.map((f, i) => {
+      const name = `f${i}`;
+      const value =
+        f.type === "checkbox"
+          ? data.getAll(name).map(String).filter(Boolean).join(", ")
+          : String(data.get(name) ?? "").trim();
+      return { label: f.label || `Campo ${i + 1}`, value };
+    });
 
     // In the editor preview there is no page to submit to, so just simulate.
     if (!handle) {
@@ -919,18 +923,15 @@ function FormBlock({
     <form onSubmit={onSubmit} className="flex w-full flex-col gap-2.5 text-left">
       {block.title ? <p className="text-center font-semibold">{block.title}</p> : null}
       {block.intro ? <p className="text-center text-sm opacity-80">{block.intro}</p> : null}
-      {block.fields.map((f, i) => (
-        <label key={i} className="flex flex-col gap-1 text-sm">
-          <span className="font-medium">
-            {f.label}
-            {f.required ? " *" : ""}
-          </span>
-          {f.type === "textarea" ? (
-            <textarea name={`f${i}`} required={f.required} rows={3} className={input} />
+      {block.fields.map((f, i) => {
+        const name = `f${i}`;
+        const field =
+          f.type === "textarea" ? (
+            <textarea name={name} required={f.required} rows={3} placeholder={f.placeholder} className={input} />
           ) : f.type === "select" ? (
-            <select name={`f${i}`} required={f.required} defaultValue="" className={input}>
+            <select name={name} required={f.required} defaultValue="" className={input}>
               <option value="" disabled>
-                Selecione...
+                {f.placeholder || "Selecione..."}
               </option>
               {f.options.map((o, oi) => (
                 <option key={oi} value={o}>
@@ -938,16 +939,54 @@ function FormBlock({
                 </option>
               ))}
             </select>
+          ) : f.type === "radio" ? (
+            <div className="flex flex-col gap-1.5">
+              {f.options.map((o, oi) => (
+                <label key={oi} className="flex items-center gap-2 font-normal">
+                  <input type="radio" name={name} value={o} required={f.required} />
+                  {o}
+                </label>
+              ))}
+            </div>
+          ) : f.type === "checkbox" ? (
+            <div className="flex flex-col gap-1.5">
+              {f.options.map((o, oi) => (
+                <label key={oi} className="flex items-center gap-2 font-normal">
+                  <input type="checkbox" name={name} value={o} />
+                  {o}
+                </label>
+              ))}
+            </div>
           ) : (
             <input
-              name={`f${i}`}
+              name={name}
               required={f.required}
-              type={f.type === "email" ? "email" : f.type === "phone" ? "tel" : "text"}
+              placeholder={f.placeholder}
+              type={
+                f.type === "email" ? "email" : f.type === "phone" ? "tel" : f.type === "number" ? "number" : f.type === "date" ? "date" : "text"
+              }
               className={input}
             />
-          )}
-        </label>
-      ))}
+          );
+        const title = (
+          <span className="font-medium">
+            {f.label}
+            {f.required ? " *" : ""}
+          </span>
+        );
+        // A group of radios/checkboxes can't sit inside one <label>.
+        return f.type === "radio" || f.type === "checkbox" ? (
+          <div key={i} className="flex flex-col gap-1 text-sm">
+            {title}
+            {field}
+          </div>
+        ) : (
+          <label key={i} className="flex flex-col gap-1 text-sm">
+            {title}
+            {field}
+          </label>
+        );
+      })}
       <button type="submit" disabled={state === "sending"} className={buttonClassName}>
         {block.buttonText || "Enviar"}
       </button>
