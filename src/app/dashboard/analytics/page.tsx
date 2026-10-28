@@ -74,12 +74,30 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
 
   const activity = current.slice(0, 8).map((e) => describe(e, blockNames, linkNames));
 
+  // "O que pede atenção": short, data-driven insights.
+  const insights: string[] = [];
+  if (topBlocks.length && totalBlockClicks) {
+    const share = Math.round((topBlocks[0].count / totalBlockClicks) * 100);
+    insights.push(`Seu botão mais tocado é “${topBlocks[0].name}” (${share}% dos toques).`);
+  }
+  const dViews = pctChange(summary.views, prev.views);
+  if (dViews !== null && isFinite(dViews) && Math.abs(dViews) >= 5) {
+    insights.push(`Visitas ${dViews > 0 ? "subiram" : "caíram"} ${Math.abs(dViews).toFixed(0)}% vs o período anterior.`);
+  }
+  const cr = Math.round(summary.clickRate * 100);
+  if (summary.views > 0) {
+    const before = prev.views > 0 ? ` (antes ${Math.round(prev.clickRate * 100)}%)` : "";
+    insights.push(`${cr}% de quem visita toca em algo${before}.`);
+  }
+  if (sources.length) insights.push(`A maior parte das visitas vem de ${sources[0][0]}.`);
+  if (summary.clicks === 0) insights.push("Ainda sem toques — compartilhe seu link para começar a receber dados.");
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Estatísticas</h1>
-          <p className="text-sm text-stone-500">Veja como a sua página está performando.</p>
+          <h1 className="text-2xl font-bold">O que as pessoas fazem na sua página</h1>
+          <p className="text-sm text-stone-500">Comparado com o período anterior.</p>
         </div>
         <div className="flex gap-1 rounded-lg bg-stone-100 p-1">
           {WINDOWS.map((w) => (
@@ -97,20 +115,34 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Kpi label="Visitas" value={summary.views} delta={pctChange(summary.views, prev.views)} />
         <Kpi label="Visitantes" value={summary.visitors} delta={pctChange(summary.visitors, prev.visitors)} hint="Pessoas diferentes" />
-        <Kpi label="Cliques" value={summary.clicks} delta={pctChange(summary.clicks, prev.clicks)} />
+        <Kpi label="Toques em botões" value={summary.clicks} delta={pctChange(summary.clicks, prev.clicks)} />
         <Kpi
-          label="Taxa de clique"
+          label="Visitas com toque"
           value={`${(summary.clickRate * 100).toFixed(1).replace(".", ",")}%`}
           delta={pctChange(summary.clickRate, prev.clickRate)}
-          hint="Visitas com ao menos um clique"
+          hint="Visitas com ao menos um toque"
         />
       </div>
+
+      {insights.length ? (
+        <section className="rounded-xl bg-stone-900 p-5 text-white">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-300">O que pede atenção</h2>
+          <ul className="flex flex-col gap-2 text-sm">
+            {insights.map((text, i) => (
+              <li key={i} className="flex items-start gap-2.5">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
+                <span>{text}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <DailyChart summary={summary} />
 
       <div className="grid gap-4 lg:grid-cols-5">
         <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200 lg:col-span-3">
-          <h2 className="mb-3 font-semibold">Conteúdo em destaque</h2>
+          <h2 className="mb-3 font-semibold">Toques por botão</h2>
           {topBlocks.length === 0 ? (
             <p className="py-6 text-center text-sm text-stone-500">Sem cliques ainda. Compartilhe o seu link para começar.</p>
           ) : (
