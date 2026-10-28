@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getOwner } from "../context";
 import { CopyLink } from "./CopyLink";
+import { DeleteFormButton } from "./DeleteFormButton";
 import { NewFormButton } from "./NewFormButton";
 
 type FormRow = { id: string; code: string; config: { title?: string } | null; created_at: string };
@@ -67,6 +68,7 @@ export default async function FormulariosPage() {
                     {counts.get(f.id) ?? 0}
                   </span>
                 </Link>
+                <DeleteFormButton id={f.id} />
               </div>
             </div>
           ))}
