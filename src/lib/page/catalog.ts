@@ -88,6 +88,7 @@ export function createBlock(type: BlockType): Block {
       return {
         ...base,
         type,
+        logoUrl: "",
         title: "Fale conosco",
         intro: "Preencha os campos e falaremos com você no WhatsApp.",
         whatsapp: "",

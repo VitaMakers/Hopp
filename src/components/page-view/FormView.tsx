@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { whatsappHref } from "@/lib/page/links";
+import { imageSrc, whatsappHref } from "@/lib/page/links";
 import type { Block } from "@/lib/page/schema";
 
 type FormConfig = Extract<Block, { type: "form" }>;
@@ -40,6 +40,7 @@ export function FormView({ config, code }: { config: FormConfig; code: string })
 
   const input =
     "w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none focus:border-stone-900";
+  const logo = imageSrc(config.logoUrl);
 
   return (
     <main className="min-h-screen bg-stone-100 px-4 py-10">
@@ -48,8 +49,12 @@ export function FormView({ config, code }: { config: FormConfig; code: string })
           <p className="py-8 text-center text-lg font-medium text-stone-800">{config.thankYouMessage}</p>
         ) : (
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
-            {config.title ? <h1 className="text-xl font-bold text-stone-900">{config.title}</h1> : null}
-            {config.intro ? <p className="-mt-2 text-sm text-stone-600">{config.intro}</p> : null}
+            {logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logo} alt="" className="mx-auto mb-2 max-h-24 w-auto object-contain" />
+            ) : null}
+            {config.title ? <h1 className="text-center text-xl font-bold text-stone-900">{config.title}</h1> : null}
+            {config.intro ? <p className="-mt-2 text-center text-sm text-stone-600">{config.intro}</p> : null}
             {config.fields.map((f, i) => {
               const name = `f${i}`;
               const field =

@@ -210,6 +210,7 @@ export const formFieldSchema = z.object({
 export const formBlockSchema = z.object({
   ...blockBase,
   type: z.literal("form"),
+  logoUrl: z.string().max(1000).default(""),
   title: z.string().max(120).default(""),
   intro: z.string().max(500).default(""),
   whatsapp: z.string().max(30).default(""),

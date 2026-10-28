@@ -919,8 +919,13 @@ function FormBlock({
     return <p className="rounded-[var(--btn-radius)] p-4 text-center font-medium">{block.thankYouMessage}</p>;
   }
 
+  const formLogo = imageSrc(block.logoUrl);
   return (
     <form onSubmit={onSubmit} className="flex w-full flex-col gap-2.5 text-left">
+      {formLogo ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={formLogo} alt="" className="mx-auto mb-1 max-h-20 w-auto object-contain" />
+      ) : null}
       {block.title ? <p className="text-center font-semibold">{block.title}</p> : null}
       {block.intro ? <p className="text-center text-sm opacity-80">{block.intro}</p> : null}
       {block.fields.map((f, i) => {

@@ -250,6 +250,15 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
     case "form":
       return (
         <div className="flex flex-col gap-3">
+          <TextField
+            label="Logo / imagem do topo (link)"
+            type="url"
+            value={block.logoUrl}
+            maxLength={1000}
+            placeholder="https://..."
+            onChange={(logoUrl) => onChange({ ...block, logoUrl })}
+          />
+          <UploadButton label="Enviar logo" onUploaded={(logoUrl) => onChange({ ...block, logoUrl })} />
           <TextField label="Título" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
           <TextArea label="Texto de introdução" value={block.intro} maxLength={500} onChange={(intro) => onChange({ ...block, intro })} />
           <TextField
