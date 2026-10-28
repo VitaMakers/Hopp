@@ -48,7 +48,7 @@ const TYPE_LABEL = Object.fromEntries(ALL_TYPES.map((i) => [i.type, i.label])) a
 const isChoice = (t: FieldType) => t === "radio" || t === "checkbox" || t === "select";
 
 function newField(type: FieldType): Field {
-  const base = { type, required: false, placeholder: "", mediaUrl: "", description: "", allowOther: false, options: [] as string[] };
+  const base = { type, required: false, placeholder: "", mediaUrl: "", description: "", allowOther: false, datePickerMode: "date" as const, options: [] as string[] };
   switch (type) {
     case "radio":
       return { ...base, label: "Escolha uma opção", options: ["Opção 1", "Opção 2"] };
@@ -286,6 +286,11 @@ function FieldPreview({ field: f }: { field: Field }) {
         </div>
       ) : f.type === "textarea" ? (
         <div className={`${input} h-10`} />
+      ) : f.type === "date" ? (
+        <div className="flex gap-2">
+          <div className={`${input} flex-1`}>Selecionar data</div>
+          {f.datePickerMode === "datetime" ? <div className={`${input} flex-1`}>Hora</div> : null}
+        </div>
       ) : (
         <div className={input}>{f.placeholder || " "}</div>
       )}
@@ -337,6 +342,16 @@ function FieldEditor({ field: f, onChange, onClose }: { field: Field; onChange: 
         <label className="mt-3 block text-xs text-stone-500">
           Espaço reservado (placeholder)
           <input value={f.placeholder} onChange={(e) => onChange({ placeholder: e.target.value })} className={`${input} mt-1`} />
+        </label>
+      ) : null}
+
+      {f.type === "date" ? (
+        <label className="mt-3 block text-xs text-stone-500">
+          Formato
+          <select value={f.datePickerMode} onChange={(e) => onChange({ datePickerMode: e.target.value as "date" | "datetime" })} className={`${input} mt-1`}>
+            <option value="date">Só data</option>
+            <option value="datetime">Data e hora</option>
+          </select>
         </label>
       ) : null}
 

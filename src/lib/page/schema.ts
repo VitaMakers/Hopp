@@ -219,6 +219,8 @@ export const formFieldSchema = z.object({
   options: z.array(z.string().max(120)).max(20).default([]),
   // "Adicionar opção 'Outra'": a free-text option on radio/checkbox.
   allowOther: z.boolean().default(false),
+  // Date field: only a date, or date + time.
+  datePickerMode: z.enum(["date", "datetime"]).default("date"),
 });
 export const formBlockSchema = z.object({
   ...blockBase,
