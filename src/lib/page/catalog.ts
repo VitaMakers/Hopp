@@ -169,8 +169,8 @@ export const FORM_PRESETS: { id: string; name: string; description: string; buil
     description: "Para buffets, festas e eventos. Campos completos prontos.",
     build: () =>
       formWith({
-        title: "Solicitação de orçamento",
-        intro: "Preencha os campos e falaremos com você no WhatsApp.",
+        title: "",
+        intro: "",
         buttonText: "Enviar solicitação",
         fields: [
           field("Nome do casal ou Empresa", "text", true),
