@@ -199,7 +199,7 @@ export function FormBuilder({ id, code, initialConfig }: { id: string; code: str
                     </div>
                   ))
                 )}
-                <div className="mt-1 rounded-md bg-stone-900 py-2 text-center text-xs font-semibold text-white">{config.buttonText || "Enviar"}</div>
+                <div className="mt-1 rounded-md bg-[#25D366] py-2 text-center text-xs font-semibold text-white">{config.buttonText || "Enviar"}</div>
               </div>
             </div>
           </div>

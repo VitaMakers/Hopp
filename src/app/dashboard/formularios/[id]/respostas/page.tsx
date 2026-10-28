@@ -21,13 +21,30 @@ export default async function RespostasPage({ params }: { params: Promise<{ id: 
         .map((f, i) => f.label || `Campo ${i + 1}`)
     : [];
 
-  const { data: responses } = await supabase
-    .from("form_responses")
-    .select("id, answers, created_at")
-    .eq("form_id", id)
-    .order("created_at", { ascending: false })
-    .limit(1000);
+  const since7 = new Date(Date.now() - 7 * 86_400_000).toISOString();
+  const [{ data: responses }, viewsRes, respCount, resp7] = await Promise.all([
+    supabase.from("form_responses").select("id, answers, created_at").eq("form_id", id).order("created_at", { ascending: false }).limit(1000),
+    supabase.from("form_views").select("id", { count: "exact", head: true }).eq("form_id", id),
+    supabase.from("form_responses").select("id", { count: "exact", head: true }).eq("form_id", id),
+    supabase.from("form_responses").select("id", { count: "exact", head: true }).eq("form_id", id).gte("created_at", since7),
+  ]);
   const rows = (responses ?? []) as { id: string; answers: Answer[]; created_at: string }[];
+
+  const views = viewsRes.count ?? 0;
+  const total = respCount.count ?? rows.length;
+  const last7 = resp7.count ?? 0;
+  const conversion = views ? Math.round((total / views) * 100) : 0;
+  const onlyOpened = Math.max(0, views - total);
+  const lastAt = rows[0]?.created_at;
+  const fmt = (d?: string) => (d ? new Date(d).toLocaleString("pt-BR", { timeZone: TIME_ZONE }) : "—");
+
+  const cards: { label: string; value: string; sub?: string }[] = [
+    { label: "Visitas", value: String(views), sub: "abriram o formulário" },
+    { label: "Respostas", value: String(total), sub: `${last7} nos últimos 7 dias` },
+    { label: "Conversão", value: `${conversion}%`, sub: "quem abriu e enviou" },
+    { label: "Só abriram", value: String(onlyOpened), sub: "abriram sem enviar" },
+    { label: "Última resposta", value: lastAt ? fmt(lastAt).split(" ")[0] : "—", sub: lastAt ? fmt(lastAt).split(" ")[1] : "" },
+  ];
 
   return (
     <div className="flex flex-col gap-6">
@@ -37,13 +54,23 @@ export default async function RespostasPage({ params }: { params: Promise<{ id: 
             ← Formulários
           </Link>
           <h1 className="mt-1 text-2xl font-bold">{title}</h1>
-          <p className="text-sm text-stone-600">{rows.length} resposta(s) · sem limite de armazenamento.</p>
+          <p className="text-sm text-stone-600">Respostas e desempenho do formulário · sem limite de armazenamento.</p>
         </div>
         {rows.length ? (
           <a href={`/dashboard/formularios/${id}/respostas/export`} className="btn-primary">
             Exportar CSV
           </a>
         ) : null}
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        {cards.map((c) => (
+          <div key={c.label} className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
+            <p className="text-xs text-stone-500">{c.label}</p>
+            <p className="mt-1 text-2xl font-bold tabular-nums">{c.value}</p>
+            {c.sub ? <p className="mt-0.5 text-[11px] text-stone-400">{c.sub}</p> : null}
+          </div>
+        ))}
       </div>
 
       {rows.length === 0 ? (
