@@ -1,8 +1,22 @@
 import "server-only";
 import { cache } from "react";
 import { normalizeHandle } from "@/lib/handles";
-import { pageDocSchema, type PageDoc } from "@/lib/page/schema";
+import { formBlockSchema, pageDocSchema, type PageDoc } from "@/lib/page/schema";
 import { createAdminClient } from "@/lib/supabase/server";
+
+export type PublicForm = { id: string; ownerId: string; config: ReturnType<typeof formBlockSchema.parse> };
+
+// A standalone form read by its short code, for the public /f/[code] page and
+// the submit route. Only published config is ever used.
+export const getFormByCode = cache(async (code: string): Promise<PublicForm | null> => {
+  const admin = createAdminClient();
+  const { data, error } = await admin.from("forms").select("id, owner_id, config").eq("code", code).maybeSingle();
+  if (error) throw serverError(error);
+  if (!data) return null;
+  const parsed = formBlockSchema.safeParse(data.config);
+  if (!parsed.success) return null;
+  return { id: data.id, ownerId: data.owner_id, config: parsed.data };
+});
 
 export type PublicPage = { ownerId: string; handle: string; plan: string; doc: PageDoc };
 
