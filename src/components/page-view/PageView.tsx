@@ -8,7 +8,7 @@ import { imageSrc, linkHref, mapsDirectionsUrl, mapsEmbedUrl, socialHref, vCard,
 import { PremiumView } from "./PremiumView";
 import { SocialIcon } from "./SocialIcon";
 import { VerifiedCheck } from "./VerifiedCheck";
-import { startVisit, track } from "./track";
+import { startVisit, track, trackDuration } from "./track";
 import { AVATAR_RADII, buttonClass, themeVars } from "./theme";
 
 type Props = {
@@ -32,6 +32,20 @@ export function PageView({ doc, handle, plan, footer, still }: Props) {
   useEffect(() => {
     startVisit();
     track(handle, { kind: "page_view", referrer: document.referrer });
+    const start = Date.now();
+    let sent = false;
+    const send = () => {
+      if (sent) return;
+      sent = true;
+      trackDuration(handle, (Date.now() - start) / 1000);
+    };
+    const onHide = () => document.visibilityState === "hidden" && send();
+    document.addEventListener("visibilitychange", onHide);
+    window.addEventListener("pagehide", send);
+    return () => {
+      document.removeEventListener("visibilitychange", onHide);
+      window.removeEventListener("pagehide", send);
+    };
   }, [handle]);
 
   if (theme.premium) return <PremiumView doc={doc} handle={handle} plan={plan} />;

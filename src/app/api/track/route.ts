@@ -6,11 +6,12 @@ import { createAdminClient } from "@/lib/supabase/server";
 
 const bodySchema = z.object({
   handle: z.string().min(1).max(60),
-  kind: z.enum(["page_view", "block_click", "social_click"]),
+  kind: z.enum(["page_view", "block_click", "social_click", "session"]),
   blockId: z.string().max(64).optional(),
   target: z.string().max(500).optional(),
   referrer: z.string().max(500).optional(),
   visitId: z.uuid().optional(),
+  duration: z.number().int().min(0).max(86_400).optional(),
 });
 
 export async function POST(request: Request) {
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
   }
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ ok: false }, { status: 400 });
-  const { handle, kind, blockId, target, referrer, visitId } = parsed.data;
+  const { handle, kind, blockId, target, referrer, visitId, duration } = parsed.data;
   const ownerId = await ownerIdForHandle(handle);
   if (!ownerId) return NextResponse.json({ ok: false }, { status: 404 });
   await createAdminClient()
@@ -31,6 +32,7 @@ export async function POST(request: Request) {
       target: target ?? null,
       referrer: referrer || null,
       visit_id: visitId ?? null,
+      duration_ms: kind === "session" && duration != null ? duration * 1000 : null,
     });
   return NextResponse.json({ ok: true });
 }

@@ -25,3 +25,10 @@ export function track(handle: string | undefined, body: Record<string, string>) 
 export function startVisit() {
   visitId = newVisitId();
 }
+
+// How long the visitor stayed, sent once when they leave the page.
+export function trackDuration(handle: string | undefined, seconds: number) {
+  if (!handle || !visitId || seconds < 1) return;
+  const payload = JSON.stringify({ handle, visitId, kind: "session", duration: Math.min(86_400, Math.round(seconds)) });
+  navigator.sendBeacon?.("/api/track", new Blob([payload], { type: "application/json" }));
+}
