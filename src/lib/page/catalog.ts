@@ -95,9 +95,9 @@ export function createBlock(type: BlockType): Block {
         buttonText: "Enviar",
         thankYouMessage: "Recebemos suas respostas. Obrigado!",
         fields: [
-          { label: "Nome", type: "text", required: true, placeholder: "", mediaUrl: "", options: [] },
-          { label: "Telefone", type: "phone", required: true, placeholder: "", mediaUrl: "", options: [] },
-          { label: "Mensagem", type: "textarea", required: false, placeholder: "", mediaUrl: "", options: [] },
+          { label: "Nome", type: "text", required: true, placeholder: "", mediaUrl: "", description: "", allowOther: false, options: [] },
+          { label: "Telefone", type: "phone", required: true, placeholder: "", mediaUrl: "", description: "", allowOther: false, options: [] },
+          { label: "Mensagem", type: "textarea", required: false, placeholder: "", mediaUrl: "", description: "", allowOther: false, options: [] },
         ],
       };
     case "image":
@@ -149,7 +149,7 @@ function field(
   options: string[] = [],
   placeholder = "",
 ): FormField {
-  return { label, type, required, placeholder, options, mediaUrl: "" };
+  return { label, type, required, placeholder, options, mediaUrl: "", description: "", allowOther: false };
 }
 
 function formWith(patch: Partial<FormBlock>): FormBlock {
