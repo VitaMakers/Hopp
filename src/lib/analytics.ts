@@ -1,5 +1,5 @@
 export type EventRow = {
-  kind: "page_view" | "block_click" | "social_click" | "short_link_click";
+  kind: "page_view" | "block_click" | "social_click" | "short_link_click" | "session";
   block_id: string | null;
   short_link_id: string | null;
   target: string | null;

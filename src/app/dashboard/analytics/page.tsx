@@ -30,7 +30,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   const [{ data: allEvents }, { data: page }, { data: links }] = await Promise.all([
     supabase
       .from("events")
-      .select("kind, block_id, short_link_id, target, referrer, visit_id, created_at")
+      .select("kind, block_id, short_link_id, target, referrer, visit_id, created_at, duration_ms")
       .eq("owner_id", profile.id)
       .gte("created_at", prevStart.toISOString())
       .order("created_at", { ascending: false })
@@ -39,11 +39,25 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
     supabase.from("short_links").select("id, code, title").eq("owner_id", profile.id),
   ]);
 
-  const events = (allEvents ?? []) as EventRow[];
+  const events = (allEvents ?? []) as (EventRow & { duration_ms: number | null })[];
   const current = events.filter((e) => e.created_at >= windowStart.toISOString());
   const previous = events.filter((e) => e.created_at < windowStart.toISOString());
   const summary = summarize(current, days, now);
   const prev = summarize(previous, days, windowStart);
+
+  // Average time on page (from "session" events).
+  const avgDuration = (rows: typeof events) => {
+    const s = rows.filter((e) => e.kind === "session" && e.duration_ms != null);
+    return s.length ? s.reduce((a, e) => a + (e.duration_ms ?? 0), 0) / s.length : 0;
+  };
+  const avgMs = avgDuration(current);
+  const prevAvgMs = avgDuration(previous);
+  const fmtDur = (ms: number) => {
+    const sec = Math.round(ms / 1000);
+    if (sec <= 0) return "—";
+    if (sec < 60) return `${sec}s`;
+    return `${Math.floor(sec / 60)}min ${sec % 60}s`;
+  };
 
   const doc = pageDocSchema.safeParse(page?.draft);
   const blockNames = new Map<string, string>();
@@ -72,7 +86,11 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   const sources = [...summary.byReferrer].sort((a, b) => b[1] - a[1]).slice(0, 6);
   const maxSource = Math.max(1, ...sources.map(([, n]) => n));
 
-  const activity = current.slice(0, 8).map((e) => describe(e, blockNames, linkNames));
+  const activity = current
+    .filter((e) => e.kind !== "session")
+    .slice(0, 8)
+    .map((e) => describe(e, blockNames, linkNames))
+    .filter((x): x is NonNullable<typeof x> => Boolean(x));
 
   // "O que pede atenção": short, data-driven insights.
   const insights: string[] = [];
@@ -112,7 +130,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <Kpi label="Visitas" value={summary.views} delta={pctChange(summary.views, prev.views)} />
         <Kpi label="Visitantes" value={summary.visitors} delta={pctChange(summary.visitors, prev.visitors)} hint="Pessoas diferentes" />
         <Kpi label="Toques em botões" value={summary.clicks} delta={pctChange(summary.clicks, prev.clicks)} />
@@ -122,6 +140,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           delta={pctChange(summary.clickRate, prev.clickRate)}
           hint="Visitas com ao menos um toque"
         />
+        <Kpi label="Tempo médio" value={fmtDur(avgMs)} delta={pctChange(avgMs, prevAvgMs)} hint="Na sua página" />
       </div>
 
       {insights.length ? (
