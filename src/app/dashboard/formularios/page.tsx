@@ -1,66 +1,73 @@
-import { pageDocSchema } from "@/lib/page/schema";
-import { deleteFormResponse } from "../actions";
+import Link from "next/link";
 import { getOwner } from "../context";
-import { FormsManager } from "./FormsManager";
+import { CopyLink } from "./CopyLink";
+import { NewFormButton } from "./NewFormButton";
 
-const TIME_ZONE = "America/Sao_Paulo";
-
-type Answer = { label: string; value: string };
+type FormRow = { id: string; code: string; config: { title?: string } | null; created_at: string };
 
 export default async function FormulariosPage() {
   const { supabase, profile } = await getOwner();
-  const [{ data: responses }, { data: page }] = await Promise.all([
-    supabase
-      .from("form_responses")
-      .select("id, answers, created_at")
-      .eq("owner_id", profile.id)
-      .order("created_at", { ascending: false })
-      .limit(500),
-    supabase.from("pages").select("draft").eq("owner_id", profile.id).maybeSingle(),
-  ]);
+  const { data: forms } = await supabase
+    .from("forms")
+    .select("id, code, config, created_at")
+    .eq("owner_id", profile.id)
+    .order("created_at", { ascending: false });
 
-  const rows = (responses ?? []) as { id: string; answers: Answer[]; created_at: string }[];
-  const parsedDoc = pageDocSchema.safeParse(page?.draft);
+  const list = (forms ?? []) as FormRow[];
+  const ids = list.map((f) => f.id);
+
+  const counts = new Map<string, number>();
+  if (ids.length) {
+    const { data: resp } = await supabase.from("form_responses").select("form_id").in("form_id", ids).limit(5000);
+    for (const r of resp ?? []) if (r.form_id) counts.set(r.form_id, (counts.get(r.form_id) ?? 0) + 1);
+  }
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold">Formulários</h1>
-        <p className="text-sm text-stone-600">
-          Crie formulários aqui (eles aparecem na sua página) e veja as respostas. Cada envio também abre o WhatsApp do
-          visitante com os dados preenchidos.
-        </p>
+      <div className="relative flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Formulários</h1>
+          <p className="text-sm text-stone-600">
+            Crie formulários com link próprio pra divulgar onde quiser. As respostas caem aqui e no seu WhatsApp.
+          </p>
+        </div>
+        <NewFormButton />
       </div>
 
-      {parsedDoc.success ? <FormsManager initialDoc={parsedDoc.data} handle={profile.handle} /> : null}
-
-      <h2 className="text-lg font-bold">Respostas</h2>
-
-      {rows.length === 0 ? (
-        <div className="rounded-xl bg-white p-8 text-center text-sm text-stone-500 ring-1 ring-stone-200">
-          Nenhuma resposta ainda. Adicione um bloco <strong>&quot;Formulário&quot;</strong> na sua página (aba Blocos) e
-          configure o WhatsApp que recebe.
+      {list.length === 0 ? (
+        <div className="rounded-2xl bg-white p-8 text-center text-sm text-stone-500 ring-1 ring-stone-200">
+          Nenhum formulário ainda. Clique em “+ Novo formulário” e escolha um modelo.
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {rows.map((r) => (
-            <div key={r.id} className="flex flex-col gap-3 rounded-2xl bg-white p-4 ring-1 ring-stone-200">
-              <p className="text-xs text-stone-400">
-                {new Date(r.created_at).toLocaleString("pt-BR", { timeZone: TIME_ZONE })}
-              </p>
-              <dl className="flex flex-col gap-2 text-sm">
-                {(Array.isArray(r.answers) ? r.answers : []).map((a, i) => (
-                  <div key={i}>
-                    <dt className="text-xs font-medium text-stone-500">{a.label}</dt>
-                    <dd className="whitespace-pre-wrap break-words text-stone-800">{a.value || "—"}</dd>
-                  </div>
-                ))}
-              </dl>
-              <form action={deleteFormResponse.bind(null, r.id)} className="mt-auto">
-                <button type="submit" className="text-xs text-stone-400 transition hover:text-red-600 hover:underline">
-                  Excluir resposta
-                </button>
-              </form>
+          {list.map((f) => (
+            <div key={f.id} className="flex flex-col gap-3 rounded-2xl bg-white p-5 ring-1 ring-stone-200">
+              <div className="min-w-0">
+                <p className="truncate font-semibold">{f.config?.title || "Formulário sem título"}</p>
+                <a
+                  href={`/f/${f.code}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block truncate text-xs text-stone-500 hover:underline"
+                >
+                  /f/{f.code}
+                </a>
+              </div>
+              <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                <Link href={`/dashboard/formularios/${f.id}`} className="text-stone-600 hover:text-stone-900 hover:underline">
+                  Editar
+                </Link>
+                <CopyLink code={f.code} compact />
+                <Link
+                  href={`/dashboard/formularios/${f.id}/respostas`}
+                  className="font-medium text-stone-700 hover:underline"
+                >
+                  Respostas
+                  <span className="ml-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-emerald-700">
+                    {counts.get(f.id) ?? 0}
+                  </span>
+                </Link>
+              </div>
             </div>
           ))}
         </div>
