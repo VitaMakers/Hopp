@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { youtubeEmbedUrl } from "@/lib/page/embed";
 import { imageSrc, whatsappHref } from "@/lib/page/links";
 import { FORM_DISPLAY_TYPES, type Block } from "@/lib/page/schema";
+import { DateField } from "./DateField";
 
 type FormConfig = Extract<Block, { type: "form" }>;
 const isDisplay = (t: string) => (FORM_DISPLAY_TYPES as readonly string[]).includes(t);
@@ -33,6 +34,10 @@ export function FormView({ config, code }: { config: FormConfig; code: string })
           let v = String(data.get(name) ?? "").trim();
           if (v === "__other__") v = other;
           value = v;
+        } else if (f.type === "date") {
+          const d = String(data.get(name) ?? "").trim();
+          const t = String(data.get(`${name}_time`) ?? "").trim();
+          value = [d, t].filter(Boolean).join(" ");
         } else {
           value = String(data.get(name) ?? "").trim();
         }
@@ -117,6 +122,8 @@ export function FormView({ config, code }: { config: FormConfig; code: string })
                       </label>
                     ))}
                   </div>
+                ) : f.type === "date" ? (
+                  <DateField name={name} required={f.required} datetime={f.datePickerMode === "datetime"} />
                 ) : f.type === "radio" ? (
                   <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-0.5">
                     {f.options.map((o, oi) => (
@@ -154,17 +161,7 @@ export function FormView({ config, code }: { config: FormConfig; code: string })
                     name={name}
                     required={f.required}
                     placeholder={f.placeholder}
-                    type={
-                      f.type === "email"
-                        ? "email"
-                        : f.type === "phone"
-                          ? "tel"
-                          : f.type === "number"
-                            ? "number"
-                            : f.type === "date"
-                              ? "date"
-                              : "text"
-                    }
+                    type={f.type === "email" ? "email" : f.type === "phone" ? "tel" : f.type === "number" ? "number" : "text"}
                     className={input}
                   />
                 );
@@ -177,7 +174,7 @@ export function FormView({ config, code }: { config: FormConfig; code: string })
                   {f.description ? <span className="text-[11px] text-stone-400">{f.description}</span> : null}
                 </span>
               );
-              return f.type === "radio" || f.type === "checkbox" || f.type === "rating" ? (
+              return f.type === "radio" || f.type === "checkbox" || f.type === "rating" || f.type === "date" ? (
                 <div key={i} className="flex flex-col gap-1.5">
                   {title}
                   {field}
