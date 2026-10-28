@@ -23,16 +23,18 @@ export async function POST(request: Request) {
   const { handle, kind, blockId, target, referrer, visitId, duration } = parsed.data;
   const ownerId = await ownerIdForHandle(handle);
   if (!ownerId) return NextResponse.json({ ok: false }, { status: 404 });
-  await createAdminClient()
-    .from("events")
-    .insert({
-      owner_id: ownerId,
-      kind,
-      block_id: blockId ?? null,
-      target: target ?? null,
-      referrer: referrer || null,
-      visit_id: visitId ?? null,
-      duration_ms: kind === "session" && duration != null ? duration * 1000 : null,
-    });
+
+  // Only a "session" event references duration_ms, so normal clicks/views keep
+  // working even before the migration that adds that column has been run.
+  const row: Record<string, unknown> = {
+    owner_id: ownerId,
+    kind,
+    block_id: blockId ?? null,
+    target: target ?? null,
+    referrer: referrer || null,
+    visit_id: visitId ?? null,
+  };
+  if (kind === "session" && duration != null) row.duration_ms = duration * 1000;
+  await createAdminClient().from("events").insert(row);
   return NextResponse.json({ ok: true });
 }
