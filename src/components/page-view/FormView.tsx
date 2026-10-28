@@ -1,28 +1,30 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { youtubeEmbedUrl } from "@/lib/page/embed";
 import { imageSrc, whatsappHref } from "@/lib/page/links";
-import type { Block } from "@/lib/page/schema";
+import { FORM_DISPLAY_TYPES, type Block } from "@/lib/page/schema";
 
 type FormConfig = Extract<Block, { type: "form" }>;
+const isDisplay = (t: string) => (FORM_DISPLAY_TYPES as readonly string[]).includes(t);
 
-// A standalone form on its own page (/f/[code]), styled to match the reference
-// layout: narrow white card on light grey, logo on top, left-aligned grey
-// labels with a leading asterisk, inline choice options, generous spacing.
 export function FormView({ config, code }: { config: FormConfig; code: string }) {
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const answers = config.fields.map((f, i) => {
-      const name = `f${i}`;
-      const value =
-        f.type === "checkbox"
-          ? data.getAll(name).map(String).filter(Boolean).join(", ")
-          : String(data.get(name) ?? "").trim();
-      return { label: f.label || `Campo ${i + 1}`, value };
-    });
+    const answers = config.fields
+      .map((f, i) => ({ f, i }))
+      .filter(({ f }) => !isDisplay(f.type))
+      .map(({ f, i }) => {
+        const name = `f${i}`;
+        const value =
+          f.type === "checkbox"
+            ? data.getAll(name).map(String).filter(Boolean).join(", ")
+            : String(data.get(name) ?? "").trim();
+        return { label: f.label || `Campo ${i + 1}`, value };
+      });
 
     setState("sending");
     fetch("/api/form", {
@@ -57,6 +59,28 @@ export function FormView({ config, code }: { config: FormConfig; code: string })
             {config.title ? <h1 className="text-base font-semibold text-stone-900">{config.title}</h1> : null}
             {config.intro ? <p className="-mt-3 text-sm text-stone-500">{config.intro}</p> : null}
             {config.fields.map((f, i) => {
+              // Display-only blocks: no input, no label row.
+              if (f.type === "header") {
+                return (
+                  <h2 key={i} className="text-base font-bold text-stone-900">
+                    {f.label}
+                  </h2>
+                );
+              }
+              if (f.type === "image") {
+                const m = imageSrc(f.mediaUrl);
+                // eslint-disable-next-line @next/next/no-img-element
+                return m ? <img key={i} src={m} alt={f.label} className="w-full rounded-md" /> : null;
+              }
+              if (f.type === "video") {
+                const e = youtubeEmbedUrl(f.mediaUrl);
+                return e ? (
+                  <div key={i} className="aspect-video w-full overflow-hidden rounded-md">
+                    <iframe src={e} title={f.label} allowFullScreen className="h-full w-full border-0" />
+                  </div>
+                ) : null;
+              }
+
               const name = `f${i}`;
               const field =
                 f.type === "textarea" ? (
@@ -72,6 +96,14 @@ export function FormView({ config, code }: { config: FormConfig; code: string })
                       </option>
                     ))}
                   </select>
+                ) : f.type === "rating" ? (
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <label key={n} className="cursor-pointer text-2xl leading-none text-stone-300 transition has-[:checked]:text-amber-400">
+                        <input type="radio" name={name} value={n} required={f.required} className="sr-only" />★
+                      </label>
+                    ))}
+                  </div>
                 ) : f.type === "radio" ? (
                   <div className="flex flex-wrap gap-x-5 gap-y-2 pt-0.5">
                     {f.options.map((o, oi) => (
@@ -115,7 +147,7 @@ export function FormView({ config, code }: { config: FormConfig; code: string })
                   {f.label}
                 </span>
               );
-              return f.type === "radio" || f.type === "checkbox" ? (
+              return f.type === "radio" || f.type === "checkbox" || f.type === "rating" ? (
                 <div key={i} className="flex flex-col gap-1.5">
                   {title}
                   {field}

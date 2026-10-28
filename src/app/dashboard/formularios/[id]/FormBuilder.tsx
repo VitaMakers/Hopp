@@ -13,29 +13,85 @@ type Field = FormConfig["fields"][number];
 type FieldType = Field["type"];
 type Status = "saved" | "dirty" | "saving" | "error";
 
-// Left-sidebar palette, mirroring the WhatsForm builder.
-const PALETTE: { type: FieldType; label: string; icon: string }[] = [
-  { type: "text", label: "Entrada de Texto", icon: "T" },
-  { type: "radio", label: "Múltipla escolha", icon: "◉" },
-  { type: "checkbox", label: "Caixas de seleção", icon: "☑" },
-  { type: "select", label: "Lista suspensa", icon: "▾" },
-  { type: "number", label: "Número", icon: "#" },
-  { type: "date", label: "Data", icon: "▦" },
-  { type: "textarea", label: "Texto longo", icon: "¶" },
-  { type: "email", label: "E-mail", icon: "@" },
-  { type: "phone", label: "Telefone", icon: "☏" },
+type PaletteItem = { type: FieldType; label: string; icon: string };
+
+// Básico palette, grouped like the WhatsForm builder.
+const BASICO: { group: string; items: PaletteItem[] }[] = [
+  {
+    group: "Perguntas",
+    items: [
+      { type: "text", label: "Entrada de Texto", icon: "T" },
+      { type: "radio", label: "Múltipla escolha", icon: "◉" },
+      { type: "checkbox", label: "Caixas de seleção", icon: "☑" },
+      { type: "select", label: "Suspenso", icon: "▾" },
+      { type: "number", label: "Número", icon: "#" },
+      { type: "rating", label: "Avaliação", icon: "★" },
+      { type: "date", label: "Data", icon: "▦" },
+    ],
+  },
+  {
+    group: "Contato",
+    items: [
+      { type: "email", label: "E-mail", icon: "@" },
+      { type: "phone", label: "Telefone", icon: "☏" },
+    ],
+  },
+  {
+    group: "Exibição",
+    items: [
+      { type: "header", label: "Título", icon: "¶" },
+      { type: "image", label: "Imagem", icon: "▣" },
+      { type: "video", label: "Vídeo", icon: "▷" },
+    ],
+  },
 ];
-const TYPE_LABEL = Object.fromEntries(PALETTE.map((p) => [p.type, p.label])) as Record<FieldType, string>;
+const AVANCADO = [
+  { label: "Página", icon: "🗐" },
+  { label: "Upload de arquivo", icon: "📎" },
+  { label: "Cálculo", icon: "🧮" },
+  { label: "Pagamento", icon: "💳" },
+  { label: "Endereço", icon: "📍" },
+  { label: "Agendamento", icon: "🗓" },
+];
+const TYPE_LABEL = Object.fromEntries(BASICO.flatMap((g) => g.items).map((i) => [i.type, i.label])) as Record<FieldType, string>;
+const ALL_TYPES = BASICO.flatMap((g) => g.items);
 
 function newField(type: FieldType): Field {
-  const choice = type === "radio" || type === "checkbox" || type === "select";
-  return { label: "Nova pergunta", type, required: false, placeholder: "", options: choice ? ["Opção 1", "Opção 2"] : [] };
+  const base = { type, required: false, placeholder: "", mediaUrl: "", options: [] as string[] };
+  switch (type) {
+    case "radio":
+      return { ...base, label: "Escolha uma opção", options: ["Opção 1", "Opção 2"] };
+    case "checkbox":
+      return { ...base, label: "Escolha uma ou mais opções", options: ["Opção 1", "Opção 2"] };
+    case "select":
+      return { ...base, label: "Escolha uma opção no menu", options: ["Opção 1", "Opção 2"] };
+    case "number":
+      return { ...base, label: "Digite um número", placeholder: "0" };
+    case "rating":
+      return { ...base, label: "Avalie sua experiência" };
+    case "date":
+      return { ...base, label: "Escolha uma data" };
+    case "email":
+      return { ...base, label: "Digite seu e-mail" };
+    case "phone":
+      return { ...base, label: "Digite seu telefone" };
+    case "header":
+      return { ...base, label: "Adicione o título aqui" };
+    case "image":
+      return { ...base, label: "" };
+    case "video":
+      return { ...base, label: "" };
+    default:
+      return { ...base, label: "Digite uma pergunta" };
+  }
 }
 
 export function FormBuilder({ id, code, initialConfig }: { id: string; code: string; initialConfig: FormConfig }) {
   const [config, setConfig] = useState<FormConfig>(initialConfig);
   const [status, setStatus] = useState<Status>("saved");
   const [showSettings, setShowSettings] = useState(false);
+  const [tab, setTab] = useState<"basico" | "avancado">("basico");
+  const [upgrade, setUpgrade] = useState(false);
   const first = useRef(true);
 
   useEffect(() => {
@@ -54,16 +110,17 @@ export function FormBuilder({ id, code, initialConfig }: { id: string; code: str
 
   const label: Record<Status, string> = { saved: "Salvo", dirty: "Não salvo", saving: "Salvando...", error: "Erro" };
 
-  function addField(type: FieldType) {
-    setConfig((c) => ({ ...c, fields: [...c.fields, newField(type)] }));
-  }
-  function updateField(i: number, patch: Partial<Field>) {
+  const addField = (type: FieldType) => setConfig((c) => ({ ...c, fields: [...c.fields, newField(type)] }));
+  const updateField = (i: number, patch: Partial<Field>) =>
     setConfig((c) => ({ ...c, fields: c.fields.map((f, idx) => (idx === i ? { ...f, ...patch } : f)) }));
-  }
-  function removeField(i: number) {
-    setConfig((c) => ({ ...c, fields: c.fields.filter((_, idx) => idx !== i) }));
-  }
-  function move(i: number, dir: -1 | 1) {
+  const removeField = (i: number) => setConfig((c) => ({ ...c, fields: c.fields.filter((_, idx) => idx !== i) }));
+  const duplicate = (i: number) =>
+    setConfig((c) => {
+      const fields = [...c.fields];
+      fields.splice(i + 1, 0, { ...c.fields[i] });
+      return { ...c, fields };
+    });
+  const move = (i: number, dir: -1 | 1) =>
     setConfig((c) => {
       const j = i + dir;
       if (j < 0 || j >= c.fields.length) return c;
@@ -71,7 +128,6 @@ export function FormBuilder({ id, code, initialConfig }: { id: string; code: str
       [fields[i], fields[j]] = [fields[j], fields[i]];
       return { ...c, fields };
     });
-  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -98,23 +154,55 @@ export function FormBuilder({ id, code, initialConfig }: { id: string; code: str
 
       {showSettings ? <Settings config={config} setConfig={setConfig} code={code} /> : null}
 
-      <div className="grid gap-4 lg:grid-cols-[200px_minmax(0,1fr)_340px]">
+      <div className="grid gap-4 lg:grid-cols-[210px_minmax(0,1fr)_340px]">
         {/* Left palette */}
         <aside className="lg:sticky lg:top-20 lg:self-start">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-500">Adicionar perguntas</p>
-          <div className="flex flex-col gap-1">
-            {PALETTE.map((p) => (
-              <button
-                key={p.type}
-                type="button"
-                onClick={() => addField(p.type)}
-                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-50 hover:ring-stone-900"
-              >
-                <span className="flex h-5 w-5 items-center justify-center text-xs text-stone-400">{p.icon}</span>
-                {p.label}
-              </button>
-            ))}
+          <div className="mb-2 flex rounded-lg bg-stone-100 p-1 text-xs">
+            <button type="button" onClick={() => setTab("basico")} className={`flex-1 rounded-md py-1.5 font-medium ${tab === "basico" ? "bg-white shadow-sm" : "text-stone-500"}`}>
+              Básico
+            </button>
+            <button type="button" onClick={() => setTab("avancado")} className={`flex-1 rounded-md py-1.5 font-medium ${tab === "avancado" ? "bg-white shadow-sm" : "text-stone-500"}`}>
+              Avançado
+            </button>
           </div>
+          {tab === "basico" ? (
+            <div className="flex flex-col gap-3">
+              {BASICO.map((g) => (
+                <div key={g.group} className="flex flex-col gap-1">
+                  <p className="px-1 text-[10px] font-semibold uppercase tracking-wide text-stone-400">{g.group}</p>
+                  {g.items.map((p) => (
+                    <button
+                      key={p.type}
+                      type="button"
+                      onClick={() => addField(p.type)}
+                      className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-50 hover:ring-stone-900"
+                    >
+                      <span className="flex h-5 w-5 items-center justify-center text-xs text-stone-400">{p.icon}</span>
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-1">
+              {AVANCADO.map((p) => (
+                <button
+                  key={p.label}
+                  type="button"
+                  onClick={() => setUpgrade(true)}
+                  className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm text-stone-500 ring-1 ring-stone-200 transition hover:bg-stone-50"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <span className="flex h-5 w-5 items-center justify-center text-xs">{p.icon}</span>
+                    {p.label}
+                  </span>
+                  <span className="text-xs text-stone-400">🔒</span>
+                </button>
+              ))}
+            </div>
+          )}
         </aside>
 
         {/* Center: field editors */}
@@ -127,15 +215,18 @@ export function FormBuilder({ id, code, initialConfig }: { id: string; code: str
             config.fields.map((f, i) => (
               <div key={i} className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-xs font-medium text-stone-400">{TYPE_LABEL[f.type]}</span>
+                  <span className="text-xs font-medium text-stone-400">{TYPE_LABEL[f.type] ?? f.type}</span>
                   <div className="flex items-center gap-1.5 text-stone-400">
-                    <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="px-1 hover:text-stone-900 disabled:opacity-30">
+                    <button type="button" title="Mover para cima" onClick={() => move(i, -1)} disabled={i === 0} className="px-1 hover:text-stone-900 disabled:opacity-30">
                       ↑
                     </button>
-                    <button type="button" onClick={() => move(i, 1)} disabled={i === config.fields.length - 1} className="px-1 hover:text-stone-900 disabled:opacity-30">
+                    <button type="button" title="Mover para baixo" onClick={() => move(i, 1)} disabled={i === config.fields.length - 1} className="px-1 hover:text-stone-900 disabled:opacity-30">
                       ↓
                     </button>
-                    <button type="button" onClick={() => removeField(i)} className="px-1 hover:text-red-600">
+                    <button type="button" title="Duplicar" onClick={() => duplicate(i)} className="px-1 hover:text-stone-900">
+                      ⧉
+                    </button>
+                    <button type="button" title="Excluir" onClick={() => removeField(i)} className="px-1 hover:text-red-600">
                       ✕
                     </button>
                   </div>
@@ -143,7 +234,7 @@ export function FormBuilder({ id, code, initialConfig }: { id: string; code: str
                 <input
                   value={f.label}
                   onChange={(e) => updateField(i, { label: e.target.value })}
-                  placeholder="Escreva a pergunta"
+                  placeholder={f.type === "header" ? "Texto do título" : "Escreva a pergunta"}
                   className="w-full rounded-md border border-stone-200 px-3 py-2 text-sm font-medium outline-none focus:border-stone-400"
                 />
                 <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -152,16 +243,18 @@ export function FormBuilder({ id, code, initialConfig }: { id: string; code: str
                     onChange={(e) => updateField(i, { type: e.target.value as FieldType })}
                     className="rounded-md border border-stone-200 px-2 py-1.5 text-xs outline-none focus:border-stone-400"
                   >
-                    {PALETTE.map((p) => (
+                    {ALL_TYPES.map((p) => (
                       <option key={p.type} value={p.type}>
                         {p.label}
                       </option>
                     ))}
                   </select>
-                  <label className="flex items-center gap-1.5 text-xs text-stone-600">
-                    <input type="checkbox" checked={f.required} onChange={(e) => updateField(i, { required: e.target.checked })} />
-                    Obrigatório
-                  </label>
+                  {f.type !== "header" && f.type !== "image" && f.type !== "video" ? (
+                    <label className="flex items-center gap-1.5 text-xs text-stone-600">
+                      <input type="checkbox" checked={f.required} onChange={(e) => updateField(i, { required: e.target.checked })} />
+                      Obrigatório
+                    </label>
+                  ) : null}
                 </div>
                 {f.type === "radio" || f.type === "checkbox" || f.type === "select" ? (
                   <textarea
@@ -171,7 +264,24 @@ export function FormBuilder({ id, code, initialConfig }: { id: string; code: str
                     placeholder="Uma opção por linha"
                     className="mt-2 w-full rounded-md border border-stone-200 px-3 py-2 text-xs outline-none focus:border-stone-400"
                   />
-                ) : (
+                ) : f.type === "image" ? (
+                  <div className="mt-2 flex flex-col gap-2">
+                    <input
+                      value={f.mediaUrl}
+                      onChange={(e) => updateField(i, { mediaUrl: e.target.value })}
+                      placeholder="Link da imagem (https://...)"
+                      className="w-full rounded-md border border-stone-200 px-3 py-2 text-xs outline-none focus:border-stone-400"
+                    />
+                    <UploadButton label="Enviar imagem" onUploaded={(mediaUrl) => updateField(i, { mediaUrl })} />
+                  </div>
+                ) : f.type === "video" ? (
+                  <input
+                    value={f.mediaUrl}
+                    onChange={(e) => updateField(i, { mediaUrl: e.target.value })}
+                    placeholder="Link do YouTube (https://youtube.com/...)"
+                    className="mt-2 w-full rounded-md border border-stone-200 px-3 py-2 text-xs outline-none focus:border-stone-400"
+                  />
+                ) : f.type === "rating" || f.type === "header" ? null : (
                   <input
                     value={f.placeholder}
                     onChange={(e) => updateField(i, { placeholder: e.target.value })}
@@ -202,6 +312,25 @@ export function FormBuilder({ id, code, initialConfig }: { id: string; code: str
           <Preview config={config} />
         </aside>
       </div>
+
+      {upgrade ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={() => setUpgrade(false)}>
+          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold">Atualize seu plano</h3>
+            <p className="mt-2 text-sm text-stone-600">
+              Este recurso não está incluído no seu plano atual. Faça upgrade para usar os campos avançados.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button type="button" onClick={() => setUpgrade(false)} className="rounded-lg px-4 py-2 text-sm ring-1 ring-stone-300 hover:ring-stone-900">
+                Cancelar
+              </button>
+              <Link href="/dashboard/plans" className="rounded-lg bg-stone-900 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-700">
+                Ver planos
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -258,31 +387,41 @@ function Preview({ config }: { config: FormConfig }) {
             <img src={logo} alt="" className="mx-auto mb-1 max-h-16 w-auto object-contain" />
           ) : null}
           {config.title ? <p className="text-sm font-semibold text-stone-900">{config.title}</p> : null}
-          {config.fields.map((f, i) => (
-            <div key={i} className="flex flex-col gap-1">
-              <span className="text-[11px] text-stone-500">
-                {f.required ? "* " : ""}
-                {f.label}
-              </span>
-              {f.type === "radio" || f.type === "checkbox" ? (
-                <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-stone-600">
-                  {f.options.map((o, oi) => (
-                    <span key={oi} className="flex items-center gap-1">
-                      <span className={f.type === "radio" ? "inline-block h-2.5 w-2.5 rounded-full ring-1 ring-stone-400" : "inline-block h-2.5 w-2.5 rounded-sm ring-1 ring-stone-400"} />
-                      {o}
-                    </span>
-                  ))}
-                </div>
-              ) : f.type === "textarea" ? (
-                <div className={`${input} h-10`} />
-              ) : (
-                <div className={input}>{f.placeholder || " "}</div>
-              )}
-            </div>
-          ))}
-          <div className="mt-1 rounded-md bg-stone-900 py-2 text-center text-xs font-semibold text-white">
-            {config.buttonText || "Enviar"}
-          </div>
+          {config.fields.map((f, i) => {
+            if (f.type === "header") return <p key={i} className="text-sm font-bold text-stone-900">{f.label}</p>;
+            if (f.type === "image") {
+              const m = imageSrc(f.mediaUrl);
+              // eslint-disable-next-line @next/next/no-img-element
+              return m ? <img key={i} src={m} alt="" className="w-full rounded-md" /> : <div key={i} className="flex h-20 items-center justify-center rounded-md bg-stone-100 text-[11px] text-stone-400">Imagem</div>;
+            }
+            if (f.type === "video")
+              return <div key={i} className="flex aspect-video items-center justify-center rounded-md bg-stone-100 text-[11px] text-stone-400">Vídeo</div>;
+            return (
+              <div key={i} className="flex flex-col gap-1">
+                <span className="text-[11px] text-stone-500">
+                  {f.required ? "* " : ""}
+                  {f.label}
+                </span>
+                {f.type === "rating" ? (
+                  <div className="text-lg text-stone-300">★★★★★</div>
+                ) : f.type === "radio" || f.type === "checkbox" ? (
+                  <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-stone-600">
+                    {f.options.map((o, oi) => (
+                      <span key={oi} className="flex items-center gap-1">
+                        <span className={f.type === "radio" ? "inline-block h-2.5 w-2.5 rounded-full ring-1 ring-stone-400" : "inline-block h-2.5 w-2.5 rounded-sm ring-1 ring-stone-400"} />
+                        {o}
+                      </span>
+                    ))}
+                  </div>
+                ) : f.type === "textarea" ? (
+                  <div className={`${input} h-10`} />
+                ) : (
+                  <div className={input}>{f.placeholder || " "}</div>
+                )}
+              </div>
+            );
+          })}
+          <div className="mt-1 rounded-md bg-stone-900 py-2 text-center text-xs font-semibold text-white">{config.buttonText || "Enviar"}</div>
         </div>
       </div>
     </div>

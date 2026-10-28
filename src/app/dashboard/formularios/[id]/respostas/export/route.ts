@@ -1,5 +1,5 @@
 import { toCsv } from "@/lib/csv";
-import { formBlockSchema } from "@/lib/page/schema";
+import { FORM_DISPLAY_TYPES, formBlockSchema } from "@/lib/page/schema";
 import { getOwner } from "../../../../context";
 
 type Answer = { label: string; value: string };
@@ -11,7 +11,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const { data: form } = await supabase.from("forms").select("config").eq("id", id).maybeSingle();
   if (!form) return new Response("Não encontrado", { status: 404 });
   const parsed = formBlockSchema.safeParse(form.config);
-  const columns = parsed.success ? parsed.data.fields.map((f, i) => f.label || `Campo ${i + 1}`) : [];
+  const columns = parsed.success
+    ? parsed.data.fields
+        .filter((f) => !(FORM_DISPLAY_TYPES as readonly string[]).includes(f.type))
+        .map((f, i) => f.label || `Campo ${i + 1}`)
+    : [];
 
   const { data: responses, error } = await supabase
     .from("form_responses")

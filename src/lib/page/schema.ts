@@ -199,12 +199,21 @@ export const FORM_FIELD_TYPES = [
   "select",
   "radio",
   "checkbox",
+  "rating",
+  // Display-only blocks (no answer collected).
+  "header",
+  "image",
+  "video",
 ] as const;
+// Blocks that show something but don't collect an answer.
+export const FORM_DISPLAY_TYPES = ["header", "image", "video"] as const;
 export const formFieldSchema = z.object({
-  label: z.string().max(120),
+  label: z.string().max(200),
   type: z.enum(FORM_FIELD_TYPES).default("text"),
   required: z.boolean().default(false),
   placeholder: z.string().max(120).default(""),
+  // Image/video URL for display blocks.
+  mediaUrl: z.string().max(1000).default(""),
   options: z.array(z.string().max(120)).max(20).default([]),
 });
 export const formBlockSchema = z.object({
