@@ -30,7 +30,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   const [{ data: allEvents }, { data: page }, { data: links }] = await Promise.all([
     supabase
       .from("events")
-      .select("kind, block_id, short_link_id, target, referrer, visit_id, created_at, duration_ms")
+      .select("kind, block_id, short_link_id, target, referrer, visit_id, created_at")
       .eq("owner_id", profile.id)
       .gte("created_at", prevStart.toISOString())
       .order("created_at", { ascending: false })
@@ -39,19 +39,28 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
     supabase.from("short_links").select("id, code, title").eq("owner_id", profile.id),
   ]);
 
-  const events = (allEvents ?? []) as (EventRow & { duration_ms: number | null })[];
+  const events = (allEvents ?? []) as EventRow[];
   const current = events.filter((e) => e.created_at >= windowStart.toISOString());
   const previous = events.filter((e) => e.created_at < windowStart.toISOString());
   const summary = summarize(current, days, now);
   const prev = summarize(previous, days, windowStart);
 
-  // Average time on page (from "session" events).
-  const avgDuration = (rows: typeof events) => {
-    const s = rows.filter((e) => e.kind === "session" && e.duration_ms != null);
-    return s.length ? s.reduce((a, e) => a + (e.duration_ms ?? 0), 0) / s.length : 0;
+  // Average time on page — a separate, error-tolerant query so a missing
+  // duration_ms column (migration 0010 not run) never breaks the dashboard.
+  const { data: sessions } = await supabase
+    .from("events")
+    .select("duration_ms, created_at")
+    .eq("owner_id", profile.id)
+    .eq("kind", "session")
+    .gte("created_at", prevStart.toISOString())
+    .limit(5000);
+  const sessionRows = (sessions ?? []) as { duration_ms: number | null; created_at: string }[];
+  const avgDuration = (fromIso: string, toIso?: string) => {
+    const s = sessionRows.filter((r) => r.duration_ms != null && r.created_at >= fromIso && (!toIso || r.created_at < toIso));
+    return s.length ? s.reduce((a, r) => a + (r.duration_ms ?? 0), 0) / s.length : 0;
   };
-  const avgMs = avgDuration(current);
-  const prevAvgMs = avgDuration(previous);
+  const avgMs = avgDuration(windowStart.toISOString());
+  const prevAvgMs = avgDuration(prevStart.toISOString(), windowStart.toISOString());
   const fmtDur = (ms: number) => {
     const sec = Math.round(ms / 1000);
     if (sec <= 0) return "—";
