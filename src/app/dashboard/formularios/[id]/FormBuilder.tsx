@@ -45,14 +45,6 @@ const BASICO: { group: string; items: PaletteItem[] }[] = [
     ],
   },
 ];
-const AVANCADO = [
-  { label: "Página", icon: "🗐" },
-  { label: "Upload de arquivo", icon: "📎" },
-  { label: "Cálculo", icon: "🧮" },
-  { label: "Pagamento", icon: "💳" },
-  { label: "Endereço", icon: "📍" },
-  { label: "Agendamento", icon: "🗓" },
-];
 const TYPE_LABEL = Object.fromEntries(BASICO.flatMap((g) => g.items).map((i) => [i.type, i.label])) as Record<FieldType, string>;
 const ALL_TYPES = BASICO.flatMap((g) => g.items);
 
@@ -90,8 +82,6 @@ export function FormBuilder({ id, code, initialConfig }: { id: string; code: str
   const [config, setConfig] = useState<FormConfig>(initialConfig);
   const [status, setStatus] = useState<Status>("saved");
   const [showSettings, setShowSettings] = useState(false);
-  const [tab, setTab] = useState<"basico" | "avancado">("basico");
-  const [upgrade, setUpgrade] = useState(false);
   const first = useRef(true);
 
   useEffect(() => {
@@ -158,51 +148,24 @@ export function FormBuilder({ id, code, initialConfig }: { id: string; code: str
         {/* Left palette */}
         <aside className="lg:sticky lg:top-20 lg:self-start">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-500">Adicionar perguntas</p>
-          <div className="mb-2 flex rounded-lg bg-stone-100 p-1 text-xs">
-            <button type="button" onClick={() => setTab("basico")} className={`flex-1 rounded-md py-1.5 font-medium ${tab === "basico" ? "bg-white shadow-sm" : "text-stone-500"}`}>
-              Básico
-            </button>
-            <button type="button" onClick={() => setTab("avancado")} className={`flex-1 rounded-md py-1.5 font-medium ${tab === "avancado" ? "bg-white shadow-sm" : "text-stone-500"}`}>
-              Avançado
-            </button>
-          </div>
-          {tab === "basico" ? (
-            <div className="flex flex-col gap-3">
-              {BASICO.map((g) => (
-                <div key={g.group} className="flex flex-col gap-1">
-                  <p className="px-1 text-[10px] font-semibold uppercase tracking-wide text-stone-400">{g.group}</p>
-                  {g.items.map((p) => (
-                    <button
-                      key={p.type}
-                      type="button"
-                      onClick={() => addField(p.type)}
-                      className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-50 hover:ring-stone-900"
-                    >
-                      <span className="flex h-5 w-5 items-center justify-center text-xs text-stone-400">{p.icon}</span>
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-1">
-              {AVANCADO.map((p) => (
-                <button
-                  key={p.label}
-                  type="button"
-                  onClick={() => setUpgrade(true)}
-                  className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm text-stone-500 ring-1 ring-stone-200 transition hover:bg-stone-50"
-                >
-                  <span className="flex items-center gap-2.5">
-                    <span className="flex h-5 w-5 items-center justify-center text-xs">{p.icon}</span>
+          <div className="flex flex-col gap-3">
+            {BASICO.map((g) => (
+              <div key={g.group} className="flex flex-col gap-1">
+                <p className="px-1 text-[10px] font-semibold uppercase tracking-wide text-stone-400">{g.group}</p>
+                {g.items.map((p) => (
+                  <button
+                    key={p.type}
+                    type="button"
+                    onClick={() => addField(p.type)}
+                    className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-50 hover:ring-stone-900"
+                  >
+                    <span className="flex h-5 w-5 items-center justify-center text-xs text-stone-400">{p.icon}</span>
                     {p.label}
-                  </span>
-                  <span className="text-xs text-stone-400">🔒</span>
-                </button>
-              ))}
-            </div>
-          )}
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
         </aside>
 
         {/* Center: field editors */}
@@ -312,25 +275,6 @@ export function FormBuilder({ id, code, initialConfig }: { id: string; code: str
           <Preview config={config} />
         </aside>
       </div>
-
-      {upgrade ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={() => setUpgrade(false)}>
-          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold">Atualize seu plano</h3>
-            <p className="mt-2 text-sm text-stone-600">
-              Este recurso não está incluído no seu plano atual. Faça upgrade para usar os campos avançados.
-            </p>
-            <div className="mt-5 flex justify-end gap-2">
-              <button type="button" onClick={() => setUpgrade(false)} className="rounded-lg px-4 py-2 text-sm ring-1 ring-stone-300 hover:ring-stone-900">
-                Cancelar
-              </button>
-              <Link href="/dashboard/plans" className="rounded-lg bg-stone-900 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-700">
-                Ver planos
-              </Link>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
