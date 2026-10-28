@@ -210,11 +210,15 @@ export const FORM_DISPLAY_TYPES = ["header", "image", "video"] as const;
 export const formFieldSchema = z.object({
   label: z.string().max(200),
   type: z.enum(FORM_FIELD_TYPES).default("text"),
+  // "Legenda": short description shown under the question.
+  description: z.string().max(1000).default(""),
   required: z.boolean().default(false),
   placeholder: z.string().max(120).default(""),
   // Image/video URL for display blocks.
   mediaUrl: z.string().max(1000).default(""),
   options: z.array(z.string().max(120)).max(20).default([]),
+  // "Adicionar opção 'Outra'": a free-text option on radio/checkbox.
+  allowOther: z.boolean().default(false),
 });
 export const formBlockSchema = z.object({
   ...blockBase,

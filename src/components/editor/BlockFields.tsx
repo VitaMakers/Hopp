@@ -335,7 +335,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
             <button
               type="button"
               onClick={() =>
-                onChange({ ...block, fields: [...block.fields, { label: "", type: "text", required: false, placeholder: "", mediaUrl: "", options: [] }] })
+                onChange({ ...block, fields: [...block.fields, { label: "", type: "text", required: false, placeholder: "", mediaUrl: "", description: "", allowOther: false, options: [] }] })
               }
               className="self-start text-sm underline"
             >

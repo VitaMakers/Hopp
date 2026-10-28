@@ -19,10 +19,23 @@ export function FormView({ config, code }: { config: FormConfig; code: string })
       .filter(({ f }) => !isDisplay(f.type))
       .map(({ f, i }) => {
         const name = `f${i}`;
-        const value =
-          f.type === "checkbox"
-            ? data.getAll(name).map(String).filter(Boolean).join(", ")
-            : String(data.get(name) ?? "").trim();
+        const other = String(data.get(`${name}_other`) ?? "").trim();
+        let value: string;
+        if (f.type === "checkbox") {
+          const vals = data.getAll(name).map(String).filter(Boolean);
+          const oi = vals.indexOf("__other__");
+          if (oi >= 0) {
+            if (other) vals[oi] = other;
+            else vals.splice(oi, 1);
+          }
+          value = vals.join(", ");
+        } else if (f.type === "radio") {
+          let v = String(data.get(name) ?? "").trim();
+          if (v === "__other__") v = other;
+          value = v;
+        } else {
+          value = String(data.get(name) ?? "").trim();
+        }
         return { label: f.label || `Campo ${i + 1}`, value };
       });
 
@@ -105,22 +118,36 @@ export function FormView({ config, code }: { config: FormConfig; code: string })
                     ))}
                   </div>
                 ) : f.type === "radio" ? (
-                  <div className="flex flex-wrap gap-x-5 gap-y-2 pt-0.5">
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-0.5">
                     {f.options.map((o, oi) => (
                       <label key={oi} className="flex items-center gap-1.5 text-sm text-stone-700">
                         <input type="radio" name={name} value={o} required={f.required} />
                         {o}
                       </label>
                     ))}
+                    {f.allowOther ? (
+                      <label className="flex items-center gap-1.5 text-sm text-stone-700">
+                        <input type="radio" name={name} value="__other__" required={f.required} />
+                        Outro:
+                        <input type="text" name={`${name}_other`} className="w-32 rounded border border-stone-200 px-2 py-0.5 text-sm" />
+                      </label>
+                    ) : null}
                   </div>
                 ) : f.type === "checkbox" ? (
-                  <div className="flex flex-wrap gap-x-5 gap-y-2 pt-0.5">
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-0.5">
                     {f.options.map((o, oi) => (
                       <label key={oi} className="flex items-center gap-1.5 text-sm text-stone-700">
                         <input type="checkbox" name={name} value={o} />
                         {o}
                       </label>
                     ))}
+                    {f.allowOther ? (
+                      <label className="flex items-center gap-1.5 text-sm text-stone-700">
+                        <input type="checkbox" name={name} value="__other__" />
+                        Outro:
+                        <input type="text" name={`${name}_other`} className="w-32 rounded border border-stone-200 px-2 py-0.5 text-sm" />
+                      </label>
+                    ) : null}
                   </div>
                 ) : (
                   <input
@@ -142,9 +169,12 @@ export function FormView({ config, code }: { config: FormConfig; code: string })
                   />
                 );
               const title = (
-                <span className="text-[13px] text-stone-500">
-                  {f.required ? <span>* </span> : null}
-                  {f.label}
+                <span className="flex flex-col">
+                  <span className="text-[13px] text-stone-500">
+                    {f.required ? <span>* </span> : null}
+                    {f.label}
+                  </span>
+                  {f.description ? <span className="text-[11px] text-stone-400">{f.description}</span> : null}
                 </span>
               );
               return f.type === "radio" || f.type === "checkbox" || f.type === "rating" ? (
