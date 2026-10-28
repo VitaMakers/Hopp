@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { formBlockSchema } from "@/lib/page/schema";
+import { FORM_DISPLAY_TYPES, formBlockSchema } from "@/lib/page/schema";
 import { getOwner } from "../../../context";
 import { deleteResponse } from "../../actions";
 
@@ -15,7 +15,11 @@ export default async function RespostasPage({ params }: { params: Promise<{ id: 
   if (!form) notFound();
   const parsed = formBlockSchema.safeParse(form.config);
   const title = parsed.success ? parsed.data.title || "Formulário" : "Formulário";
-  const columns = parsed.success ? parsed.data.fields.map((f, i) => f.label || `Campo ${i + 1}`) : [];
+  const columns = parsed.success
+    ? parsed.data.fields
+        .filter((f) => !(FORM_DISPLAY_TYPES as readonly string[]).includes(f.type))
+        .map((f, i) => f.label || `Campo ${i + 1}`)
+    : [];
 
   const { data: responses } = await supabase
     .from("form_responses")

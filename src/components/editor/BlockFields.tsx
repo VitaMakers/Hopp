@@ -296,6 +296,10 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
                     select: "Lista suspensa",
                     radio: "Escolha única",
                     checkbox: "Múltipla escolha",
+                    rating: "Avaliação",
+                    header: "Título",
+                    image: "Imagem",
+                    video: "Vídeo",
                   }}
                   onChange={(type) => setField({ type })}
                 />
@@ -331,7 +335,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
             <button
               type="button"
               onClick={() =>
-                onChange({ ...block, fields: [...block.fields, { label: "", type: "text", required: false, placeholder: "", options: [] }] })
+                onChange({ ...block, fields: [...block.fields, { label: "", type: "text", required: false, placeholder: "", mediaUrl: "", options: [] }] })
               }
               className="self-start text-sm underline"
             >
