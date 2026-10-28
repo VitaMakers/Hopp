@@ -37,5 +37,5 @@ export async function POST(request: Request) {
   if (kind === "session" && duration != null) row.duration_ms = duration * 1000;
   const { error } = await createAdminClient().from("events").insert(row);
   if (error) console.error("track insert failed", error.message);
-  return NextResponse.json({ ok: !error, error: error?.message });
+  return NextResponse.json({ ok: !error });
 }
