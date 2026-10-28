@@ -48,13 +48,13 @@ export function FormView({ config, code }: { config: FormConfig; code: string })
         {state === "done" ? (
           <p className="py-8 text-center text-lg font-medium text-stone-800">{config.thankYouMessage}</p>
         ) : (
-          <form onSubmit={onSubmit} className="flex flex-col gap-4">
+          <form onSubmit={onSubmit} className="flex flex-col gap-5">
             {logo ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logo} alt="" className="mx-auto mb-2 max-h-24 w-auto object-contain" />
             ) : null}
-            {config.title ? <h1 className="text-center text-xl font-bold text-stone-900">{config.title}</h1> : null}
-            {config.intro ? <p className="-mt-2 text-center text-sm text-stone-600">{config.intro}</p> : null}
+            {config.title ? <h1 className="text-lg font-bold text-stone-900">{config.title}</h1> : null}
+            {config.intro ? <p className="-mt-2 text-sm text-stone-500">{config.intro}</p> : null}
             {config.fields.map((f, i) => {
               const name = `f${i}`;
               const field =
@@ -72,18 +72,18 @@ export function FormView({ config, code }: { config: FormConfig; code: string })
                     ))}
                   </select>
                 ) : f.type === "radio" ? (
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-wrap gap-x-5 gap-y-2">
                     {f.options.map((o, oi) => (
-                      <label key={oi} className="flex items-center gap-2 text-sm font-normal text-stone-700">
+                      <label key={oi} className="flex items-center gap-1.5 text-sm font-normal text-stone-700">
                         <input type="radio" name={name} value={o} required={f.required} />
                         {o}
                       </label>
                     ))}
                   </div>
                 ) : f.type === "checkbox" ? (
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-wrap gap-x-5 gap-y-2">
                     {f.options.map((o, oi) => (
-                      <label key={oi} className="flex items-center gap-2 text-sm font-normal text-stone-700">
+                      <label key={oi} className="flex items-center gap-1.5 text-sm font-normal text-stone-700">
                         <input type="checkbox" name={name} value={o} />
                         {o}
                       </label>
@@ -109,9 +109,9 @@ export function FormView({ config, code }: { config: FormConfig; code: string })
                   />
                 );
               const title = (
-                <span className="text-sm font-medium text-stone-700">
+                <span className="text-sm text-stone-600">
+                  {f.required ? <span className="text-red-500">* </span> : null}
                   {f.label}
-                  {f.required ? " *" : ""}
                 </span>
               );
               return f.type === "radio" || f.type === "checkbox" ? (
