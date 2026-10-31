@@ -739,10 +739,28 @@ function StoreSlide({
 
 function StorePromo({ premium, brand, handle }: { premium: PremiumFields; brand: string; handle?: string }) {
   const href = linkHref(premium.promoUrl);
+  const code = (premium.promoCode || "").trim();
   const match = (premium.promoDiscount || "").match(/^(\S+)\s*(.*)$/);
   const bigPart = match ? match[1] : premium.promoDiscount;
   const smallPart = match ? match[2] : "";
-  const go = () => href && track(handle, { kind: "block_click", blockId: "promo", target: href });
+  const [revealed, setRevealed] = useState(false);
+  const [copied, setCopied] = useState(false);
+  // No code: the button is a plain link to promoUrl (old behaviour).
+  const activate = () => {
+    track(handle, { kind: "block_click", blockId: "promo", target: code ? `cupom:${code}` : href ?? "promo" });
+    setRevealed(true);
+    try {
+      navigator.clipboard?.writeText(code).then(
+        () => {
+          setCopied(true);
+          window.setTimeout(() => setCopied(false), 2500);
+        },
+        () => {},
+      );
+    } catch {
+      /* clipboard may be blocked; the code still shows for manual copy */
+    }
+  };
   return (
     <section className="store-promo">
       <div className="store-promo-top">
@@ -756,11 +774,23 @@ function StorePromo({ premium, brand, handle }: { premium: PremiumFields; brand:
         </div>
         <div className="store-promo-right">
           <span className="store-promo-brand">{brand}</span>
-          <a className="store-promo-btn" href={href ?? "#"} target="_blank" rel="noopener noreferrer" onClick={go}>
-            {premium.promoButton || "ATIVAR"} <span aria-hidden>→</span>
-          </a>
+          {code ? (
+            <button type="button" className="store-promo-btn" onClick={activate}>
+              {copied ? "Copiado!" : revealed ? "Copiar" : premium.promoButton || "ATIVAR"} <span aria-hidden>{copied ? "✓" : "→"}</span>
+            </button>
+          ) : (
+            <a className="store-promo-btn" href={href ?? "#"} target="_blank" rel="noopener noreferrer" onClick={() => href && track(handle, { kind: "block_click", blockId: "promo", target: href })}>
+              {premium.promoButton || "ATIVAR"} <span aria-hidden>→</span>
+            </a>
+          )}
         </div>
       </div>
+      {code && revealed ? (
+        <button type="button" className="store-coupon" onClick={activate} aria-label={`Copiar cupom ${code}`}>
+          <span className="store-coupon-code">{code}</span>
+          <span className="store-coupon-hint">{copied ? "✓ copiado" : "toque para copiar"}</span>
+        </button>
+      ) : null}
       {premium.benefits.length ? (
         <div className="store-promo-benefits">
           {premium.benefits.map((benefit, index) => (

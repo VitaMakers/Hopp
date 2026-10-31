@@ -290,9 +290,10 @@ function StoreFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Pa
         <TextField label="Selo" value={p.promoBadge} maxLength={30} onChange={(promoBadge) => setPremium({ promoBadge })} />
         <TextField label="Desconto (ex.: 15% OFF)" value={p.promoDiscount} maxLength={20} onChange={(promoDiscount) => setPremium({ promoDiscount })} />
         <TextField label="Texto do botão" value={p.promoButton} maxLength={30} onChange={(promoButton) => setPremium({ promoButton })} />
-        <TextField label="Link do botão" type="url" value={p.promoUrl} maxLength={2000} onChange={(promoUrl) => setPremium({ promoUrl })} />
+        <TextField label="Código do cupom (ao tocar, copia)" value={p.promoCode} maxLength={30} onChange={(promoCode) => setPremium({ promoCode })} />
       </div>
       <TextField label="Observação" value={p.promoNote} maxLength={80} onChange={(promoNote) => setPremium({ promoNote })} />
+      <TextField label="Link do botão (usado só se não houver cupom)" type="url" value={p.promoUrl} maxLength={2000} onChange={(promoUrl) => setPremium({ promoUrl })} />
       <TextField label="Vantagens (separe por vírgula)" value={p.benefits.join(", ")} onChange={(value) => setPremium({ benefits: list(value).slice(0, 4) })} />
 
       <p className="text-sm font-semibold">Cartão de novidade</p>
