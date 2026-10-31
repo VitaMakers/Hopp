@@ -188,6 +188,7 @@ export const TEMPLATES: PageTemplate[] = [
           promoDiscount: "15% OFF",
           promoNote: "Cupom extra na sua estreia",
           promoButton: "ATIVAR",
+          promoCode: "BLACK15",
           promoUrl: "https://example.com/cupom",
           benefits: ["FRETE GRÁTIS", "TROCA GRÁTIS", "+2% NO PIX"],
           featureLabel: "LANÇAMENTO",

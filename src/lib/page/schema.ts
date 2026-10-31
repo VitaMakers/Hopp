@@ -334,6 +334,9 @@ export const premiumFieldsSchema = z.object({
   promoNote: z.string().max(80).default(""),
   promoButton: z.string().max(30).default("ATIVAR"),
   promoUrl: z.string().max(2000).default(""),
+  // Coupon code revealed and copied when the promo button is tapped. Empty =
+  // the button just links to promoUrl.
+  promoCode: z.string().max(30).default(""),
   benefits: z.array(z.string().max(30)).max(4).default([]),
   featureLabel: z.string().max(30).default("LANÇAMENTO"),
   featureTitle: z.string().max(40).default(""),
