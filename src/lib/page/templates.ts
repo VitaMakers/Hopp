@@ -41,7 +41,7 @@ export const TEMPLATE_COLLECTIONS: TemplateCollection[] = [
     name: "Black Friday",
     description: "Modelos de campanha para a Black Friday — ofertas, contagem e destaque.",
     swatch: { background: "#000000", accent: "#e11d2a", text: "#ffffff" },
-    templateIds: ["bf-loja", "bf-lookbook", "bf-mosaico", "bf-drop"],
+    templateIds: ["bf-loja", "bf-lookbook", "bf-mosaico", "bf-drop", "bf-banner"],
   },
   {
     id: "autoridade",
@@ -382,6 +382,50 @@ export const TEMPLATES: PageTemplate[] = [
           product({ label: "", title: "Tênis Court", description: "", price: "R$429", buttonText: "Ver", url: "https://example.com/court", imageUrl: unsplash("1491553895911-0055eca6402d", 700) }),
           product({ label: "", title: "Meia Premium", description: "", price: "R$49", buttonText: "Ver", url: "https://example.com/meia", imageUrl: unsplash("1586350977771-b3b0abd50c82", 700) }),
           product({ label: "", title: "Boné Classic", description: "", price: "R$129", buttonText: "Ver", url: "https://example.com/bone", imageUrl: unsplash("1521369909029-2afed882baee", 700) }),
+        ],
+      }),
+  },
+  {
+    id: "bf-banner",
+    name: "Banner Black Friday",
+    category: "Campanha",
+    plan: "premium",
+    tab: "premium",
+    description: "Banner promocional com confete, foto, 'BLACK FRIDAY' gigante, botão e selos de desconto inclinados. Ofertas e redes abaixo.",
+    swatch: { background: "#141414", accent: "#e8185d", text: "#ffffff" },
+    build: (name) =>
+      page(name, {
+        profile: {
+          bio: "As melhores ofertas do ano em um só lugar. Descontos imperdíveis por tempo limitado — aproveite antes que acabe.",
+          coverUrl: unsplash("1483985988355-763728e1935b", 1200),
+          floatingWhatsapp: "(11) 99999-0000",
+        },
+        socials: [
+          { platform: "instagram", url: "https://www.instagram.com/" },
+          { platform: "facebook", url: "https://www.facebook.com/" },
+          { platform: "youtube", url: "https://www.youtube.com/" },
+          { platform: "tiktok", url: "https://www.tiktok.com/" },
+        ],
+        theme: { premium: "promo", background: "#141414", text: "#ffffff", accent: "#e8185d", font: "sans" },
+        premium: {
+          promoBadge: "OFERTA ESPECIAL",
+          heroSlides: [
+            { imageUrl: unsplash("1483985988355-763728e1935b", 1200), headline: "BLACK\nFRIDAY", productLabel: "", productName: "", priceFrom: "", price: "", url: "https://example.com/ofertas" },
+          ],
+          promoButton: "COMPRAR AGORA",
+          promoUrl: "https://example.com/ofertas",
+          featureTags: ["50%", "60%"],
+          navLinks: [
+            { label: "Início", url: "https://example.com/" },
+            { label: "Loja", url: "https://example.com/loja" },
+            { label: "Galeria", url: "https://example.com/galeria" },
+            { label: "Contato", url: "https://example.com/contato" },
+          ],
+        },
+        blocks: [
+          link({ display: "banner", label: "CUPOM", title: "Ganhe 50% OFF na primeira compra", buttonText: "Aproveitar", url: "https://example.com/cupom" }),
+          link({ display: "button", label: "FRETE GRÁTIS", title: "Em todo o site nesta semana", buttonText: "Ver regras", url: "https://example.com/frete" }),
+          link({ display: "button", label: "NOVIDADES", title: "Coleção Black Friday", buttonText: "Explorar", url: "https://example.com/colecao" }),
         ],
       }),
   },
