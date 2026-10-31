@@ -80,6 +80,7 @@ const PREMIUM_NAMES: Record<Exclude<Theme["premium"], "">, string> = {
   ecosystem: "Ecossistema",
   catalog: "Vitrine",
   experience: "Presença Profissional",
+  store: "Loja / Black Friday",
 };
 
 function PremiumPanel({ doc, onChange }: PanelProps) {
@@ -225,10 +226,117 @@ function PremiumPanel({ doc, onChange }: PanelProps) {
             </p>
           </>
         ) : null}
+        {design === "store" ? <StoreFields doc={doc} setPremium={setPremium} /> : null}
         <button type="button" onClick={() => setTheme({ premium: "" })} className="self-start text-sm text-stone-500 underline">
           Sair do modelo e usar o visual normal
         </button>
       </Card>
+    </div>
+  );
+}
+
+function StoreFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Partial<PageDoc["premium"]>) => void }) {
+  const p = doc.premium;
+  const slides = p.heroSlides;
+  const setSlide = (index: number, patch: Partial<(typeof slides)[number]>) =>
+    setPremium({ heroSlides: slides.map((slide, i) => (i === index ? { ...slide, ...patch } : slide)) });
+  const addSlide = () =>
+    setPremium({ heroSlides: [...slides, { imageUrl: "", headline: "", productLabel: "NA TELA", productName: "", priceFrom: "", price: "", url: "" }] });
+  const removeSlide = (index: number) => setPremium({ heroSlides: slides.filter((_, i) => i !== index) });
+  // Comma-separated list <-> string[] helper.
+  const list = (value: string) =>
+    value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  const nav = p.navLinks;
+  const setNav = (index: number, patch: Partial<(typeof nav)[number]>) =>
+    setPremium({ navLinks: nav.map((item, i) => (i === index ? { ...item, ...patch } : item)) });
+
+  return (
+    <div className="flex flex-col gap-4 rounded-xl border border-stone-200 p-3">
+      <p className="text-sm font-semibold">Destaque (carrossel)</p>
+      <div className="grid grid-cols-2 gap-3">
+        <TextField label="Texto do selo (canto superior)" value={p.heroPill} maxLength={40} onChange={(heroPill) => setPremium({ heroPill })} />
+        <TextField label="Link do selo" type="url" value={p.heroPillUrl} maxLength={2000} onChange={(heroPillUrl) => setPremium({ heroPillUrl })} />
+      </div>
+      {slides.map((slide, index) => (
+        <div key={index} className="flex flex-col gap-2 rounded-lg bg-stone-50 p-2.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-stone-500">Slide {index + 1}</span>
+            <button type="button" onClick={() => removeSlide(index)} className="text-xs text-red-500">
+              Remover
+            </button>
+          </div>
+          <TextField label="Imagem (link)" type="url" value={slide.imageUrl} placeholder="https://..." onChange={(imageUrl) => setSlide(index, { imageUrl })} />
+          <TextField label="Título (use Enter para quebrar a linha)" value={slide.headline} maxLength={80} onChange={(headline) => setSlide(index, { headline })} />
+          <div className="grid grid-cols-2 gap-2">
+            <TextField label="Rótulo do produto" value={slide.productLabel} maxLength={20} onChange={(productLabel) => setSlide(index, { productLabel })} />
+            <TextField label="Nome do produto" value={slide.productName} maxLength={60} onChange={(productName) => setSlide(index, { productName })} />
+            <TextField label="Preço de (riscado)" value={slide.priceFrom} maxLength={20} onChange={(priceFrom) => setSlide(index, { priceFrom })} />
+            <TextField label="Preço por" value={slide.price} maxLength={20} onChange={(price) => setSlide(index, { price })} />
+          </div>
+          <TextField label="Link do produto" type="url" value={slide.url} maxLength={2000} onChange={(url) => setSlide(index, { url })} />
+        </div>
+      ))}
+      {slides.length < 6 ? (
+        <button type="button" onClick={addSlide} className="self-start rounded-lg border border-dashed border-stone-300 px-3 py-1.5 text-sm text-stone-600">
+          + Adicionar slide
+        </button>
+      ) : null}
+
+      <p className="text-sm font-semibold">Cartão de oferta</p>
+      <div className="grid grid-cols-2 gap-3">
+        <TextField label="Selo" value={p.promoBadge} maxLength={30} onChange={(promoBadge) => setPremium({ promoBadge })} />
+        <TextField label="Desconto (ex.: 15% OFF)" value={p.promoDiscount} maxLength={20} onChange={(promoDiscount) => setPremium({ promoDiscount })} />
+        <TextField label="Texto do botão" value={p.promoButton} maxLength={30} onChange={(promoButton) => setPremium({ promoButton })} />
+        <TextField label="Link do botão" type="url" value={p.promoUrl} maxLength={2000} onChange={(promoUrl) => setPremium({ promoUrl })} />
+      </div>
+      <TextField label="Observação" value={p.promoNote} maxLength={80} onChange={(promoNote) => setPremium({ promoNote })} />
+      <TextField label="Vantagens (separe por vírgula)" value={p.benefits.join(", ")} onChange={(value) => setPremium({ benefits: list(value).slice(0, 4) })} />
+
+      <p className="text-sm font-semibold">Cartão de novidade</p>
+      <div className="grid grid-cols-2 gap-3">
+        <TextField label="Rótulo" value={p.featureLabel} maxLength={30} onChange={(featureLabel) => setPremium({ featureLabel })} />
+        <TextField label="Título" value={p.featureTitle} maxLength={40} onChange={(featureTitle) => setPremium({ featureTitle })} />
+      </div>
+      <TextField label="Imagem (link)" type="url" value={p.featureImageUrl} placeholder="https://..." onChange={(featureImageUrl) => setPremium({ featureImageUrl })} />
+      <TextField label="Link" type="url" value={p.featureUrl} maxLength={2000} onChange={(featureUrl) => setPremium({ featureUrl })} />
+      <TextField label="Etiquetas (separe por vírgula)" value={p.featureTags.join(", ")} onChange={(value) => setPremium({ featureTags: list(value).slice(0, 5) })} />
+      <TextField label="Cores em destaque (hex, separe por vírgula)" value={p.featureColors.join(", ")} onChange={(value) => setPremium({ featureColors: list(value).slice(0, 8) })} />
+
+      <p className="text-sm font-semibold">Cartão de tamanho</p>
+      <TextField label="Título" value={p.sizeTitle} maxLength={60} onChange={(sizeTitle) => setPremium({ sizeTitle })} />
+      <div className="grid grid-cols-2 gap-3">
+        <TextField label="Tamanhos (separe por vírgula)" value={p.sizes.join(", ")} onChange={(value) => setPremium({ sizes: list(value).slice(0, 10) })} />
+        <TextField label="Tamanho em destaque" value={p.sizeActive} maxLength={6} onChange={(sizeActive) => setPremium({ sizeActive })} />
+      </div>
+      <TextField label="Imagem (link, opcional)" type="url" value={p.sizeImageUrl} placeholder="https://..." onChange={(sizeImageUrl) => setPremium({ sizeImageUrl })} />
+
+      <p className="text-sm font-semibold">Rodapé (links)</p>
+      {nav.map((item, index) => (
+        <div key={index} className="grid grid-cols-[1fr_1fr_auto] items-end gap-2">
+          <TextField label="Nome" value={item.label} maxLength={20} onChange={(label) => setNav(index, { label })} />
+          <TextField label="Link" type="url" value={item.url} maxLength={2000} onChange={(url) => setNav(index, { url })} />
+          <button type="button" onClick={() => setPremium({ navLinks: nav.filter((_, i) => i !== index) })} className="pb-2 text-xs text-red-500">
+            ✕
+          </button>
+        </div>
+      ))}
+      {nav.length < 6 ? (
+        <button
+          type="button"
+          onClick={() => setPremium({ navLinks: [...nav, { label: "", url: "" }] })}
+          className="self-start rounded-lg border border-dashed border-stone-300 px-3 py-1.5 text-sm text-stone-600"
+        >
+          + Adicionar link
+        </button>
+      ) : null}
+
+      <p className="text-xs text-stone-500">
+        Os produtos da grade (2 colunas) vêm dos blocos do tipo <strong>Produto</strong> na aba Blocos — a imagem, o nome, as etiquetas (no
+        campo &quot;rótulo&quot;, separadas por · ou vírgula) e o botão. O WhatsApp vem do Perfil.
+      </p>
     </div>
   );
 }

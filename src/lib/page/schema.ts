@@ -263,7 +263,7 @@ export const AVATAR_SHAPES = ["circle", "rounded", "square"] as const;
 export const SOCIAL_STYLES = ["icons", "pills"] as const;
 // Vita premium designs: when set, the page is drawn by that template's own
 // layout (src/components/page-view/PremiumView.tsx) instead of the theme.
-export const PREMIUM_DESIGNS = ["", "authority", "spotlight", "ecosystem", "catalog", "experience"] as const;
+export const PREMIUM_DESIGNS = ["", "authority", "spotlight", "ecosystem", "catalog", "experience", "store"] as const;
 
 export const themeSchema = z.object({
   layout: z.enum(LAYOUTS),
@@ -309,6 +309,46 @@ export const premiumFieldsSchema = z.object({
   credential: z.string().max(80).default(""),
   audienceA: z.string().max(40).default("Sou paciente"),
   audienceB: z.string().max(40).default("Sou dentista"),
+  // "store" design (e-commerce / Black Friday): an auto-rotating hero
+  // carousel, a highlighted promo card, a "new drop" feature card and a
+  // size-help card. The product grid below comes from the page's product
+  // blocks. Every list defaults to empty; the template ships the samples.
+  heroPill: z.string().max(40).default("Black Antecipada"),
+  heroPillUrl: z.string().max(2000).default(""),
+  heroSlides: z
+    .array(
+      z.object({
+        imageUrl: z.string().max(1000).default(""),
+        headline: z.string().max(80).default(""),
+        productLabel: z.string().max(20).default("NA TELA"),
+        productName: z.string().max(60).default(""),
+        priceFrom: z.string().max(20).default(""),
+        price: z.string().max(20).default(""),
+        url: z.string().max(2000).default(""),
+      }),
+    )
+    .max(6)
+    .default([]),
+  promoBadge: z.string().max(30).default("1ª COMPRA"),
+  promoDiscount: z.string().max(20).default("15% OFF"),
+  promoNote: z.string().max(80).default(""),
+  promoButton: z.string().max(30).default("ATIVAR"),
+  promoUrl: z.string().max(2000).default(""),
+  benefits: z.array(z.string().max(30)).max(4).default([]),
+  featureLabel: z.string().max(30).default("LANÇAMENTO"),
+  featureTitle: z.string().max(40).default(""),
+  featureTags: z.array(z.string().max(20)).max(5).default([]),
+  featureImageUrl: z.string().max(1000).default(""),
+  featureUrl: z.string().max(2000).default(""),
+  featureColors: z.array(z.string().max(20)).max(8).default([]),
+  sizeTitle: z.string().max(60).default("Não sabe seu tamanho?"),
+  sizes: z.array(z.string().max(6)).max(10).default([]),
+  sizeActive: z.string().max(6).default(""),
+  sizeImageUrl: z.string().max(1000).default(""),
+  navLinks: z
+    .array(z.object({ label: z.string().max(20), url: z.string().max(2000).default("") }))
+    .max(6)
+    .default([]),
 });
 
 export const PREMIUM_DEFAULTS = premiumFieldsSchema.parse({});

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { APP_NAME } from "@/lib/env";
 import { showsBadge } from "@/lib/entitlements";
 import type { Block, PageDoc } from "@/lib/page/schema";
@@ -71,6 +71,8 @@ export function PremiumView({ doc, handle, plan }: Props) {
         return <Catalog doc={doc} handle={handle} plan={plan} />;
       case "experience":
         return <Experience doc={doc} handle={handle} plan={plan} />;
+      case "store":
+        return <Store doc={doc} handle={handle} plan={plan} />;
       default:
         return null;
     }
@@ -574,5 +576,299 @@ function Catalog({ doc, handle, plan }: Props) {
         </a>
       ) : null}
     </div>
+  );
+}
+
+/* ---------- Store (e-commerce / Black Friday) ---------- */
+type PremiumFields = PageDoc["premium"];
+type HeroSlide = PremiumFields["heroSlides"][number];
+
+function Store({ doc, handle, plan }: Props) {
+  const { profile, theme, premium } = doc;
+  const brand = profile.name || APP_NAME;
+  const products = visible(doc, "product");
+  const whatsapp = whatsappHref(profile.floatingWhatsapp, "");
+  return (
+    <div
+      className="vita-premium premium-store"
+      style={
+        {
+          "--store-bg": theme.background,
+          "--store-text": theme.text,
+          "--store-accent": theme.accent,
+        } as React.CSSProperties
+      }
+    >
+      <div className="store-inner">
+        <StoreHero slides={premium.heroSlides} brand={brand} verified={profile.verified} pill={premium.heroPill} pillUrl={premium.heroPillUrl} handle={handle} />
+        <StorePromo premium={premium} brand={brand} handle={handle} />
+        {premium.featureTitle || premium.featureImageUrl ? <StoreFeature premium={premium} handle={handle} /> : null}
+        {products.length ? (
+          <section className="store-grid" aria-label="Produtos">
+            {products.map((block) => (
+              <StoreProduct key={block.id} block={block} handle={handle} />
+            ))}
+          </section>
+        ) : null}
+        {whatsapp && (premium.sizes.length > 0 || premium.sizeTitle) ? <StoreSize premium={premium} whatsapp={whatsapp} handle={handle} /> : null}
+        <footer className="store-footer">
+          <span className="store-footer-brand">{brand}</span>
+          {premium.navLinks.length ? (
+            <nav className="store-nav">
+              {premium.navLinks.map((item, index) =>
+                item.label ? (
+                  <a key={index} href={linkHref(item.url) ?? "#"} target="_blank" rel="noopener noreferrer">
+                    {item.label}
+                  </a>
+                ) : null,
+              )}
+            </nav>
+          ) : null}
+          <small>© {footerOwner(plan, profile.name, handle)} · {year}</small>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+function StoreHero({
+  slides,
+  brand,
+  verified,
+  pill,
+  pillUrl,
+  handle,
+}: {
+  slides: HeroSlide[];
+  brand: string;
+  verified: boolean;
+  pill: string;
+  pillUrl: string;
+  handle?: string;
+}) {
+  const [index, setIndex] = useState(0);
+  const count = slides.length;
+  useEffect(() => {
+    if (count <= 1) return;
+    const timer = setInterval(() => setIndex((value) => (value + 1) % count), 3600);
+    return () => clearInterval(timer);
+  }, [count]);
+  if (!count) return null;
+  const active = Math.min(index, count - 1);
+  return (
+    <section className="store-hero">
+      <div className="store-hero-track" style={{ transform: `translateX(-${active * 100}%)` }}>
+        {slides.map((slide, slideIndex) => (
+          <StoreSlide key={slideIndex} slide={slide} brand={brand} verified={verified} pill={pill} pillUrl={pillUrl} handle={handle} />
+        ))}
+      </div>
+      {count > 1 ? (
+        <div className="store-hero-bars" aria-hidden>
+          {slides.map((_, barIndex) => (
+            <button key={barIndex} type="button" className={barIndex === active ? "on" : ""} onClick={() => setIndex(barIndex)} aria-label={`Ver destaque ${barIndex + 1}`}>
+              <span />
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function StoreSlide({
+  slide,
+  brand,
+  verified,
+  pill,
+  pillUrl,
+  handle,
+}: {
+  slide: HeroSlide;
+  brand: string;
+  verified: boolean;
+  pill: string;
+  pillUrl: string;
+  handle?: string;
+}) {
+  const href = linkHref(slide.url);
+  const image = imageSrc(slide.imageUrl);
+  const pillHref = linkHref(pillUrl) ?? href;
+  const lines = (slide.headline || "").split("\n").filter(Boolean);
+  const go = () => href && track(handle, { kind: "block_click", blockId: "hero", target: href });
+  return (
+    <div className="store-slide">
+      {image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={image} alt={slide.headline || slide.productName || brand} className="store-slide-img" loading="lazy" />
+      ) : (
+        <div className="store-slide-img store-slide-placeholder" />
+      )}
+      <div className="store-slide-shade" />
+      <div className="store-slide-top">
+        <span className="store-brandpill">
+          {brand}
+          {verified ? <VerifiedCheck className="ml-1 inline h-[0.85em] w-[0.85em] align-middle" /> : null}
+        </span>
+        {pill ? (
+          <a className="store-toppill" href={pillHref ?? "#"} target="_blank" rel="noopener noreferrer">
+            {pill} <span aria-hidden>›</span>
+          </a>
+        ) : null}
+      </div>
+      <div className="store-slide-bottom">
+        {lines.length ? (
+          <h2 className="store-slide-head">
+            {lines.map((line, lineIndex) => (
+              <span key={lineIndex}>{line}</span>
+            ))}
+          </h2>
+        ) : null}
+        {slide.productName || slide.price ? (
+          <a className="store-slide-product" href={href ?? "#"} target="_blank" rel="noopener noreferrer" onClick={go}>
+            {slide.productLabel ? <span className="store-prod-label">{slide.productLabel}</span> : null}
+            <span className="store-prod-name">{slide.productName}</span>
+            {slide.priceFrom ? <s className="store-prod-from">{slide.priceFrom}</s> : null}
+            {slide.price ? <span className="store-prod-price">{slide.price}</span> : null}
+            <span className="store-prod-arrow" aria-hidden>›</span>
+          </a>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function StorePromo({ premium, brand, handle }: { premium: PremiumFields; brand: string; handle?: string }) {
+  const href = linkHref(premium.promoUrl);
+  const match = (premium.promoDiscount || "").match(/^(\S+)\s*(.*)$/);
+  const bigPart = match ? match[1] : premium.promoDiscount;
+  const smallPart = match ? match[2] : "";
+  const go = () => href && track(handle, { kind: "block_click", blockId: "promo", target: href });
+  return (
+    <section className="store-promo">
+      <div className="store-promo-top">
+        <div>
+          {premium.promoBadge ? <span className="store-promo-badge">{premium.promoBadge}</span> : null}
+          <p className="store-promo-discount">
+            <strong>{bigPart}</strong>
+            {smallPart ? <span>{smallPart}</span> : null}
+          </p>
+          {premium.promoNote ? <p className="store-promo-note">{premium.promoNote}</p> : null}
+        </div>
+        <div className="store-promo-right">
+          <span className="store-promo-brand">{brand}</span>
+          <a className="store-promo-btn" href={href ?? "#"} target="_blank" rel="noopener noreferrer" onClick={go}>
+            {premium.promoButton || "ATIVAR"} <span aria-hidden>→</span>
+          </a>
+        </div>
+      </div>
+      {premium.benefits.length ? (
+        <div className="store-promo-benefits">
+          {premium.benefits.map((benefit, index) => (
+            <span key={index}>{benefit}</span>
+          ))}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function StoreFeature({ premium, handle }: { premium: PremiumFields; handle?: string }) {
+  const image = imageSrc(premium.featureImageUrl);
+  const href = linkHref(premium.featureUrl);
+  const go = () => href && track(handle, { kind: "block_click", blockId: "feature", target: href });
+  return (
+    <a className="store-feature" href={href ?? "#"} target="_blank" rel="noopener noreferrer" onClick={go}>
+      {image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={image} alt={premium.featureTitle} className="store-feature-img" loading="lazy" />
+      ) : null}
+      <div className="store-feature-body">
+        {premium.featureLabel ? <span className="store-feature-label">{premium.featureLabel}</span> : null}
+        {premium.featureTitle ? <h3>{premium.featureTitle}</h3> : null}
+        {premium.featureTags.length ? (
+          <div className="store-tags">
+            {premium.featureTags.map((tag, index) => (
+              <span key={index}>{tag}</span>
+            ))}
+          </div>
+        ) : null}
+        {premium.featureColors.length ? (
+          <div className="store-swatches">
+            {premium.featureColors.map((colorValue, index) => (
+              <span key={index} style={{ background: colorValue }} />
+            ))}
+          </div>
+        ) : null}
+        <span className="store-feature-cta">Ver tudo <span aria-hidden>›</span></span>
+      </div>
+    </a>
+  );
+}
+
+function StoreProduct({ block, handle }: { block: ProductBlock; handle?: string }) {
+  const image = imageSrc(block.imageUrl);
+  const href = linkHref(block.url);
+  const tags = block.label
+    ? block.label
+        .split(/[·,|]/)
+        .map((tag) => tag.trim())
+        .filter(Boolean)
+    : [];
+  return (
+    <article className="store-card">
+      {image ? (
+        <BlockLink block={block} handle={handle} href={href} className="store-card-image">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={image} alt={block.title} loading="lazy" />
+        </BlockLink>
+      ) : null}
+      <div className="store-card-body">
+        <h3>{block.title}</h3>
+        {tags.length ? (
+          <div className="store-tags">
+            {tags.map((tag, index) => (
+              <span key={index}>{tag}</span>
+            ))}
+          </div>
+        ) : null}
+        <BlockLink block={block} handle={handle} href={href} className="store-card-cta">
+          {block.buttonText || "Comprar"} <span aria-hidden>›</span>
+        </BlockLink>
+      </div>
+    </article>
+  );
+}
+
+function StoreSize({ premium, whatsapp, handle }: { premium: PremiumFields; whatsapp: string; handle?: string }) {
+  const image = imageSrc(premium.sizeImageUrl);
+  return (
+    <section className="store-size">
+      {image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={image} alt="" className="store-size-img" loading="lazy" />
+      ) : null}
+      <div className="store-size-body">
+        <p>{premium.sizeTitle}</p>
+        {premium.sizes.length ? (
+          <div className="store-sizes">
+            {premium.sizes.map((size, index) => (
+              <span key={index} className={size === premium.sizeActive ? "on" : ""}>
+                {size}
+              </span>
+            ))}
+          </div>
+        ) : null}
+      </div>
+      <a
+        className="store-size-wa"
+        href={whatsapp}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Falar no WhatsApp"
+        onClick={() => track(handle, { kind: "social_click", target: "whatsapp" })}
+      >
+        <SocialIcon platform="whatsapp" />
+      </a>
+    </section>
   );
 }
