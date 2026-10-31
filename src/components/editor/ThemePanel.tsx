@@ -82,6 +82,8 @@ const PREMIUM_NAMES: Record<Exclude<Theme["premium"], "">, string> = {
   experience: "Presença Profissional",
   store: "Loja / Black Friday",
   lookbook: "Lookbook",
+  mosaic: "Mosaico",
+  dropz: "Drop Único",
 };
 
 function PremiumPanel({ doc, onChange }: PanelProps) {
@@ -227,7 +229,7 @@ function PremiumPanel({ doc, onChange }: PanelProps) {
             </p>
           </>
         ) : null}
-        {design === "store" || design === "lookbook" ? <StoreFields doc={doc} setPremium={setPremium} /> : null}
+        {design === "store" || design === "lookbook" || design === "mosaic" || design === "dropz" ? <StoreFields doc={doc} setPremium={setPremium} /> : null}
         <button type="button" onClick={() => setTheme({ premium: "" })} className="self-start text-sm text-stone-500 underline">
           Sair do modelo e usar o visual normal
         </button>

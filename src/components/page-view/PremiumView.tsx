@@ -75,6 +75,10 @@ export function PremiumView({ doc, handle, plan }: Props) {
         return <Store doc={doc} handle={handle} plan={plan} />;
       case "lookbook":
         return <Lookbook doc={doc} handle={handle} plan={plan} />;
+      case "mosaic":
+        return <Mosaic doc={doc} handle={handle} plan={plan} />;
+      case "dropz":
+        return <Dropz doc={doc} handle={handle} plan={plan} />;
       default:
         return null;
     }
@@ -1038,7 +1042,7 @@ function Lookbook({ doc, handle, plan }: Props) {
   );
 }
 
-function LookPromo({ premium, handle }: { premium: PremiumFields; handle?: string }) {
+function LookPromo({ premium, handle, hideBenefits }: { premium: PremiumFields; handle?: string; hideBenefits?: boolean }) {
   const href = linkHref(premium.promoUrl);
   const code = (premium.promoCode || "").trim();
   const match = (premium.promoDiscount || "").match(/^(\S+)\s*(.*)$/);
@@ -1087,7 +1091,7 @@ function LookPromo({ premium, handle }: { premium: PremiumFields; handle?: strin
           </button>
         ) : null}
       </div>
-      {premium.benefits.length ? (
+      {!hideBenefits && premium.benefits.length ? (
         <div className="look-promo-benefits">
           {premium.benefits.map((benefit, index) => (
             <span key={index}>{benefit}</span>
@@ -1095,5 +1099,193 @@ function LookPromo({ premium, handle }: { premium: PremiumFields; handle?: strin
         </div>
       ) : null}
     </section>
+  );
+}
+
+/* ---------- Mosaic (magazine / marketplace grid) ---------- */
+function Mosaic({ doc, handle, plan }: Props) {
+  const { profile, theme, premium } = doc;
+  const brand = profile.name || APP_NAME;
+  const headline = (premium.heading || "").split("\n").filter(Boolean);
+  const products = visible(doc, "product");
+  const whatsapp = whatsappHref(profile.floatingWhatsapp, "");
+  return (
+    <div
+      className="vita-premium premium-mosaic"
+      style={{ "--mosaic-bg": theme.background, "--mosaic-text": theme.text, "--mosaic-accent": theme.accent, "--look-accent": theme.accent } as React.CSSProperties}
+    >
+      <div className="mosaic-inner">
+        <header className="mosaic-head">
+          <div className="mosaic-head-top">
+            <span className="mosaic-brand">
+              {brand}
+              {profile.verified ? <VerifiedCheck className="ml-1 inline h-[0.8em] w-[0.8em] align-middle" /> : null}
+            </span>
+            {premium.heroPill ? (
+              <a className="mosaic-pill" href={linkHref(premium.heroPillUrl) ?? "#"} target="_blank" rel="noopener noreferrer">
+                {premium.heroPill} <span aria-hidden>›</span>
+              </a>
+            ) : null}
+          </div>
+          {headline.length ? (
+            <h1 className="mosaic-title">
+              {headline.map((line, index) => (
+                <span key={index}>{line}</span>
+              ))}
+            </h1>
+          ) : null}
+          {profile.bio ? <p className="mosaic-bio">{profile.bio}</p> : null}
+        </header>
+        {products.length ? (
+          <section className="mosaic-grid" aria-label="Ofertas">
+            {products.map((block, index) => {
+              const image = imageSrc(block.imageUrl);
+              const href = linkHref(block.url);
+              const shape = index % 6 === 0 ? "mosaic-tall" : index % 6 === 3 ? "mosaic-wide" : "";
+              return (
+                <BlockLink key={block.id} block={block} handle={handle} href={href} className={`mosaic-tile ${shape}`}>
+                  {image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={image} alt={block.title} loading="lazy" />
+                  ) : (
+                    <span className="mosaic-tile-ph" />
+                  )}
+                  <span className="mosaic-tile-shade" />
+                  <span className="mosaic-tile-copy">
+                    {block.label ? <small>{block.label}</small> : null}
+                    <strong>{block.title}</strong>
+                    {block.price ? <span className="mosaic-tile-price">{block.price}</span> : null}
+                  </span>
+                </BlockLink>
+              );
+            })}
+          </section>
+        ) : null}
+        <LookPromo premium={premium} handle={handle} />
+        <footer className="mosaic-footer">
+          <span className="mosaic-footer-brand">{brand}</span>
+          {premium.navLinks.length ? (
+            <nav className="mosaic-nav">
+              {premium.navLinks.map((item, index) => (item.label ? <a key={index} href={linkHref(item.url) ?? "#"} target="_blank" rel="noopener noreferrer">{item.label}</a> : null))}
+            </nav>
+          ) : null}
+          <small>© {footerOwner(plan, profile.name, handle)} · {year}</small>
+        </footer>
+      </div>
+      {whatsapp ? (
+        <a className="look-wa" href={whatsapp} target="_blank" rel="noopener noreferrer" aria-label="Falar no WhatsApp" onClick={() => track(handle, { kind: "social_click", target: "whatsapp" })}>
+          <SocialIcon platform="whatsapp" />
+        </a>
+      ) : null}
+    </div>
+  );
+}
+
+/* ---------- Dropz (single-product drop) ---------- */
+function Dropz({ doc, handle, plan }: Props) {
+  const { profile, theme, premium } = doc;
+  const brand = profile.name || APP_NAME;
+  const slide = premium.heroSlides[0];
+  const heroImg = imageSrc(slide?.imageUrl || premium.featureImageUrl || profile.coverUrl);
+  const title = slide?.headline || premium.featureTitle || "";
+  const label = slide?.productLabel || premium.featureLabel;
+  const buyHref = linkHref(slide?.url || premium.siteUrl || premium.promoUrl);
+  const products = visible(doc, "product");
+  const whatsapp = whatsappHref(profile.floatingWhatsapp, "");
+  return (
+    <div
+      className="vita-premium premium-dropz"
+      style={{ "--dropz-bg": theme.background, "--dropz-text": theme.text, "--dropz-accent": theme.accent, "--look-accent": theme.accent } as React.CSSProperties}
+    >
+      <div className="dropz-inner">
+        <header className="dropz-top">
+          <span className="dropz-brand">
+            {brand}
+            {profile.verified ? <VerifiedCheck className="ml-1 inline h-[0.8em] w-[0.8em] align-middle" /> : null}
+          </span>
+          {premium.heroPill ? <span className="dropz-chip">{premium.heroPill}</span> : null}
+        </header>
+        <section className="dropz-hero">
+          {heroImg ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="dropz-hero-img" src={heroImg} alt={title || brand} />
+          ) : (
+            <div className="dropz-hero-img dropz-hero-ph" />
+          )}
+        </section>
+        <section className="dropz-info">
+          {label ? <span className="dropz-label">{label}</span> : null}
+          {title ? <h1 className="dropz-title">{title}</h1> : null}
+          <div className="dropz-price">
+            {slide?.priceFrom ? <s>{slide.priceFrom}</s> : null}
+            {slide?.price ? <strong>{slide.price}</strong> : null}
+          </div>
+          {premium.sizes.length ? (
+            <div className="dropz-sizes">
+              <span className="dropz-sizes-label">Tamanho</span>
+              <div className="dropz-sizes-row">
+                {premium.sizes.map((size, index) => (
+                  <span key={index} className={size === premium.sizeActive ? "on" : ""}>
+                    {size}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+          {buyHref ? (
+            <a className="dropz-buy" href={buyHref} target="_blank" rel="noopener noreferrer" onClick={() => track(handle, { kind: "block_click", blockId: "buy", target: buyHref })}>
+              {premium.promoButton || "Comprar agora"} <span aria-hidden>→</span>
+            </a>
+          ) : null}
+          {premium.benefits.length ? (
+            <div className="dropz-benefits">
+              {premium.benefits.map((benefit, index) => (
+                <span key={index}>{benefit}</span>
+              ))}
+            </div>
+          ) : null}
+        </section>
+        {premium.promoCode || (premium.promoDiscount && premium.promoBadge) ? <LookPromo premium={premium} handle={handle} hideBenefits /> : null}
+        {products.length ? (
+          <section className="dropz-more">
+            <h2>Você também vai gostar</h2>
+            <div className="dropz-rail">
+              {products.map((block) => {
+                const image = imageSrc(block.imageUrl);
+                const href = linkHref(block.url);
+                return (
+                  <article key={block.id} className="dropz-card">
+                    {image ? (
+                      <BlockLink block={block} handle={handle} href={href} className="dropz-card-img">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={image} alt={block.title} loading="lazy" />
+                      </BlockLink>
+                    ) : null}
+                    <div className="dropz-card-body">
+                      <h3>{block.title}</h3>
+                      {block.price ? <span>{block.price}</span> : null}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+        <footer className="dropz-footer">
+          <span className="dropz-footer-brand">{brand}</span>
+          {premium.navLinks.length ? (
+            <nav className="dropz-nav">
+              {premium.navLinks.map((item, index) => (item.label ? <a key={index} href={linkHref(item.url) ?? "#"} target="_blank" rel="noopener noreferrer">{item.label}</a> : null))}
+            </nav>
+          ) : null}
+          <small>© {footerOwner(plan, profile.name, handle)} · {year}</small>
+        </footer>
+      </div>
+      {whatsapp ? (
+        <a className="look-wa" href={whatsapp} target="_blank" rel="noopener noreferrer" aria-label="Falar no WhatsApp" onClick={() => track(handle, { kind: "social_click", target: "whatsapp" })}>
+          <SocialIcon platform="whatsapp" />
+        </a>
+      ) : null}
+    </div>
   );
 }
