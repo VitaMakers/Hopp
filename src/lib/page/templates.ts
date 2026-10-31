@@ -36,6 +36,14 @@ export type TemplateCollection = {
 export const TEMPLATE_COLLECTIONS: TemplateCollection[] = [
   ...ESSENTIAL_COLLECTIONS,
   {
+    id: "black-friday",
+    tab: "premium",
+    name: "Black Friday",
+    description: "Modelos de campanha para a Black Friday — ofertas, contagem e destaque.",
+    swatch: { background: "#000000", accent: "#ffcc00", text: "#ffffff" },
+    templateIds: [],
+  },
+  {
     id: "autoridade",
     tab: "premium",
     name: "Autoridade",
