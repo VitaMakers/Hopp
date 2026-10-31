@@ -263,7 +263,7 @@ export const AVATAR_SHAPES = ["circle", "rounded", "square"] as const;
 export const SOCIAL_STYLES = ["icons", "pills"] as const;
 // Vita premium designs: when set, the page is drawn by that template's own
 // layout (src/components/page-view/PremiumView.tsx) instead of the theme.
-export const PREMIUM_DESIGNS = ["", "authority", "spotlight", "ecosystem", "catalog", "experience", "store", "lookbook", "mosaic", "dropz"] as const;
+export const PREMIUM_DESIGNS = ["", "authority", "spotlight", "ecosystem", "catalog", "experience", "store", "lookbook", "mosaic", "dropz", "promo"] as const;
 
 export const themeSchema = z.object({
   layout: z.enum(LAYOUTS),

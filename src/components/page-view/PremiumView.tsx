@@ -79,6 +79,8 @@ export function PremiumView({ doc, handle, plan }: Props) {
         return <Mosaic doc={doc} handle={handle} plan={plan} />;
       case "dropz":
         return <Dropz doc={doc} handle={handle} plan={plan} />;
+      case "promo":
+        return <Promo doc={doc} handle={handle} plan={plan} />;
       default:
         return null;
     }
@@ -1278,6 +1280,114 @@ function Dropz({ doc, handle, plan }: Props) {
               {premium.navLinks.map((item, index) => (item.label ? <a key={index} href={linkHref(item.url) ?? "#"} target="_blank" rel="noopener noreferrer">{item.label}</a> : null))}
             </nav>
           ) : null}
+          <small>© {footerOwner(plan, profile.name, handle)} · {year}</small>
+        </footer>
+      </div>
+      {whatsapp ? (
+        <a className="look-wa" href={whatsapp} target="_blank" rel="noopener noreferrer" aria-label="Falar no WhatsApp" onClick={() => track(handle, { kind: "social_click", target: "whatsapp" })}>
+          <SocialIcon platform="whatsapp" />
+        </a>
+      ) : null}
+    </div>
+  );
+}
+
+/* ---------- Promo (Black Friday banner) ---------- */
+function Promo({ doc, handle, plan }: Props) {
+  const { profile, theme, premium } = doc;
+  const brand = profile.name || APP_NAME;
+  const slide = premium.heroSlides[0];
+  const photo = imageSrc(slide?.imageUrl || profile.coverUrl);
+  const headline = (slide?.headline || premium.heading || "BLACK FRIDAY").split("\n").filter(Boolean);
+  const eyebrow = premium.promoBadge;
+  const ctaHref = linkHref(slide?.url || premium.promoUrl || premium.siteUrl);
+  const badges = premium.featureTags.slice(0, 2);
+  const offers = visible(doc, "link");
+  const socials = doc.socials
+    .map((social) => ({ social, href: socialHref(social) }))
+    .filter((item): item is { social: (typeof doc.socials)[number]; href: string } => !!item.href);
+  const whatsapp = whatsappHref(profile.floatingWhatsapp, "");
+  return (
+    <div
+      className="vita-premium premium-promo"
+      style={{ "--promo-bg": theme.background, "--promo-text": theme.text, "--promo-accent": theme.accent } as React.CSSProperties}
+    >
+      <div className="promo-inner">
+        {(premium.navLinks.length || brand) ? (
+          <nav className="promo-nav">
+            <span className="promo-logo">{brand}</span>
+            {premium.navLinks.length ? (
+              <div className="promo-nav-links">
+                {premium.navLinks.map((item, index) => (item.label ? <a key={index} href={linkHref(item.url) ?? "#"} target="_blank" rel="noopener noreferrer">{item.label}</a> : null))}
+              </div>
+            ) : null}
+          </nav>
+        ) : null}
+
+        <section className="promo-hero">
+          <span className="promo-confetti" aria-hidden>
+            {Array.from({ length: 14 }).map((_, index) => (
+              <span key={index} />
+            ))}
+          </span>
+          <div className="promo-hero-text">
+            {eyebrow ? <span className="promo-eyebrow">{eyebrow}</span> : null}
+            <h1 className="promo-title">
+              {headline.map((line, index) => (
+                <span key={index}>{line}</span>
+              ))}
+            </h1>
+            {profile.bio ? <p className="promo-lead">{profile.bio}</p> : null}
+            {ctaHref || premium.promoButton ? (
+              <a className="promo-cta" href={ctaHref ?? "#"} target="_blank" rel="noopener noreferrer" onClick={() => ctaHref && track(handle, { kind: "block_click", blockId: "cta", target: ctaHref })}>
+                {premium.promoButton || "COMPRAR AGORA"}
+              </a>
+            ) : null}
+          </div>
+          <div className="promo-hero-photo">
+            {photo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={photo} alt={brand} />
+            ) : (
+              <span className="promo-photo-ph" />
+            )}
+            {badges.length ? (
+              <div className="promo-badges">
+                {badges.map((badge, index) => (
+                  <span key={index} className="promo-badge">
+                    <small>ATÉ</small>
+                    <strong>{badge}</strong>
+                  </span>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </section>
+
+        {offers.length ? (
+          <section className="promo-offers">
+            {offers.map((block: LinkBlock) => (
+              <BlockLink key={block.id} block={block} handle={handle} href={linkHref(block.url)} className="promo-offer">
+                {block.label ? <small>{block.label}</small> : null}
+                <strong>{block.title}</strong>
+                {block.buttonText ? <span className="promo-offer-cta">{block.buttonText} →</span> : null}
+              </BlockLink>
+            ))}
+          </section>
+        ) : null}
+
+        {socials.length ? (
+          <nav className="promo-socials" aria-label="Redes sociais">
+            {socials.map(({ social, href }) => (
+              <a key={`${social.platform}-${href}`} href={href} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[social.platform]} onClick={() => track(handle, { kind: "social_click", target: social.platform })}>
+                <SocialIcon platform={social.platform} />
+              </a>
+            ))}
+          </nav>
+        ) : null}
+
+        <footer className="promo-footer">
+          <span className="promo-footer-brand">{brand}</span>
           <small>© {footerOwner(plan, profile.name, handle)} · {year}</small>
         </footer>
       </div>
