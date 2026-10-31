@@ -41,7 +41,7 @@ export const TEMPLATE_COLLECTIONS: TemplateCollection[] = [
     name: "Black Friday",
     description: "Modelos de campanha para a Black Friday — ofertas, contagem e destaque.",
     swatch: { background: "#000000", accent: "#ffcc00", text: "#ffffff" },
-    templateIds: [],
+    templateIds: ["black-friday"],
   },
   {
     id: "autoridade",
@@ -100,7 +100,7 @@ function link(fields: Partial<Extract<Block, { type: "link" }>> & { title: strin
   };
 }
 
-function product(fields: { label: string; title: string; description: string; imageUrl: string; buttonText: string; url: string }): Block {
+function product(fields: { label: string; title: string; description: string; imageUrl: string; buttonText: string; url: string; price?: string }): Block {
   return { id: id(), enabled: true, type: "product", price: "", payWithStripe: false, amountCents: 0, ...fields };
 }
 
@@ -149,6 +149,66 @@ export function page(
 // essential (plan "basic") models grouped by category.
 export const TEMPLATES: PageTemplate[] = [
   ...ESSENTIAL_TEMPLATES,
+  {
+    id: "black-friday",
+    name: "Black Friday",
+    category: "Campanha",
+    plan: "premium",
+    tab: "premium",
+    description: "Campanha de Black Friday com contagem regressiva e ofertas em destaque. Edite preços, produtos e a data final.",
+    swatch: { background: "#000000", accent: "#ffcc00", text: "#ffffff" },
+    build: (name) =>
+      page(name, {
+        profile: { bio: "⚡ Ofertas por tempo limitado" },
+        theme: {
+          premium: "",
+          layout: "classic",
+          background: "#000000",
+          background2: "#000000",
+          text: "#ffffff",
+          accent: "#ffcc00",
+          buttonBackground: "#ffcc00",
+          buttonText: "#000000",
+          buttonShape: "pill",
+          buttonStyle: "fill",
+          font: "sans",
+        },
+        blocks: [
+          { id: id(), enabled: true, type: "heading", text: "BLACK FRIDAY", style: "display" },
+          { id: id(), enabled: true, type: "heading", text: "Até 70% OFF", style: "badge" },
+          { id: id(), enabled: true, type: "text", text: "As maiores ofertas do ano, só esta semana. Garanta a sua antes que o tempo acabe.", style: "plain", title: "" },
+          { id: id(), enabled: true, type: "countdown", title: "A oferta termina em:", endsAt: "2026-11-28T23:59:59" },
+          product({
+            label: "-60%",
+            title: "Mentoria Estratégica",
+            description: "De R$497 por R$197. Acompanhamento completo para organizar sua estratégia e fazer sua marca crescer.",
+            price: "R$197",
+            buttonText: "GARANTIR OFERTA",
+            url: "https://example.com/mentoria",
+            imageUrl: unsplash("1519389950473-47ba0277781c", 1400),
+          }),
+          product({
+            label: "-50%",
+            title: "Curso Completo",
+            description: "De R$297 por R$147. Do zero ao avançado, com acesso vitalício e certificado.",
+            price: "R$147",
+            buttonText: "QUERO ESTE",
+            url: "https://example.com/curso",
+            imageUrl: unsplash("1516321318423-f06f85e504b3", 1400),
+          }),
+          product({
+            label: "COMBO · -70%",
+            title: "Combo Completo",
+            description: "Leve tudo com o maior desconto do ano. De R$794 por R$297.",
+            price: "R$297",
+            buttonText: "QUERO O COMBO",
+            url: "https://example.com/combo",
+            imageUrl: unsplash("1607082348824-0a96f2a4b9da", 1400),
+          }),
+          link({ display: "button", highlight: true, title: "Tirar dúvidas no WhatsApp", url: "https://wa.me/5511999990000" }),
+        ],
+      }),
+  },
   {
     id: "autoridade",
     name: "Autoridade",
