@@ -73,6 +73,8 @@ export function PremiumView({ doc, handle, plan }: Props) {
         return <Experience doc={doc} handle={handle} plan={plan} />;
       case "store":
         return <Store doc={doc} handle={handle} plan={plan} />;
+      case "lookbook":
+        return <Lookbook doc={doc} handle={handle} plan={plan} />;
       default:
         return null;
     }
@@ -899,6 +901,199 @@ function StoreSize({ premium, whatsapp, handle }: { premium: PremiumFields; what
       >
         <SocialIcon platform="whatsapp" />
       </a>
+    </section>
+  );
+}
+
+/* ---------- Lookbook (editorial fashion drop) ---------- */
+function Lookbook({ doc, handle, plan }: Props) {
+  const { profile, theme, premium } = doc;
+  const brand = profile.name || APP_NAME;
+  const slide = premium.heroSlides[0];
+  const heroImg = imageSrc(slide?.imageUrl || profile.coverUrl);
+  const headline = (slide?.headline || premium.heading || "").split("\n").filter(Boolean);
+  const heroHref = linkHref(slide?.url);
+  const siteHref = linkHref(premium.siteUrl);
+  const products = visible(doc, "product");
+  const feature = imageSrc(premium.featureImageUrl);
+  const featureHref = linkHref(premium.featureUrl);
+  const whatsapp = whatsappHref(profile.floatingWhatsapp, "");
+  return (
+    <div
+      className="vita-premium premium-lookbook"
+      style={{ "--look-bg": theme.background, "--look-text": theme.text, "--look-accent": theme.accent } as React.CSSProperties}
+    >
+      <header className="look-hero">
+        {heroImg ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="look-hero-img" src={heroImg} alt={headline.join(" ") || brand} />
+        ) : (
+          <div className="look-hero-img look-hero-placeholder" />
+        )}
+        <div className="look-hero-shade" />
+        <div className="look-hero-top">
+          <span className="look-brand">
+            {brand}
+            {profile.verified ? <VerifiedCheck className="ml-1 inline h-[0.8em] w-[0.8em] align-middle" /> : null}
+          </span>
+          {premium.heroPill ? (
+            <a className="look-top-pill" href={linkHref(premium.heroPillUrl) ?? heroHref ?? "#"} target="_blank" rel="noopener noreferrer">
+              {premium.heroPill} <span aria-hidden>›</span>
+            </a>
+          ) : null}
+        </div>
+        <div className="look-hero-bottom">
+          {headline.length ? (
+            <h1 className="look-headline">
+              {headline.map((line, index) => (
+                <span key={index}>{line}</span>
+              ))}
+            </h1>
+          ) : null}
+          <div className="look-hero-row">
+            {slide?.productName || slide?.price ? (
+              <a className="look-hero-chip" href={heroHref ?? "#"} target="_blank" rel="noopener noreferrer" onClick={() => heroHref && track(handle, { kind: "block_click", blockId: "hero", target: heroHref })}>
+                {slide?.productName ? <span className="look-chip-name">{slide.productName}</span> : null}
+                {slide?.priceFrom ? <s className="look-chip-from">{slide.priceFrom}</s> : null}
+                {slide?.price ? <span className="look-chip-price">{slide.price}</span> : null}
+              </a>
+            ) : null}
+            {siteHref ? (
+              <a className="look-hero-cta" href={siteHref} target="_blank" rel="noopener noreferrer" onClick={() => track(handle, { kind: "social_click", target: "website" })}>
+                {premium.siteLabel || "Ver coleção"} <span aria-hidden>→</span>
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </header>
+
+      <div className="look-body">
+        {premium.navLinks.length ? (
+          <nav className="look-chips" aria-label="Categorias">
+            {premium.navLinks.map((item, index) =>
+              item.label ? (
+                <a key={index} href={linkHref(item.url) ?? "#"} target="_blank" rel="noopener noreferrer">
+                  {item.label}
+                </a>
+              ) : null,
+            )}
+          </nav>
+        ) : null}
+
+        {products.length ? (
+          <section className="look-rail-wrap" aria-label="Produtos">
+            {premium.featureLabel ? <h2 className="look-rail-title">{premium.featureTitle || "Mais desejados"}</h2> : null}
+            <div className="look-rail">
+              {products.map((block) => {
+                const image = imageSrc(block.imageUrl);
+                const href = linkHref(block.url);
+                return (
+                  <article key={block.id} className="look-product">
+                    {image ? (
+                      <BlockLink block={block} handle={handle} href={href} className="look-product-img">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={image} alt={block.title} loading="lazy" />
+                      </BlockLink>
+                    ) : null}
+                    <div className="look-product-body">
+                      <h3>{block.title}</h3>
+                      {block.price ? <span className="look-product-price">{block.price}</span> : null}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
+        <LookPromo premium={premium} handle={handle} />
+
+        {feature || premium.featureTitle ? (
+          <a className="look-feature" href={featureHref ?? "#"} target="_blank" rel="noopener noreferrer" onClick={() => featureHref && track(handle, { kind: "block_click", blockId: "feature", target: featureHref })}>
+            {feature ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img className="look-feature-img" src={feature} alt={premium.featureTitle} loading="lazy" />
+            ) : null}
+            <div className="look-feature-shade" />
+            <div className="look-feature-copy">
+              {premium.featureLabel ? <small>{premium.featureLabel}</small> : null}
+              {premium.featureTitle ? <strong>{premium.featureTitle}</strong> : null}
+              <span className="look-feature-cta">Ver tudo <span aria-hidden>→</span></span>
+            </div>
+          </a>
+        ) : null}
+
+        <footer className="look-footer">
+          <span className="look-footer-brand">{brand}</span>
+          <small>© {footerOwner(plan, profile.name, handle)} · {year}</small>
+        </footer>
+      </div>
+
+      {whatsapp ? (
+        <a className="look-wa" href={whatsapp} target="_blank" rel="noopener noreferrer" aria-label="Falar no WhatsApp" onClick={() => track(handle, { kind: "social_click", target: "whatsapp" })}>
+          <SocialIcon platform="whatsapp" />
+        </a>
+      ) : null}
+    </div>
+  );
+}
+
+function LookPromo({ premium, handle }: { premium: PremiumFields; handle?: string }) {
+  const href = linkHref(premium.promoUrl);
+  const code = (premium.promoCode || "").trim();
+  const match = (premium.promoDiscount || "").match(/^(\S+)\s*(.*)$/);
+  const bigPart = match ? match[1] : premium.promoDiscount;
+  const smallPart = match ? match[2] : "";
+  const [revealed, setRevealed] = useState(false);
+  const [copied, setCopied] = useState(false);
+  if (!premium.promoDiscount && !code) return null;
+  const activate = () => {
+    track(handle, { kind: "block_click", blockId: "promo", target: code ? `cupom:${code}` : href ?? "promo" });
+    setRevealed(true);
+    try {
+      navigator.clipboard?.writeText(code).then(
+        () => {
+          setCopied(true);
+          window.setTimeout(() => setCopied(false), 2500);
+        },
+        () => {},
+      );
+    } catch {
+      /* clipboard may be blocked; code still shows for manual copy */
+    }
+  };
+  return (
+    <section className="look-promo">
+      <div className="look-promo-main">
+        {premium.promoBadge ? <span className="look-promo-badge">{premium.promoBadge}</span> : null}
+        <p className="look-promo-discount">
+          <strong>{bigPart}</strong>
+          {smallPart ? <span>{smallPart}</span> : null}
+        </p>
+        {premium.promoNote ? <p className="look-promo-note">{premium.promoNote}</p> : null}
+        {code ? (
+          <button type="button" className="look-promo-btn" onClick={activate}>
+            {copied ? "Cupom copiado ✓" : revealed ? `Copiar ${code}` : premium.promoButton || "Pegar cupom"}
+          </button>
+        ) : href ? (
+          <a className="look-promo-btn" href={href} target="_blank" rel="noopener noreferrer" onClick={() => track(handle, { kind: "block_click", blockId: "promo", target: href })}>
+            {premium.promoButton || "Ver ofertas"}
+          </a>
+        ) : null}
+        {code && revealed ? (
+          <button type="button" className="store-coupon" onClick={activate} aria-label={`Copiar cupom ${code}`}>
+            <span className="store-coupon-code">{code}</span>
+            <span className="store-coupon-hint">{copied ? "✓ copiado" : "toque para copiar"}</span>
+          </button>
+        ) : null}
+      </div>
+      {premium.benefits.length ? (
+        <div className="look-promo-benefits">
+          {premium.benefits.map((benefit, index) => (
+            <span key={index}>{benefit}</span>
+          ))}
+        </div>
+      ) : null}
     </section>
   );
 }
