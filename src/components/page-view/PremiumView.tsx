@@ -800,13 +800,58 @@ function StorePromo({ premium, brand, handle }: { premium: PremiumFields; brand:
         </button>
       ) : null}
       {premium.benefits.length ? (
-        <div className="store-promo-benefits">
-          {premium.benefits.map((benefit, index) => (
-            <span key={index}>{benefit}</span>
-          ))}
-        </div>
+        <>
+          <div className="store-promo-cut" aria-hidden />
+          <div className="store-promo-benefits">
+            {premium.benefits.map((benefit, index) => (
+              <span key={index}>
+                {benefitIcon(benefit)}
+                <em>{benefit}</em>
+              </span>
+            ))}
+          </div>
+        </>
       ) : null}
     </section>
+  );
+}
+
+// A small line icon for a benefit, chosen by keyword (frete → truck,
+// troca → arrows, pix/%/+ → plus), with a tag as the fallback.
+function benefitIcon(label: string) {
+  const text = label.toLowerCase();
+  const common = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, className: "store-benefit-icon" };
+  if (text.includes("frete") || text.includes("entreg") || text.includes("envio")) {
+    return (
+      <svg {...common} aria-hidden>
+        <path d="M3 6h11v9H3z" />
+        <path d="M14 9h4l3 3v3h-7" />
+        <circle cx="7" cy="18" r="1.7" />
+        <circle cx="17.5" cy="18" r="1.7" />
+      </svg>
+    );
+  }
+  if (text.includes("troca") || text.includes("devolu") || text.includes("reembol")) {
+    return (
+      <svg {...common} aria-hidden>
+        <path d="M4 9a8 8 0 0 1 13-3l2 2" />
+        <path d="M20 15a8 8 0 0 1-13 3l-2-2" />
+        <path d="M19 4v4h-4" />
+        <path d="M5 20v-4h4" />
+      </svg>
+    );
+  }
+  if (text.includes("pix") || text.includes("%") || text.includes("+") || text.includes("desconto") || text.includes("cashback")) {
+    return (
+      <svg {...common} aria-hidden>
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...common} aria-hidden>
+      <path d="M4 12l8-8 8 8-8 8z" />
+    </svg>
   );
 }
 
