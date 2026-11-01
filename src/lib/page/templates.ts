@@ -156,11 +156,11 @@ export const TEMPLATES: PageTemplate[] = [
     plan: "premium",
     tab: "premium",
     description: "Vitrine estilo e-commerce: carrossel de destaques animado, cartão de oferta, grade de produtos e ajuda de tamanho. Edite tudo com seus produtos.",
-    swatch: { background: "#000000", accent: "#e11d2a", text: "#ffffff" },
+    swatch: { background: "#000000", accent: "#2563eb", text: "#ffffff" },
     build: (name) =>
       page(name, {
         profile: { bio: "", floatingWhatsapp: "(11) 99999-0000" },
-        theme: { premium: "store", background: "#000000", text: "#ffffff", accent: "#e11d2a", font: "sans" },
+        theme: { premium: "store", background: "#000000", text: "#ffffff", accent: "#2563eb", font: "sans" },
         premium: {
           heroPill: "Black Antecipada",
           heroPillUrl: "https://example.com/black-friday",
