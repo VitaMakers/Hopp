@@ -52,7 +52,7 @@ export const TEMPLATE_COLLECTIONS: TemplateCollection[] = [
     templateIds: ["autoridade", "presenca", "ecossistema", "vitrine"],
   },
   { id: "presenca", tab: "premium", name: "Presença", description: "Perfil profissional com público duplo.", swatch: { background: "#0a0a0f", accent: "#a78bfa", text: "#f5f5f5" }, templateIds: ["experiencia"] },
-  { id: "ecossistema", tab: "premium", name: "Restaurante", description: "Modelos de cardápio para restaurantes, bares e delivery.", swatch: { background: "#1c0f0b", accent: "#d8a24a", text: "#f3e9df" }, templateIds: ["resto-menu"] },
+  { id: "ecossistema", tab: "premium", name: "Restaurante", description: "Modelos de cardápio para restaurantes, bares e delivery.", swatch: { background: "#1c0f0b", accent: "#d8a24a", text: "#f3e9df" }, templateIds: ["resto-menu", "resto-bistro"] },
   { id: "vitrine", tab: "premium", name: "Vitrine", description: "Em breve.", swatch: { background: "#111d1f", accent: "#e6ff35", text: "#e7e9e8" }, templateIds: [], requiresPlan: "essencial" },
 ];
 
@@ -469,6 +469,50 @@ export const TEMPLATES: PageTemplate[] = [
           product({ label: "Chef", title: "Burger Autoral", description: "Blend 180g, queijo brie, cebola caramelizada e pão brioche artesanal.", price: "R$46,90", buttonText: "Pedir", url: "https://example.com/burger", imageUrl: unsplash("1568901346375-23c9450c58cd", 1000) }),
           product({ label: "", title: "Salada Mediterrânea", description: "Folhas frescas, tomate seco, queijo branco e molho pesto da casa.", price: "R$34,90", buttonText: "Pedir", url: "https://example.com/salada", imageUrl: unsplash("1512621776951-a57141f2eefd", 1000) }),
           product({ label: "Doce", title: "Petit Gâteau", description: "Bolo quente de chocolate com sorvete de creme e calda quente.", price: "R$24,90", buttonText: "Pedir", url: "https://example.com/petit", imageUrl: unsplash("1551024601-bec78aea704b", 1000) }),
+        ],
+      }),
+  },
+  {
+    id: "resto-bistro",
+    name: "Restaurante Completo",
+    category: "Restaurante",
+    plan: "premium",
+    tab: "premium",
+    description: "Página completa de restaurante: capa com tarja, faixas alternando creme e vinho, pratos com foto e preço, atalhos com ícones e rodapé com horário. Sofisticado e editável.",
+    swatch: { background: "#5c1a1f", accent: "#c99a46", text: "#f4ede1" },
+    build: (name) =>
+      page(name, {
+        profile: { bio: "", coverUrl: unsplash("1558030006-450675393462", 1300), floatingWhatsapp: "(11) 99999-0000" },
+        socials: [
+          { platform: "instagram", url: "https://www.instagram.com/" },
+          { platform: "whatsapp", url: "https://wa.me/5511999990000" },
+        ],
+        theme: { premium: "bistro", background: "#5c1a1f", text: "#f4ede1", accent: "#c99a46", font: "serif" },
+        premium: {
+          heroSlides: [
+            { imageUrl: unsplash("1558030006-450675393462", 1300), headline: "O seu próximo bom momento.", productLabel: "Sugestão do dia", productName: "", priceFrom: "", price: "", url: "https://wa.me/5511999990000" },
+          ],
+          credential: "Restaurante",
+          featureLabel: "Sabor que convida a ficar",
+          featureTitle: "Da nossa cozinha para a sua mesa.",
+          promoButton: "Faça seu pedido",
+          promoUrl: "https://wa.me/5511999990000",
+          sectionTitle: "Escolhas da casa",
+          heading: "Hoje combina com...",
+          quote: "Seu momento, do seu jeito.",
+          navLinks: [
+            { label: "Cardápio completo", url: "https://example.com/cardapio" },
+            { label: "Reservar mesa", url: "https://example.com/reservas" },
+            { label: "Como chegar", url: "https://maps.google.com/" },
+          ],
+          featureImageUrl: unsplash("1517248135467-4c7edcad34c4", 1300),
+          about: "A mesa está pronta para você.",
+          promoNote: "Terça a domingo · 12h às 23h",
+        },
+        blocks: [
+          product({ label: "Na brasa", title: "Steak da casa", description: "Arroz, fritas e muito sabor.", price: "R$ 79,90", buttonText: "Pedir", url: "https://example.com/steak", imageUrl: unsplash("1558030006-450675393462", 900) }),
+          product({ label: "Para compartilhar", title: "Costela BBQ", description: "Costela ao molho da casa e fritas.", price: "R$ 119,90", buttonText: "Pedir", url: "https://example.com/costela", imageUrl: unsplash("1544025162-d76694265947", 900) }),
+          product({ label: "Especial da casa", title: "Burger artesanal", description: "Pão brioche, queijo e carne na brasa.", price: "R$ 39,90", buttonText: "Pedir", url: "https://example.com/burger", imageUrl: unsplash("1568901346375-23c9450c58cd", 900) }),
         ],
       }),
   },

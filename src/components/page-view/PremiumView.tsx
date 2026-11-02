@@ -83,6 +83,8 @@ export function PremiumView({ doc, handle, plan }: Props) {
         return <Promo doc={doc} handle={handle} plan={plan} />;
       case "menu":
         return <Menu doc={doc} handle={handle} plan={plan} />;
+      case "bistro":
+        return <Bistro doc={doc} handle={handle} plan={plan} />;
       default:
         return null;
     }
@@ -1559,5 +1561,179 @@ function MenuItem({ block, handle }: { block: ProductBlock; handle?: string }) {
         ) : null}
       </div>
     </article>
+  );
+}
+
+/* ---------- Bistro (full restaurant landing) ---------- */
+function bistroNavIcon(label: string) {
+  const t = label.toLowerCase();
+  const c = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, className: "bistro-link-icon" };
+  if (t.includes("reserv") || t.includes("mesa") || t.includes("agend")) {
+    return <svg {...c} aria-hidden><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M3 9h18M8 2v4M16 2v4" /></svg>;
+  }
+  if (t.includes("cheg") || t.includes("local") || t.includes("endere") || t.includes("mapa") || t.includes("onde") || t.includes("rota")) {
+    return <svg {...c} aria-hidden><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z" /><circle cx="12" cy="10" r="2.5" /></svg>;
+  }
+  if (t.includes("whats") || t.includes("fala") || t.includes("contato")) {
+    return <svg {...c} aria-hidden><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z" /></svg>;
+  }
+  // cardápio / menu / default
+  return <svg {...c} aria-hidden><path d="M4 3v18M8 3v6a2 2 0 0 1-4 0M18 3c-1.5 0-3 1.8-3 5s1.5 4 3 4m0 0v9" /></svg>;
+}
+
+function Bistro({ doc, handle, plan }: Props) {
+  const { profile, theme, premium } = doc;
+  const brand = profile.name || APP_NAME;
+  const slide = premium.heroSlides[0];
+  const heroImg = imageSrc(slide?.imageUrl || profile.coverUrl);
+  const logo = imageSrc(profile.logo);
+  const ribbon = slide?.productLabel || premium.promoBadge;
+  const tagline = slide?.headline || premium.heading;
+  const dishes = visible(doc, "product");
+  const orderHref = linkHref(premium.promoUrl || slide?.url);
+  const moodImg = imageSrc(premium.featureImageUrl);
+  const socials = doc.socials
+    .map((social) => ({ social, href: socialHref(social) }))
+    .filter((item): item is { social: (typeof doc.socials)[number]; href: string } => !!item.href);
+
+  const Signature = () => (
+    <div className="bistro-logo">
+      {logo ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img className="bistro-logo-img" src={logo} alt={brand} />
+      ) : (
+        <span className="bistro-logo-name">{brand}</span>
+      )}
+      {premium.credential ? (
+        <span className="bistro-logo-sub">
+          <i />
+          {premium.credential}
+          <i />
+        </span>
+      ) : null}
+    </div>
+  );
+
+  return (
+    <div
+      className="vita-premium premium-bistro"
+      style={{ "--bistro-wine": theme.background, "--bistro-cream": theme.text, "--bistro-gold": theme.accent } as React.CSSProperties}
+    >
+      {/* 1. Hero */}
+      <header className="bistro-hero">
+        {heroImg ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="bistro-hero-img" src={heroImg} alt={brand} />
+        ) : (
+          <div className="bistro-hero-img bistro-ph" />
+        )}
+        <div className="bistro-hero-shade" />
+        {ribbon ? <span className="bistro-ribbon">{ribbon}</span> : null}
+        <div className="bistro-hero-center">
+          <Signature />
+          {tagline ? <p className="bistro-hero-tagline">{tagline}</p> : null}
+        </div>
+      </header>
+
+      {/* 2. Order CTA (cream) */}
+      {premium.featureLabel || premium.featureTitle || premium.promoButton ? (
+        <section className="bistro-band bistro-cream bistro-order">
+          {premium.featureLabel ? <span className="bistro-eyebrow bistro-eyebrow-wine">{premium.featureLabel}</span> : null}
+          {premium.featureTitle ? <h2 className="bistro-heading bistro-heading-wine">{premium.featureTitle}</h2> : null}
+          {orderHref || premium.promoButton ? (
+            <a className="bistro-order-btn" href={orderHref ?? "#"} target="_blank" rel="noopener noreferrer" onClick={() => orderHref && track(handle, { kind: "block_click", blockId: "order", target: orderHref })}>
+              {premium.promoButton || "Faça seu pedido"} <span aria-hidden>→</span>
+            </a>
+          ) : null}
+        </section>
+      ) : null}
+
+      {/* 3. Dishes (wine) */}
+      {dishes.length ? (
+        <section className="bistro-band bistro-wine-bg bistro-dishes">
+          {premium.sectionTitle ? <span className="bistro-eyebrow bistro-eyebrow-gold">{premium.sectionTitle}</span> : null}
+          {premium.heading ? <h2 className="bistro-heading bistro-heading-cream">{premium.heading}</h2> : null}
+          <div className="bistro-dish-list">
+            {dishes.map((block) => {
+              const image = imageSrc(block.imageUrl);
+              const href = linkHref(block.url);
+              return (
+                <article key={block.id} className="bistro-dish">
+                  <div className="bistro-dish-body">
+                    {block.label ? <span className="bistro-dish-tag">{block.label}</span> : null}
+                    <h3>{block.title}</h3>
+                    {block.description ? <p>{block.description}</p> : null}
+                    <div className="bistro-dish-foot">
+                      {block.price ? <span className="bistro-dish-price">{block.price}</span> : null}
+                      {href ? (
+                        <BlockLink block={block} handle={handle} href={href} className="bistro-dish-cta">
+                          {block.buttonText || "Pedir"} <span aria-hidden>→</span>
+                        </BlockLink>
+                      ) : null}
+                    </div>
+                  </div>
+                  {image ? (
+                    <BlockLink block={block} handle={handle} href={href} className="bistro-dish-photo">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={image} alt={block.title} loading="lazy" />
+                    </BlockLink>
+                  ) : null}
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
+
+      {/* 4. Quick links (cream) */}
+      {premium.quote || premium.navLinks.length ? (
+        <section className="bistro-band bistro-cream bistro-links-band">
+          {premium.quote ? <h2 className="bistro-heading bistro-heading-wine">{premium.quote}</h2> : null}
+          {premium.navLinks.length ? (
+            <nav className="bistro-links">
+              {premium.navLinks.map((item, index) =>
+                item.label ? (
+                  <a key={index} href={linkHref(item.url) ?? "#"} target="_blank" rel="noopener noreferrer">
+                    {bistroNavIcon(item.label)}
+                    <span>{item.label}</span>
+                    <span className="bistro-link-arrow" aria-hidden>→</span>
+                  </a>
+                ) : null,
+              )}
+            </nav>
+          ) : null}
+        </section>
+      ) : null}
+
+      {/* 5. Mood image */}
+      {moodImg || premium.about ? (
+        <section className="bistro-mood">
+          {moodImg ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="bistro-mood-img" src={moodImg} alt="" loading="lazy" />
+          ) : (
+            <div className="bistro-mood-img bistro-ph" />
+          )}
+          <div className="bistro-mood-shade" />
+          {premium.about ? <p className="bistro-mood-text">{premium.about}</p> : null}
+        </section>
+      ) : null}
+
+      {/* 6. Footer (cream) */}
+      <footer className="bistro-band bistro-cream bistro-foot">
+        <Signature />
+        {premium.promoNote ? <p className="bistro-foot-hours">{premium.promoNote}</p> : null}
+        {socials.length ? (
+          <nav className="bistro-socials" aria-label="Redes sociais">
+            {socials.map(({ social, href }) => (
+              <a key={`${social.platform}-${href}`} href={href} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[social.platform]} onClick={() => track(handle, { kind: "social_click", target: social.platform })}>
+                <SocialIcon platform={social.platform} />
+              </a>
+            ))}
+          </nav>
+        ) : null}
+        {showsBadge(plan) ? <small className="bistro-foot-made">Feito com {APP_NAME}</small> : null}
+      </footer>
+    </div>
   );
 }
