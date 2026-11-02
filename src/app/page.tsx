@@ -157,6 +157,10 @@ export default function Home() {
                     <div style={{ width: 390, transformOrigin: "top left", transform: `scale(${w / 390})` }} className="pointer-events-none">
                       <PageView doc={item.doc as PageDoc} still={!item.video} />
                     </div>
+                    {/* iOS-style finish: fade the cropped content and cap it with a home bar. */}
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 flex h-10 items-end justify-center bg-gradient-to-t from-black/60 to-transparent pb-2">
+                      <span className="h-[3px] w-10 rounded-full bg-white/80" />
+                    </div>
                   </div>
                 </div>
               </div>
