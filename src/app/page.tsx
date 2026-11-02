@@ -145,22 +145,44 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="mt-12 flex items-end justify-center gap-2 overflow-x-auto px-2 pb-6 sm:gap-3 md:gap-4 [-ms-overflow-style:none] [scrollbar-width:none]">
+        {/* Center is a real iPhone; the others are tilted cards fanned behind it. */}
+        <div className="mt-14 flex items-center justify-center px-2">
           {row.map((item, index) => {
+            const offset = index - center;
             const isCenter = index === center;
-            const w = isCenter ? 194 : 164;
-            const h = isCenter ? 378 : 320;
+
+            if (isCenter) {
+              const w = 222;
+              return (
+                <div key={item.id} className="relative z-20 mx-[-16px] shrink-0">
+                  <div className="rounded-[44px] bg-stone-900 p-[6px] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.45)] ring-1 ring-black/10">
+                    <div className="relative overflow-hidden rounded-[38px] bg-black" style={{ width: w, height: 466 }}>
+                      <div style={{ width: 390, transformOrigin: "top left", transform: `scale(${w / 390})` }} className="pointer-events-none">
+                        <PageView doc={item.doc as PageDoc} still={!item.video} />
+                      </div>
+                      <span className="absolute left-1/2 top-2.5 z-10 h-5 w-[26%] -translate-x-1/2 rounded-full bg-black" />
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            const w = 178;
+            const depth = Math.abs(offset);
             return (
-              <div key={item.id} className={`shrink-0 ${isCenter ? "-translate-y-5" : ""}`}>
-                <div className="rounded-[30px] bg-stone-900 p-[5px] shadow-2xl ring-1 ring-black/5">
-                  <div className="relative overflow-hidden rounded-[26px] bg-black" style={{ width: w, height: h }}>
-                    <div style={{ width: 390, transformOrigin: "top left", transform: `scale(${w / 390})` }} className="pointer-events-none">
-                      <PageView doc={item.doc as PageDoc} still={!item.video} />
-                    </div>
-                    {/* iOS-style finish: fade the cropped content and cap it with a home bar. */}
-                    <div className="pointer-events-none absolute inset-x-0 bottom-0 flex h-10 items-end justify-center bg-gradient-to-t from-black/60 to-transparent pb-2">
-                      <span className="h-[3px] w-10 rounded-full bg-white/80" />
-                    </div>
+              <div
+                key={item.id}
+                className="shrink-0"
+                style={{
+                  transform: `rotate(${offset * 6}deg) translateY(${depth * 16}px)`,
+                  zIndex: 10 - depth,
+                  marginLeft: offset > 0 ? -22 : 0,
+                  marginRight: offset < 0 ? -22 : 0,
+                }}
+              >
+                <div className="overflow-hidden rounded-[26px] bg-black shadow-xl ring-1 ring-black/10" style={{ width: w, height: 372 }}>
+                  <div style={{ width: 390, transformOrigin: "top left", transform: `scale(${w / 390})` }} className="pointer-events-none">
+                    <PageView doc={item.doc as PageDoc} still={!item.video} />
                   </div>
                 </div>
               </div>
