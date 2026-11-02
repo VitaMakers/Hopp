@@ -339,7 +339,7 @@ function StoreFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Pa
 
       <p className="text-sm font-semibold">Cartão de oferta</p>
       <div className="grid grid-cols-2 gap-3">
-        <TextField label="Selo" value={p.promoBadge} maxLength={30} onChange={(promoBadge) => setPremium({ promoBadge })} />
+        <TextField label="Selo / tarja" value={p.promoBadge} maxLength={80} onChange={(promoBadge) => setPremium({ promoBadge })} />
         <TextField label="Desconto (ex.: 15% OFF)" value={p.promoDiscount} maxLength={20} onChange={(promoDiscount) => setPremium({ promoDiscount })} />
         <TextField label="Texto do botão" value={p.promoButton} maxLength={30} onChange={(promoButton) => setPremium({ promoButton })} />
         <TextField label="Código do cupom (ao tocar, copia)" value={p.promoCode} maxLength={30} onChange={(promoCode) => setPremium({ promoCode })} />
