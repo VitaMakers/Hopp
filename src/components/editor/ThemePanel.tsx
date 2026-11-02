@@ -86,6 +86,7 @@ const PREMIUM_NAMES: Record<Exclude<Theme["premium"], "">, string> = {
   dropz: "Drop Único",
   promo: "Banner Promo",
   menu: "Restaurante / Cardápio",
+  bistro: "Restaurante Completo",
 };
 
 function PremiumPanel({ doc, onChange }: PanelProps) {
@@ -231,7 +232,21 @@ function PremiumPanel({ doc, onChange }: PanelProps) {
             </p>
           </>
         ) : null}
-        {design === "store" || design === "lookbook" || design === "mosaic" || design === "dropz" || design === "promo" || design === "menu" ? <StoreFields doc={doc} setPremium={setPremium} /> : null}
+        {design === "bistro" ? (
+          <div className="flex flex-col gap-3 rounded-xl border border-stone-200 p-3">
+            <p className="text-sm font-semibold">Textos do restaurante</p>
+            <TextField label="Subtítulo do logo (ex.: RESTAURANTE)" value={doc.premium.credential} maxLength={80} onChange={(credential) => setPremium({ credential })} />
+            <TextField label="Seção dos pratos — rótulo (ex.: ESCOLHAS DA CASA)" value={doc.premium.sectionTitle} maxLength={60} onChange={(sectionTitle) => setPremium({ sectionTitle })} />
+            <TextField label="Seção dos pratos — título (ex.: Hoje combina com...)" value={doc.premium.heading} maxLength={240} onChange={(heading) => setPremium({ heading })} />
+            <TextField label="Título dos atalhos (ex.: Seu momento, do seu jeito.)" value={doc.premium.quote} maxLength={200} onChange={(quote) => setPremium({ quote })} />
+            <TextField label="Frase sobre a foto do ambiente" value={doc.premium.about} maxLength={1000} onChange={(about) => setPremium({ about })} />
+            <TextField label="Horário no rodapé (ex.: Terça a domingo · 12h às 23h)" value={doc.premium.promoNote} maxLength={80} onChange={(promoNote) => setPremium({ promoNote })} />
+            <p className="text-xs text-stone-500">
+              A tarja da capa, o botão de pedido, os atalhos (rodapé), a foto do ambiente e os pratos (blocos Produto) você edita abaixo e na aba Blocos.
+            </p>
+          </div>
+        ) : null}
+        {design === "store" || design === "lookbook" || design === "mosaic" || design === "dropz" || design === "promo" || design === "menu" || design === "bistro" ? <StoreFields doc={doc} setPremium={setPremium} /> : null}
         <button type="button" onClick={() => setTheme({ premium: "" })} className="self-start text-sm text-stone-500 underline">
           Sair do modelo e usar o visual normal
         </button>
