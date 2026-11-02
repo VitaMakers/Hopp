@@ -357,7 +357,7 @@
 .ecosystem-inner { max-width: 428px; margin: auto; }
 .ecosystem-profile { text-align: center; }
 .ecosystem-portrait { height: 400px; position: relative; isolation: isolate; overflow: hidden; }
-.ecosystem-portrait > img { width: 100%; height: 100%; display: block; object-fit: cover; filter: saturate(0.75); }
+.ecosystem-portrait > img, .ecosystem-portrait > video { width: 100%; height: 100%; display: block; object-fit: cover; filter: saturate(0.75); }
 .ecosystem-photo-shade {
   position: absolute;
   inset: 0;

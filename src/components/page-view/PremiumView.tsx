@@ -240,6 +240,7 @@ function Spotlight({ doc, handle, plan }: Props) {
 function Ecosystem({ doc, handle, plan }: Props) {
   const { profile, theme, premium } = doc;
   const cover = imageSrc(profile.coverUrl);
+  const coverVideo = videoSrc(profile.coverVideo);
   const logo = imageSrc(profile.logo);
   const stats = visible(doc, "stats")[0]?.items.slice(0, 3) ?? [];
   return (
@@ -247,7 +248,9 @@ function Ecosystem({ doc, handle, plan }: Props) {
       <div className="ecosystem-inner">
         <header className="ecosystem-profile">
           <div className="ecosystem-portrait">
-            {cover ? (
+            {coverVideo ? (
+              <video src={coverVideo} poster={cover ?? undefined} autoPlay muted loop playsInline style={{ objectPosition: `${premium.coverX}% ${premium.coverY}%` }} />
+            ) : cover ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={cover} alt="" style={{ objectPosition: `${premium.coverX}% ${premium.coverY}%` }} />
             ) : null}
