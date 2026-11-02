@@ -34,3 +34,12 @@ body {
     animation: none;
   }
 }
+
+/* Landing: the phone screen slowly scrolls its page up and down. */
+@keyframes heroScroll {
+  0%, 10% { transform: translateY(0); }
+  55%, 62% { transform: translateY(-46%); }
+  100% { transform: translateY(0); }
+}
+.hero-scroll { animation: heroScroll 17s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .hero-scroll { animation: none; } }
