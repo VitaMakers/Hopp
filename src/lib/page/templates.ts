@@ -52,7 +52,7 @@ export const TEMPLATE_COLLECTIONS: TemplateCollection[] = [
     templateIds: ["autoridade", "presenca", "ecossistema", "vitrine"],
   },
   { id: "presenca", tab: "premium", name: "Presença", description: "Perfil profissional com público duplo.", swatch: { background: "#0a0a0f", accent: "#a78bfa", text: "#f5f5f5" }, templateIds: ["experiencia"] },
-  { id: "ecossistema", tab: "premium", name: "Ecossistema", description: "Em breve.", swatch: { background: "#030303", accent: "#ff3469", text: "#f7f7f7" }, templateIds: [] },
+  { id: "ecossistema", tab: "premium", name: "Restaurante", description: "Modelos de cardápio para restaurantes, bares e delivery.", swatch: { background: "#1c0f0b", accent: "#d8a24a", text: "#f3e9df" }, templateIds: ["resto-menu"] },
   { id: "vitrine", tab: "premium", name: "Vitrine", description: "Em breve.", swatch: { background: "#111d1f", accent: "#e6ff35", text: "#e7e9e8" }, templateIds: [], requiresPlan: "essencial" },
 ];
 
@@ -426,6 +426,49 @@ export const TEMPLATES: PageTemplate[] = [
           link({ display: "banner", label: "CUPOM", title: "Ganhe 50% OFF na primeira compra", buttonText: "Aproveitar", url: "https://example.com/cupom" }),
           link({ display: "button", label: "FRETE GRÁTIS", title: "Em todo o site nesta semana", buttonText: "Ver regras", url: "https://example.com/frete" }),
           link({ display: "button", label: "NOVIDADES", title: "Coleção Black Friday", buttonText: "Explorar", url: "https://example.com/colecao" }),
+        ],
+      }),
+  },
+  {
+    id: "resto-menu",
+    name: "Cardápio Premium",
+    category: "Restaurante",
+    plan: "premium",
+    tab: "premium",
+    description: "Capa com foto e tarja de novidade, cardápio com fotos, etiquetas, descrições e preços. Para restaurantes, bares e delivery.",
+    swatch: { background: "#1c0f0b", accent: "#d8a24a", text: "#f3e9df" },
+    build: (name) =>
+      page(name, {
+        profile: {
+          bio: "Cozinha de verdade, do jeito que você ama. Reserve sua mesa ou peça no delivery.",
+          coverUrl: unsplash("1504674900247-0877df9cc836", 1300),
+          floatingWhatsapp: "(11) 99999-0000",
+        },
+        socials: [
+          { platform: "instagram", url: "https://www.instagram.com/" },
+          { platform: "facebook", url: "https://www.facebook.com/" },
+          { platform: "whatsapp", url: "https://wa.me/5511999990000" },
+        ],
+        theme: { premium: "menu", background: "#1c0f0b", text: "#f3e9df", accent: "#d8a24a", font: "serif" },
+        premium: {
+          heroSlides: [
+            { imageUrl: unsplash("1504674900247-0877df9cc836", 1300), headline: "O sabor que o seu dia merece.", productLabel: "Sugestão do dia", productName: "", priceFrom: "", price: "", url: "https://example.com/cardapio" },
+          ],
+          promoButton: "Reservar mesa",
+          promoUrl: "https://wa.me/5511999990000",
+          navLinks: [
+            { label: "Cardápio", url: "https://example.com/cardapio" },
+            { label: "Reservas", url: "https://example.com/reservas" },
+            { label: "Delivery", url: "https://example.com/delivery" },
+            { label: "Instagram", url: "https://instagram.com/" },
+          ],
+        },
+        blocks: [
+          product({ label: "Novo", title: "Picanha na Brasa", description: "Picanha grelhada no ponto, farofa crocante e vinagrete da casa.", price: "R$79,90", buttonText: "Pedir", url: "https://example.com/picanha", imageUrl: unsplash("1558030006-450675393462", 1000) }),
+          product({ label: "", title: "Risoto de Camarão", description: "Arroz arbóreo cremoso com camarões salteados no alho e limão siciliano.", price: "R$68,90", buttonText: "Pedir", url: "https://example.com/risoto", imageUrl: unsplash("1476124369491-e7addf5db371", 1000) }),
+          product({ label: "Chef", title: "Burger Autoral", description: "Blend 180g, queijo brie, cebola caramelizada e pão brioche artesanal.", price: "R$46,90", buttonText: "Pedir", url: "https://example.com/burger", imageUrl: unsplash("1568901346375-23c9450c58cd", 1000) }),
+          product({ label: "", title: "Salada Mediterrânea", description: "Folhas frescas, tomate seco, queijo branco e molho pesto da casa.", price: "R$34,90", buttonText: "Pedir", url: "https://example.com/salada", imageUrl: unsplash("1512621776951-a57141f2eefd", 1000) }),
+          product({ label: "Doce", title: "Petit Gâteau", description: "Bolo quente de chocolate com sorvete de creme e calda quente.", price: "R$24,90", buttonText: "Pedir", url: "https://example.com/petit", imageUrl: unsplash("1551024601-bec78aea704b", 1000) }),
         ],
       }),
   },
