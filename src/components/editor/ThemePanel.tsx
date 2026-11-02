@@ -87,6 +87,7 @@ const PREMIUM_NAMES: Record<Exclude<Theme["premium"], "">, string> = {
   promo: "Banner Promo",
   menu: "Restaurante / Cardápio",
   bistro: "Restaurante Completo",
+  bar: "Restaurante / Bar Noturno",
 };
 
 function PremiumPanel({ doc, onChange }: PanelProps) {
@@ -246,7 +247,25 @@ function PremiumPanel({ doc, onChange }: PanelProps) {
             </p>
           </div>
         ) : null}
-        {design === "store" || design === "lookbook" || design === "mosaic" || design === "dropz" || design === "promo" || design === "menu" || design === "bistro" ? <StoreFields doc={doc} setPremium={setPremium} /> : null}
+        {design === "bar" ? (
+          <div className="flex flex-col gap-3 rounded-xl border border-stone-200 p-3">
+            <p className="text-sm font-semibold">Textos do bar / restaurante</p>
+            <TextField label="Texto acima do título da capa (ex.: COZINHA AUTORAL + BAR)" value={doc.premium.tagline} maxLength={120} onChange={(tagline) => setPremium({ tagline })} />
+            <TextField label="Seção — rótulo (ex.: ESCOLHA SUA EXPERIÊNCIA)" value={doc.premium.sectionTitle} maxLength={60} onChange={(sectionTitle) => setPremium({ sectionTitle })} />
+            <TextField label="Seção — título (ex.: EXPLORE OS SABORES.)" value={doc.premium.heading} maxLength={240} onChange={(heading) => setPremium({ heading })} />
+            <TextArea label="Frase grande (uma linha por trecho; a última fica em laranja)" value={doc.premium.quote} maxLength={200} onChange={(quote) => setPremium({ quote })} />
+            <TextField label="Legenda da frase (ex.: Uma mesa, novas histórias.)" value={doc.premium.about} maxLength={1000} onChange={(about) => setPremium({ about })} />
+            <TextField label="Chamada do rodapé (ex.: VENHA PARA O ATTO)" value={doc.premium.siteLabel} maxLength={40} onChange={(siteLabel) => setPremium({ siteLabel })} />
+            <TextField label="Endereço (ex.: Rua do Encontro, 120 · São Paulo)" value={doc.premium.credential} maxLength={80} onChange={(credential) => setPremium({ credential })} />
+            <TextField label="Horário (ex.: Terça a domingo · 18h às 23h)" value={doc.premium.promoNote} maxLength={80} onChange={(promoNote) => setPremium({ promoNote })} />
+            <TextField label="Link do botão laranja (Reservar) e do rodapé" type="url" value={doc.premium.siteUrl} maxLength={2000} onChange={(siteUrl) => setPremium({ siteUrl })} />
+            <p className="text-xs text-stone-500">
+              A capa (foto + título), a tarja laranja, os atalhos 01/02/03, a foto do ambiente, o texto do botão e os cartões Cozinha/Bar
+              (blocos Produto) você edita abaixo e na aba Blocos.
+            </p>
+          </div>
+        ) : null}
+        {design === "store" || design === "lookbook" || design === "mosaic" || design === "dropz" || design === "promo" || design === "menu" || design === "bistro" || design === "bar" ? <StoreFields doc={doc} setPremium={setPremium} /> : null}
         <button type="button" onClick={() => setTheme({ premium: "" })} className="self-start text-sm text-stone-500 underline">
           Sair do modelo e usar o visual normal
         </button>

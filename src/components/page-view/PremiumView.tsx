@@ -85,6 +85,8 @@ export function PremiumView({ doc, handle, plan }: Props) {
         return <Menu doc={doc} handle={handle} plan={plan} />;
       case "bistro":
         return <Bistro doc={doc} handle={handle} plan={plan} />;
+      case "bar":
+        return <Bar doc={doc} handle={handle} plan={plan} />;
       default:
         return null;
     }
@@ -1733,6 +1735,203 @@ function Bistro({ doc, handle, plan }: Props) {
           </nav>
         ) : null}
         {showsBadge(plan) ? <small className="bistro-foot-made">Feito com {APP_NAME}</small> : null}
+      </footer>
+    </div>
+  );
+}
+
+/* ---------- Bar (bold nightlife restaurant) ---------- */
+// Renders a heading, colouring a trailing period in the accent colour.
+function barDot(text: string) {
+  if (!text.endsWith(".")) return text;
+  const body = text.slice(0, -1);
+  const i = body.lastIndexOf(" ");
+  const head = i === -1 ? "" : body.slice(0, i + 1);
+  const tail = i === -1 ? body : body.slice(i + 1);
+  // The last word and the accent period ride together as one inline-block, so
+  // the dot can never wrap onto its own line.
+  return (
+    <>
+      {head}
+      <span className="bar-keep">
+        {tail}
+        <span className="bar-dot">.</span>
+      </span>
+    </>
+  );
+}
+
+function Bar({ doc, handle, plan }: Props) {
+  const { profile, theme, premium } = doc;
+  const brand = profile.name || APP_NAME;
+  const logo = imageSrc(profile.logo);
+  const slide = premium.heroSlides[0];
+  const heroImg = imageSrc(slide?.imageUrl || profile.coverUrl);
+  const heroLines = (slide?.headline || "A noite começa à mesa.").split("\n").filter(Boolean);
+  const bannerHref = linkHref(premium.promoUrl);
+  const cards = visible(doc, "product");
+  const statement = (premium.quote || "").split("\n").filter(Boolean);
+  const moodImg = imageSrc(premium.featureImageUrl);
+  const infoHref = linkHref(premium.heroPillUrl || premium.siteUrl);
+  const ctaHref = linkHref(premium.siteUrl || premium.promoUrl);
+  const socials = doc.socials
+    .map((social) => ({ social, href: socialHref(social) }))
+    .filter((item): item is { social: (typeof doc.socials)[number]; href: string } => !!item.href);
+  const arrow = <span className="bar-arrow" aria-hidden>↗</span>;
+
+  return (
+    <div
+      className="vita-premium premium-bar"
+      style={{ "--bar-bg": theme.background, "--bar-text": theme.text, "--bar-accent": theme.accent } as React.CSSProperties}
+    >
+      {/* Top bar */}
+      <div className="bar-top">
+        {logo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="bar-top-logo" src={logo} alt={brand} />
+        ) : (
+          <span className="bar-wordmark">{brand}</span>
+        )}
+      </div>
+
+      {/* Hero */}
+      <header className="bar-hero">
+        {heroImg ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="bar-hero-img" src={heroImg} alt={brand} />
+        ) : (
+          <div className="bar-hero-img bar-ph" />
+        )}
+        <div className="bar-hero-shade" />
+        <div className="bar-hero-copy">
+          {premium.tagline ? <span className="bar-eyebrow">{premium.tagline}</span> : null}
+          <h1 className="bar-hero-title">
+            {heroLines.map((line, index) => (
+              <span key={index}>{index === heroLines.length - 1 ? barDot(line) : line}</span>
+            ))}
+          </h1>
+        </div>
+      </header>
+
+      {/* Orange banner */}
+      {premium.promoBadge ? (
+        <a className="bar-banner" href={bannerHref ?? "#"} target="_blank" rel="noopener noreferrer" onClick={() => bannerHref && track(handle, { kind: "block_click", blockId: "banner", target: bannerHref })}>
+          {premium.promoBadge} {arrow}
+        </a>
+      ) : null}
+
+      {/* Numbered nav */}
+      {premium.navLinks.length ? (
+        <nav className="bar-nav" aria-label="Atalhos">
+          {premium.navLinks.slice(0, 3).map((item, index) =>
+            item.label ? (
+              <a key={index} href={linkHref(item.url) ?? "#"} target="_blank" rel="noopener noreferrer">
+                <span className="bar-nav-num">{String(index + 1).padStart(2, "0")}</span>
+                <span className="bar-nav-label">/ {item.label} {arrow}</span>
+              </a>
+            ) : null,
+          )}
+        </nav>
+      ) : null}
+
+      {/* Experience */}
+      {(premium.sectionTitle || premium.heading || cards.length) ? (
+        <section className="bar-section">
+          {premium.sectionTitle ? <span className="bar-eyebrow bar-eyebrow-accent">{premium.sectionTitle}</span> : null}
+          {premium.heading ? <h2 className="bar-h2">{barDot(premium.heading)}</h2> : null}
+          {cards.length ? (
+            <div className="bar-cards">
+              {cards.map((block) => {
+                const image = imageSrc(block.imageUrl);
+                const href = linkHref(block.url);
+                return (
+                  <BlockLink key={block.id} block={block} handle={handle} href={href} className="bar-card">
+                    {image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={image} alt={block.title} loading="lazy" />
+                    ) : (
+                      <span className="bar-card-ph" />
+                    )}
+                    <span className="bar-card-shade" />
+                    <span className="bar-card-copy">
+                      <strong>{block.title}</strong>
+                      {block.buttonText ? <span className="bar-card-cta">{block.buttonText} {arrow}</span> : null}
+                    </span>
+                  </BlockLink>
+                );
+              })}
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
+      {/* Statement */}
+      {statement.length || premium.about ? (
+        <section className="bar-statement">
+          {statement.length ? (
+            <p className="bar-statement-big">
+              {statement.map((line, index) => (
+                <span key={index} className={index === statement.length - 1 ? "bar-statement-accent" : undefined}>
+                  {barDot(line)}
+                </span>
+              ))}
+            </p>
+          ) : null}
+          {premium.about ? <p className="bar-statement-sub">{premium.about}</p> : null}
+        </section>
+      ) : null}
+
+      {/* Mood image */}
+      {moodImg || premium.featureLabel ? (
+        <section className="bar-mood">
+          {moodImg ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="bar-mood-img" src={moodImg} alt="" loading="lazy" />
+          ) : (
+            <div className="bar-mood-img bar-ph" />
+          )}
+          <div className="bar-mood-shade" />
+          {premium.featureLabel ? <span className="bar-mood-label">{premium.featureLabel}</span> : null}
+        </section>
+      ) : null}
+
+      {/* Info + socials */}
+      <section className="bar-info">
+        <div className="bar-info-text">
+          {premium.siteLabel ? (
+            infoHref ? (
+              <a className="bar-info-title" href={infoHref} target="_blank" rel="noopener noreferrer">
+                {premium.siteLabel} {arrow}
+              </a>
+            ) : (
+              <span className="bar-info-title">{premium.siteLabel}</span>
+            )
+          ) : null}
+          {premium.credential ? <p className="bar-info-line">{premium.credential}</p> : null}
+          {premium.promoNote ? <p className="bar-info-line">{premium.promoNote}</p> : null}
+        </div>
+        {socials.length ? (
+          <nav className="bar-socials" aria-label="Redes sociais">
+            {socials.map(({ social, href }) => (
+              <a key={`${social.platform}-${href}`} href={href} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[social.platform]} onClick={() => track(handle, { kind: "social_click", target: social.platform })}>
+                <SocialIcon platform={social.platform} />
+              </a>
+            ))}
+          </nav>
+        ) : null}
+      </section>
+
+      {/* Orange CTA */}
+      {premium.promoButton ? (
+        <a className="bar-cta" href={ctaHref ?? "#"} target="_blank" rel="noopener noreferrer" onClick={() => ctaHref && track(handle, { kind: "block_click", blockId: "cta", target: ctaHref })}>
+          {premium.promoButton} {arrow}
+        </a>
+      ) : null}
+
+      {/* Footer */}
+      <footer className="bar-footer">
+        <span>{brand} © {year}</span>
+        {showsBadge(plan) ? <span className="bar-footer-made">Feito com {APP_NAME}</span> : null}
       </footer>
     </div>
   );

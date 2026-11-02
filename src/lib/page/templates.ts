@@ -52,7 +52,7 @@ export const TEMPLATE_COLLECTIONS: TemplateCollection[] = [
     templateIds: ["autoridade", "presenca", "ecossistema", "vitrine"],
   },
   { id: "presenca", tab: "premium", name: "Presença", description: "Perfil profissional com público duplo.", swatch: { background: "#0a0a0f", accent: "#a78bfa", text: "#f5f5f5" }, templateIds: ["experiencia"] },
-  { id: "ecossistema", tab: "premium", name: "Restaurante", description: "Modelos de cardápio para restaurantes, bares e delivery.", swatch: { background: "#1c0f0b", accent: "#d8a24a", text: "#f3e9df" }, templateIds: ["resto-menu", "resto-bistro"] },
+  { id: "ecossistema", tab: "premium", name: "Restaurante", description: "Modelos de cardápio para restaurantes, bares e delivery.", swatch: { background: "#1c0f0b", accent: "#d8a24a", text: "#f3e9df" }, templateIds: ["resto-menu", "resto-bistro", "resto-bar"] },
   { id: "vitrine", tab: "premium", name: "Vitrine", description: "Em breve.", swatch: { background: "#111d1f", accent: "#e6ff35", text: "#e7e9e8" }, templateIds: [], requiresPlan: "essencial" },
 ];
 
@@ -513,6 +513,52 @@ export const TEMPLATES: PageTemplate[] = [
           product({ label: "Na brasa", title: "Steak da casa", description: "Arroz, fritas e muito sabor.", price: "R$ 79,90", buttonText: "Pedir", url: "https://example.com/steak", imageUrl: unsplash("1558030006-450675393462", 900) }),
           product({ label: "Para compartilhar", title: "Costela BBQ", description: "Costela ao molho da casa e fritas.", price: "R$ 119,90", buttonText: "Pedir", url: "https://example.com/costela", imageUrl: unsplash("1544025162-d76694265947", 900) }),
           product({ label: "Especial da casa", title: "Burger artesanal", description: "Pão brioche, queijo e carne na brasa.", price: "R$ 39,90", buttonText: "Pedir", url: "https://example.com/burger", imageUrl: unsplash("1568901346375-23c9450c58cd", 900) }),
+        ],
+      }),
+  },
+  {
+    id: "resto-bar",
+    name: "Bar Noturno",
+    category: "Restaurante",
+    plan: "premium",
+    tab: "premium",
+    description: "Página ousada de bar/restaurante noturno: capa escura com título pesado, tarja laranja, atalhos numerados, cartões Cozinha/Bar, frase de impacto e rodapé com endereço. Tudo editável.",
+    swatch: { background: "#161311", accent: "#e0702c", text: "#f5f1ec" },
+    build: (name) =>
+      page(name, {
+        profile: { bio: "", coverUrl: unsplash("1414235077428-338989a2e8c0", 1300), floatingWhatsapp: "(11) 99999-0000" },
+        socials: [
+          { platform: "instagram", url: "https://www.instagram.com/" },
+          { platform: "whatsapp", url: "https://wa.me/5511999990000" },
+        ],
+        theme: { premium: "bar", background: "#161311", text: "#f5f1ec", accent: "#e0702c", font: "sans" },
+        premium: {
+          tagline: "Cozinha autoral + Bar",
+          heroSlides: [
+            { imageUrl: unsplash("1414235077428-338989a2e8c0", 1300), headline: "A noite começa\nà mesa.", productLabel: "", productName: "", priceFrom: "", price: "", url: "https://example.com/menu" },
+          ],
+          promoBadge: "Novidade — conheça o menu autoral",
+          promoUrl: "https://example.com/menu",
+          navLinks: [
+            { label: "Menu", url: "https://example.com/menu" },
+            { label: "Reservas", url: "https://example.com/reservas" },
+            { label: "Delivery", url: "https://example.com/delivery" },
+          ],
+          sectionTitle: "Escolha sua experiência",
+          heading: "Explore os sabores.",
+          quote: "Boa comida.\nBons encontros.",
+          about: "Uma mesa, novas histórias.",
+          featureImageUrl: unsplash("1517248135467-4c7edcad34c4", 1300),
+          featureLabel: "Esse é o nosso lugar",
+          siteLabel: "Venha nos visitar",
+          credential: "Rua do Encontro, 120 · São Paulo",
+          promoNote: "Terça a domingo · 18h às 23h",
+          siteUrl: "https://example.com/reservas",
+          promoButton: "Reservar uma mesa",
+        },
+        blocks: [
+          product({ label: "", title: "Cozinha", description: "", price: "", buttonText: "Ver menu", url: "https://example.com/menu", imageUrl: unsplash("1559339352-11d035aa65de", 900) }),
+          product({ label: "", title: "Bar", description: "", price: "", buttonText: "Ver drinks", url: "https://example.com/drinks", imageUrl: unsplash("1514362545857-3bc16c4c7d1b", 900) }),
         ],
       }),
   },
