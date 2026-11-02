@@ -25,14 +25,22 @@ function realEstate(): PageDoc | null {
   return doc;
 }
 
+// The Ecossistema model with a video cover (placeholder clip).
+function ecoVideo(): PageDoc | null {
+  const doc = model("ecossistema", "João Mentor");
+  if (!doc) return null;
+  doc.profile.coverVideo = "https://videos.pexels.com/video-files/3254066/3254066-hd_1920_1080_25fps.mp4";
+  return doc;
+}
+
 // Five models in a straight row; the middle one (Presença) is the hero of the
-// row. One plays a video to show that models can use video.
-const ROW: { id: string; name: string; video?: boolean }[] = [
+// row. Two of them play a video to show that models can use video.
+const ROW: { id: string; name: string; video?: boolean; make?: () => PageDoc | null }[] = [
   { id: "resto-casa", name: "Casa Noma" },
-  { id: "ecossistema", name: "João Mentor" },
+  { id: "ecossistema", name: "João Mentor", video: true, make: ecoVideo },
   { id: "presenca", name: "Marina Alves" }, // center
   { id: "experiencia", name: "Dr. Lucas" },
-  { id: "imobiliaria-4", name: "Imóveis Premium", video: true },
+  { id: "imobiliaria-4", name: "Imóveis Premium", video: true, make: realEstate },
 ];
 
 const FEATURES: [string, string][] = [
@@ -44,7 +52,7 @@ const FEATURES: [string, string][] = [
 
 export default function Home() {
   const hero = model("bf-loja", "Loja Vibe");
-  const row = ROW.map((r) => ({ ...r, doc: r.video ? realEstate() : model(r.id, r.name) })).filter((r) => r.doc);
+  const row = ROW.map((r) => ({ ...r, doc: r.make ? r.make() : model(r.id, r.name) })).filter((r) => r.doc);
   const center = Math.floor(row.length / 2);
 
   return (
