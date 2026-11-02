@@ -87,6 +87,8 @@ export function PremiumView({ doc, handle, plan }: Props) {
         return <Bistro doc={doc} handle={handle} plan={plan} />;
       case "bar":
         return <Bar doc={doc} handle={handle} plan={plan} />;
+      case "casa":
+        return <Casa doc={doc} handle={handle} plan={plan} />;
       default:
         return null;
     }
@@ -1933,6 +1935,122 @@ function Bar({ doc, handle, plan }: Props) {
         <span>{brand} © {year}</span>
         {showsBadge(plan) ? <span className="bar-footer-made">Feito com {APP_NAME}</span> : null}
       </footer>
+    </div>
+  );
+}
+
+/* ---------- Casa (elegant restaurant concierge, carousel hero) ---------- */
+function casaIcon(label: string) {
+  const t = label.toLowerCase();
+  const c = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, className: "casa-link-icon" };
+  if (t.includes("reserv") || t.includes("mesa") || t.includes("agend")) {
+    return <svg {...c} aria-hidden><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M3 9h18M8 2v4M16 2v4" /></svg>;
+  }
+  if (t.includes("ifood") || t.includes("peça") || t.includes("peca") || t.includes("pedi") || t.includes("delivery") || t.includes("entrega")) {
+    return <svg {...c} aria-hidden><path d="M6 8h12l-1 12H7L6 8z" /><path d="M9 8a3 3 0 0 1 6 0" /></svg>;
+  }
+  if (t.includes("cardápio") || t.includes("cardapio") || t.includes("menu") || t.includes("prato")) {
+    return <svg {...c} aria-hidden><path d="M5 4h12a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2V4z" /><path d="M9 8h6M9 12h6" /></svg>;
+  }
+  if (t.includes("local") || t.includes("endere") || t.includes("cheg") || t.includes("mapa") || t.includes("onde")) {
+    return <svg {...c} aria-hidden><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z" /><circle cx="12" cy="10" r="2.5" /></svg>;
+  }
+  if (t.includes("whats") || t.includes("fala") || t.includes("contato")) {
+    return <svg {...c} aria-hidden><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z" /></svg>;
+  }
+  if (t.includes("insta") || t.includes("rede")) {
+    return <svg {...c} aria-hidden><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></svg>;
+  }
+  return <svg {...c} aria-hidden><path d="M4 3v18M8 3v6a2 2 0 0 1-4 0M18 3c-1.5 0-3 1.8-3 5s1.5 4 3 4m0 0v9" /></svg>;
+}
+
+function CasaHero({ slides, brand, credential, verified }: { slides: PremiumFields["heroSlides"]; brand: string; credential: string; verified: boolean }) {
+  const [index, setIndex] = useState(0);
+  const count = slides.length;
+  useEffect(() => {
+    if (count <= 1) return;
+    const timer = setInterval(() => setIndex((v) => (v + 1) % count), 4000);
+    return () => clearInterval(timer);
+  }, [count]);
+  const active = count ? Math.min(index, count - 1) : 0;
+  return (
+    <header className="casa-hero">
+      <div className="casa-hero-track" style={{ transform: `translateX(-${active * 100}%)` }}>
+        {(count ? slides : [{ imageUrl: "", headline: "" }]).map((slide, i) => {
+          const img = imageSrc(slide.imageUrl);
+          return (
+            <div className="casa-slide" key={i}>
+              {img ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={img} alt="" className="casa-slide-img" loading={i === 0 ? "eager" : "lazy"} />
+              ) : (
+                <div className="casa-slide-img casa-ph" />
+              )}
+              <div className="casa-slide-shade" />
+              {"headline" in slide && slide.headline ? <span className="casa-eyebrow">{slide.headline}</span> : null}
+            </div>
+          );
+        })}
+      </div>
+      <div className="casa-logo">
+        <span className="casa-logo-name">
+          {brand}
+          {verified ? <VerifiedCheck className="ml-1.5 inline h-[0.7em] w-[0.7em] align-middle" /> : null}
+        </span>
+        {credential ? <span className="casa-logo-sub">{credential}</span> : null}
+      </div>
+      {count > 1 ? (
+        <div className="casa-bars" aria-hidden>
+          {slides.map((_, i) => (
+            <button key={i} type="button" className={i === active ? "on" : ""} onClick={() => setIndex(i)} aria-label={`Imagem ${i + 1}`} />
+          ))}
+        </div>
+      ) : null}
+    </header>
+  );
+}
+
+function Casa({ doc, handle, plan }: Props) {
+  const { profile, theme, premium } = doc;
+  const brand = profile.name || APP_NAME;
+  const links = visible(doc, "link");
+  const socials = doc.socials
+    .map((social) => ({ social, href: socialHref(social) }))
+    .filter((item): item is { social: (typeof doc.socials)[number]; href: string } => !!item.href);
+  return (
+    <div
+      className="vita-premium premium-casa"
+      style={{ "--casa-bg": theme.background, "--casa-text": theme.text, "--casa-accent": theme.accent } as React.CSSProperties}
+    >
+      <CasaHero slides={premium.heroSlides} brand={brand} credential={premium.credential} verified={profile.verified} />
+      <div className="casa-body">
+        {premium.heading ? <h1 className="casa-heading">{premium.heading}</h1> : null}
+        {links.length ? (
+          <nav className="casa-links" aria-label="Atalhos">
+            {links.map((block: LinkBlock) => {
+              const href = linkHref(block.url);
+              return (
+                <BlockLink key={block.id} block={block} handle={handle} href={href} className="casa-link">
+                  {casaIcon(block.label || block.title)}
+                  <span className="casa-link-label">{block.title}</span>
+                  <span className="casa-link-arrow" aria-hidden>↗</span>
+                </BlockLink>
+              );
+            })}
+          </nav>
+        ) : null}
+        {premium.promoNote ? <p className="casa-hours">{premium.promoNote}</p> : null}
+        {socials.length ? (
+          <nav className="casa-socials" aria-label="Redes sociais">
+            {socials.map(({ social, href }) => (
+              <a key={`${social.platform}-${href}`} href={href} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[social.platform]} onClick={() => track(handle, { kind: "social_click", target: social.platform })}>
+                <SocialIcon platform={social.platform} />
+              </a>
+            ))}
+          </nav>
+        ) : null}
+        {showsBadge(plan) ? <small className="casa-made">Feito com {APP_NAME}</small> : null}
+      </div>
     </div>
   );
 }

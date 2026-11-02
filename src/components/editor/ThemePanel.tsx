@@ -88,6 +88,7 @@ const PREMIUM_NAMES: Record<Exclude<Theme["premium"], "">, string> = {
   menu: "Restaurante / Cardápio",
   bistro: "Restaurante Completo",
   bar: "Restaurante / Bar Noturno",
+  casa: "Restaurante Elegante",
 };
 
 function PremiumPanel({ doc, onChange }: PanelProps) {
@@ -265,7 +266,19 @@ function PremiumPanel({ doc, onChange }: PanelProps) {
             </p>
           </div>
         ) : null}
-        {design === "store" || design === "lookbook" || design === "mosaic" || design === "dropz" || design === "promo" || design === "menu" || design === "bistro" || design === "bar" ? <StoreFields doc={doc} setPremium={setPremium} /> : null}
+        {design === "casa" ? (
+          <div className="flex flex-col gap-3 rounded-xl border border-stone-200 p-3">
+            <p className="text-sm font-semibold">Textos do restaurante</p>
+            <TextField label="Subtítulo do logo (ex.: COZINHA & ENCONTROS)" value={doc.premium.credential} maxLength={80} onChange={(credential) => setPremium({ credential })} />
+            <TextField label="Frase de boas-vindas (ex.: Escolha como viver seu próximo momento.)" value={doc.premium.heading} maxLength={240} onChange={(heading) => setPremium({ heading })} />
+            <TextField label="Horário (ex.: Terça a domingo · 12h às 23h)" value={doc.premium.promoNote} maxLength={80} onChange={(promoNote) => setPremium({ promoNote })} />
+            <p className="text-xs text-stone-500">
+              O carrossel da capa (várias imagens + legenda de cada uma) você monta abaixo em &quot;Destaque (carrossel)&quot;, e os botões
+              (Reserva, iFood, Cardápio, Localização…) na aba Blocos — cada link vira uma linha com ícone automático.
+            </p>
+          </div>
+        ) : null}
+        {design === "store" || design === "lookbook" || design === "mosaic" || design === "dropz" || design === "promo" || design === "menu" || design === "bistro" || design === "bar" || design === "casa" ? <StoreFields doc={doc} setPremium={setPremium} /> : null}
         <button type="button" onClick={() => setTheme({ premium: "" })} className="self-start text-sm text-stone-500 underline">
           Sair do modelo e usar o visual normal
         </button>
