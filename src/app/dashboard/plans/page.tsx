@@ -1,6 +1,7 @@
 import { APP_NAME } from "@/lib/env";
 import { PLAN_LABEL, PLAN_PRICE_BRL, PLANS, normalizePlan, type Plan } from "@/lib/plans";
 import { getOwner } from "../context";
+import { CancelSubscriptionButton } from "../clientes/CancelSubscriptionButton";
 
 // What each tier includes, shown on the pricing cards.
 const FEATURES: Record<Plan, string[]> = {
@@ -93,15 +94,18 @@ export default async function PlansPage() {
                   <button type="button" disabled className="w-full rounded-lg bg-stone-100 py-2.5 text-sm font-semibold text-stone-500">
                     Seu plano atual
                   </button>
-                ) : (
-                  <button
-                    type="button"
-                    disabled
-                    title="A cobrança via Stripe entra em breve"
-                    className={`w-full rounded-lg py-2.5 text-sm font-semibold ${recommended ? "bg-stone-900 text-white opacity-60" : "bg-stone-100 text-stone-600"}`}
+                ) : price ? (
+                  <a
+                    href={`/dashboard/clientes/${profile.id}/assinar?plan=${plan}`}
+                    className={`block w-full rounded-lg py-2.5 text-center text-sm font-semibold transition ${recommended ? "bg-stone-900 text-white hover:bg-stone-800" : "bg-stone-100 text-stone-800 hover:bg-stone-200"}`}
                   >
-                    {price ? "Assinar" : "Usar o Grátis"} · em breve
-                  </button>
+                    Assinar {PLAN_LABEL[plan]}
+                  </a>
+                ) : (
+                  // Current plan is paid; this is the free card → cancel to downgrade.
+                  <div className="flex h-[42px] items-center justify-center rounded-lg bg-stone-50 ring-1 ring-stone-200">
+                    <CancelSubscriptionButton clientId={profile.id} />
+                  </div>
                 )}
               </div>
             </section>
@@ -110,8 +114,7 @@ export default async function PlansPage() {
       </div>
 
       <p className="text-center text-xs text-stone-400">
-        O pagamento das assinaturas (Stripe) está a caminho. Por enquanto, esta tela mostra os planos; em breve dá para assinar e
-        trocar de plano aqui mesmo.
+        Pagamento seguro via Stripe. Ao assinar, você vai para o checkout e pode cancelar quando quiser.
       </p>
     </div>
   );
