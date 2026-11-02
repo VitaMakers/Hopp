@@ -329,7 +329,7 @@ export const premiumFieldsSchema = z.object({
     )
     .max(6)
     .default([]),
-  promoBadge: z.string().max(30).default("1ª COMPRA"),
+  promoBadge: z.string().max(80).default("1ª COMPRA"),
   promoDiscount: z.string().max(20).default("15% OFF"),
   promoNote: z.string().max(80).default(""),
   promoButton: z.string().max(30).default("ATIVAR"),
