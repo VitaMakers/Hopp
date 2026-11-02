@@ -81,6 +81,8 @@ export function PremiumView({ doc, handle, plan }: Props) {
         return <Dropz doc={doc} handle={handle} plan={plan} />;
       case "promo":
         return <Promo doc={doc} handle={handle} plan={plan} />;
+      case "menu":
+        return <Menu doc={doc} handle={handle} plan={plan} />;
       default:
         return null;
     }
@@ -1442,5 +1444,120 @@ function Promo({ doc, handle, plan }: Props) {
         </a>
       ) : null}
     </div>
+  );
+}
+
+/* ---------- Menu (restaurant / cardápio) ---------- */
+function Menu({ doc, handle, plan }: Props) {
+  const { profile, theme, premium } = doc;
+  const brand = profile.name || APP_NAME;
+  const slide = premium.heroSlides[0];
+  const heroImg = imageSrc(slide?.imageUrl || profile.coverUrl);
+  const logo = imageSrc(profile.logo);
+  const ribbon = slide?.productLabel || premium.promoBadge;
+  const headline = (slide?.headline || premium.heading || "").split("\n").filter(Boolean);
+  const dishes = visible(doc, "product");
+  const ctaHref = linkHref(premium.promoUrl || premium.siteUrl || slide?.url);
+  const whatsapp = whatsappHref(profile.floatingWhatsapp, "");
+  const socials = doc.socials
+    .map((social) => ({ social, href: socialHref(social) }))
+    .filter((item): item is { social: (typeof doc.socials)[number]; href: string } => !!item.href);
+  return (
+    <div
+      className="vita-premium premium-menu"
+      style={{ "--menu-bg": theme.background, "--menu-text": theme.text, "--menu-accent": theme.accent } as React.CSSProperties}
+    >
+      <header className="menu-hero">
+        {heroImg ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="menu-hero-img" src={heroImg} alt={brand} />
+        ) : (
+          <div className="menu-hero-img menu-hero-ph" />
+        )}
+        <div className="menu-hero-shade" />
+        {ribbon ? <span className="menu-ribbon">{ribbon}</span> : null}
+        <div className="menu-hero-center">
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="menu-logo" src={logo} alt={brand} />
+          ) : null}
+          <h1 className="menu-brand">
+            {brand}
+            {profile.verified ? <VerifiedCheck className="ml-1.5 inline h-[0.75em] w-[0.75em] align-middle" /> : null}
+          </h1>
+          {headline.length ? <p className="menu-tagline">{headline.join(" ")}</p> : null}
+        </div>
+      </header>
+
+      <div className="menu-inner">
+        {profile.bio ? <p className="menu-intro">{profile.bio}</p> : null}
+        {dishes.length ? (
+          <section className="menu-list" aria-label="Cardápio">
+            <h2 className="menu-section">Cardápio</h2>
+            {dishes.map((block) => (
+              <MenuItem key={block.id} block={block} handle={handle} />
+            ))}
+          </section>
+        ) : null}
+        {ctaHref || premium.promoButton ? (
+          <a className="menu-cta" href={ctaHref ?? "#"} target="_blank" rel="noopener noreferrer" onClick={() => ctaHref && track(handle, { kind: "block_click", blockId: "cta", target: ctaHref })}>
+            {premium.promoButton || "Reservar mesa"}
+          </a>
+        ) : null}
+        {socials.length ? (
+          <nav className="menu-socials" aria-label="Redes sociais">
+            {socials.map(({ social, href }) => (
+              <a key={`${social.platform}-${href}`} href={href} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[social.platform]} onClick={() => track(handle, { kind: "social_click", target: social.platform })}>
+                <SocialIcon platform={social.platform} />
+              </a>
+            ))}
+          </nav>
+        ) : null}
+        <footer className="menu-footer">
+          <span className="menu-footer-brand">{brand}</span>
+          {premium.navLinks.length ? (
+            <nav className="menu-nav">
+              {premium.navLinks.map((item, index) => (item.label ? <a key={index} href={linkHref(item.url) ?? "#"} target="_blank" rel="noopener noreferrer">{item.label}</a> : null))}
+            </nav>
+          ) : null}
+          <small>© {footerOwner(plan, profile.name, handle)} · {year}</small>
+        </footer>
+      </div>
+      {whatsapp ? (
+        <a className="look-wa" href={whatsapp} target="_blank" rel="noopener noreferrer" aria-label="Falar no WhatsApp" onClick={() => track(handle, { kind: "social_click", target: "whatsapp" })}>
+          <SocialIcon platform="whatsapp" />
+        </a>
+      ) : null}
+    </div>
+  );
+}
+
+function MenuItem({ block, handle }: { block: ProductBlock; handle?: string }) {
+  const image = imageSrc(block.imageUrl);
+  const href = linkHref(block.url);
+  return (
+    <article className="menu-item">
+      {image ? (
+        <div className="menu-item-photo">
+          {block.label ? <span className="menu-item-tag">{block.label}</span> : null}
+          <BlockLink block={block} handle={handle} href={href} className="menu-item-photo-link">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={image} alt={block.title} loading="lazy" />
+          </BlockLink>
+        </div>
+      ) : null}
+      <div className="menu-item-body">
+        <div className="menu-item-head">
+          <h3>{block.title}</h3>
+          {block.price ? <span className="menu-item-price">{block.price}</span> : null}
+        </div>
+        {block.description ? <p>{block.description}</p> : null}
+        {href && block.buttonText ? (
+          <BlockLink block={block} handle={handle} href={href} className="menu-item-cta">
+            {block.buttonText} <span aria-hidden>→</span>
+          </BlockLink>
+        ) : null}
+      </div>
+    </article>
   );
 }
