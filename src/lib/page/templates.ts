@@ -52,7 +52,7 @@ export const TEMPLATE_COLLECTIONS: TemplateCollection[] = [
     templateIds: ["autoridade", "presenca", "ecossistema", "vitrine"],
   },
   { id: "presenca", tab: "premium", name: "Presença", description: "Perfil profissional com público duplo.", swatch: { background: "#0a0a0f", accent: "#a78bfa", text: "#f5f5f5" }, templateIds: ["experiencia"] },
-  { id: "ecossistema", tab: "premium", name: "Restaurante", description: "Modelos de cardápio para restaurantes, bares e delivery.", swatch: { background: "#1c0f0b", accent: "#d8a24a", text: "#f3e9df" }, templateIds: ["resto-menu", "resto-bistro", "resto-bar"] },
+  { id: "ecossistema", tab: "premium", name: "Restaurante", description: "Modelos de cardápio para restaurantes, bares e delivery.", swatch: { background: "#1c0f0b", accent: "#d8a24a", text: "#f3e9df" }, templateIds: ["resto-menu", "resto-bistro", "resto-bar", "resto-casa"] },
   { id: "vitrine", tab: "premium", name: "Vitrine", description: "Em breve.", swatch: { background: "#111d1f", accent: "#e6ff35", text: "#e7e9e8" }, templateIds: [], requiresPlan: "essencial" },
 ];
 
@@ -559,6 +559,40 @@ export const TEMPLATES: PageTemplate[] = [
         blocks: [
           product({ label: "", title: "Cozinha", description: "", price: "", buttonText: "Ver menu", url: "https://example.com/menu", imageUrl: unsplash("1559339352-11d035aa65de", 900) }),
           product({ label: "", title: "Bar", description: "", price: "", buttonText: "Ver drinks", url: "https://example.com/drinks", imageUrl: unsplash("1514362545857-3bc16c4c7d1b", 900) }),
+        ],
+      }),
+  },
+  {
+    id: "resto-casa",
+    name: "Restaurante Elegante",
+    category: "Restaurante",
+    plan: "premium",
+    tab: "premium",
+    description: "Capa em carrossel (várias imagens para comunicar o que quiser), logo em serifa e lista de atalhos com ícones (reserva, iFood, cardápio, localização). Elegante e editável.",
+    swatch: { background: "#f4f1ea", accent: "#7a1f2b", text: "#2a2320" },
+    build: (name) =>
+      page(name, {
+        profile: { bio: "", floatingWhatsapp: "(11) 99999-0000" },
+        socials: [
+          { platform: "instagram", url: "https://www.instagram.com/" },
+          { platform: "whatsapp", url: "https://wa.me/5511999990000" },
+        ],
+        theme: { premium: "casa", background: "#f4f1ea", text: "#2a2320", accent: "#7a1f2b", font: "serif" },
+        premium: {
+          credential: "Cozinha & Encontros",
+          heading: "Escolha como viver seu próximo momento.",
+          promoNote: "Terça a domingo · 12h às 23h",
+          heroSlides: [
+            { imageUrl: unsplash("1558030006-450675393462", 1200), headline: "Bem-vindo à nossa mesa", productLabel: "", productName: "", priceFrom: "", price: "", url: "" },
+            { imageUrl: unsplash("1517248135467-4c7edcad34c4", 1200), headline: "Novidades no cardápio de outono", productLabel: "", productName: "", priceFrom: "", price: "", url: "" },
+            { imageUrl: unsplash("1510812431401-41d2bd2722f3", 1200), headline: "Happy hour · toda quinta", productLabel: "", productName: "", priceFrom: "", price: "", url: "" },
+          ],
+        },
+        blocks: [
+          link({ display: "button", title: "Faça sua reserva", url: "https://example.com/reservas" }),
+          link({ display: "button", title: "Peça pelo iFood", url: "https://www.ifood.com.br/" }),
+          link({ display: "button", title: "Cardápio", url: "https://example.com/cardapio" }),
+          link({ display: "button", title: "Localização", url: "https://maps.google.com/" }),
         ],
       }),
   },
