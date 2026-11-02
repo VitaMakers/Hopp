@@ -2,7 +2,6 @@ import Link from "next/link";
 import { APP_NAME } from "@/lib/env";
 import { TEMPLATES } from "@/lib/page/templates";
 import { PageView } from "@/components/page-view/PageView";
-import { ModelThumb } from "@/components/page-view/ModelThumb";
 import type { PageDoc } from "@/lib/page/schema";
 
 // Build a real model's page document so the landing shows it running inside a
@@ -19,7 +18,6 @@ const unsplash = (photo: string) => `https://images.unsplash.com/photo-${photo}?
 function realEstate(): PageDoc | null {
   const doc = model("imobiliaria-4", "Imóveis Premium");
   if (!doc) return null;
-  doc.theme.layout = "cover";
   doc.profile.coverUrl = unsplash("1600585154340-be6161a56a0c");
   doc.profile.coverVideo = "https://videos.pexels.com/video-files/3773486/3773486-hd_1920_1080_30fps.mp4";
   return doc;
@@ -128,7 +126,7 @@ export default function Home() {
       <section id="recursos" className="mx-auto max-w-6xl px-5 py-10">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map(([title, text]) => (
-            <div key={title} className="rounded-2xl bg-stone-50 p-5 ring-1 ring-stone-100">
+            <div key={title} className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
               <h3 className="font-bold">{title}</h3>
               <p className="mt-1.5 text-sm text-stone-500">{text}</p>
             </div>
@@ -147,24 +145,20 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="mt-12 flex items-end justify-center gap-2.5 overflow-x-auto px-2 pb-6 sm:gap-3 md:gap-4 [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="mt-12 flex items-end justify-center gap-2 overflow-x-auto px-2 pb-6 sm:gap-3 md:gap-4 [-ms-overflow-style:none] [scrollbar-width:none]">
           {row.map((item, index) => {
             const isCenter = index === center;
-            const w = isCenter ? 162 : 138;
-            const h = isCenter ? 340 : 282;
+            const w = isCenter ? 194 : 164;
+            const h = isCenter ? 378 : 320;
             return (
-              <div key={item.id} className={`shrink-0 ${isCenter ? "-translate-y-4" : ""}`}>
-                {item.video ? (
-                  <div className="overflow-hidden rounded-[22px] bg-black shadow-2xl ring-1 ring-black/10" style={{ width: w, height: h }}>
+              <div key={item.id} className={`shrink-0 ${isCenter ? "-translate-y-5" : ""}`}>
+                <div className="rounded-[30px] bg-stone-900 p-[5px] shadow-2xl ring-1 ring-black/5">
+                  <div className="relative overflow-hidden rounded-[26px] bg-black" style={{ width: w, height: h }}>
                     <div style={{ width: 390, transformOrigin: "top left", transform: `scale(${w / 390})` }} className="pointer-events-none">
-                      <PageView doc={item.doc as PageDoc} />
+                      <PageView doc={item.doc as PageDoc} still={!item.video} />
                     </div>
                   </div>
-                ) : (
-                  <div className={isCenter ? "rounded-[22px] shadow-2xl ring-1 ring-black/10" : "rounded-[20px] shadow-xl ring-1 ring-black/5"}>
-                    <ModelThumb doc={item.doc as PageDoc} width={w} height={h} />
-                  </div>
-                )}
+                </div>
               </div>
             );
           })}
