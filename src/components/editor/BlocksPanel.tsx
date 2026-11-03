@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DndContext,
   KeyboardSensor,
@@ -22,11 +22,21 @@ import { BLOCK_CATALOG, blockSummary, createBlock } from "@/lib/page/catalog";
 import type { Block, BlockType, PageDoc } from "@/lib/page/schema";
 import { BlockFields } from "./BlockFields";
 
-type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void };
+type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void; focus?: { id: string; n: number } | null };
 
-export function BlocksPanel({ doc, onChange }: PanelProps) {
+export function BlocksPanel({ doc, onChange, focus }: PanelProps) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+
+  // When a block is clicked in the preview, open it here and scroll to it.
+  useEffect(() => {
+    if (!focus) return;
+    setOpenId(focus.id);
+    const timer = window.setTimeout(() => {
+      document.getElementById(`blk-${focus.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 60);
+    return () => window.clearTimeout(timer);
+  }, [focus]);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -115,8 +125,9 @@ function SortableBlock({
   return (
     <div
       ref={setNodeRef}
+      id={`blk-${block.id}`}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`rounded-xl bg-white ring-1 ring-stone-200 ${isDragging ? "z-10 shadow-lg" : ""}`}
+      className={`scroll-mt-24 rounded-xl bg-white ring-1 transition ${open ? "ring-2 ring-blue-500" : "ring-stone-200"} ${isDragging ? "z-10 shadow-lg" : ""}`}
     >
       <div className="flex items-center gap-2 p-3">
         <button
