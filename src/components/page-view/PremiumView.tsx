@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { APP_NAME } from "@/lib/env";
 import { showsBadge } from "@/lib/entitlements";
 import type { Block, PageDoc } from "@/lib/page/schema";
@@ -14,7 +14,12 @@ import { VerifiedCheck } from "./VerifiedCheck";
 // The four Vita premium designs. Each one mirrors the markup of the
 // original template so src/app/premium.css styles it the same way.
 
-type Props = { doc: PageDoc; handle?: string; plan?: string };
+type Props = { doc: PageDoc; handle?: string; plan?: string; onEdit?: (target: string) => void };
+
+// In the editor, premium block links open the block; everything else (hero,
+// promo, etc.) opens the Aparência tab. Threaded via context to avoid passing
+// onEdit through every renderer.
+const PremiumEditContext = createContext<((target: string) => void) | null>(null);
 
 // The footer credit. Profissional keeps its own brand; every other plan
 // carries the Virtú.bio name (same rule as the badge).
@@ -44,6 +49,7 @@ function BlockLink({
   className?: string;
   children: React.ReactNode;
 }) {
+  const onEdit = useContext(PremiumEditContext);
   return (
     <a
       href={href ?? "#"}
@@ -51,14 +57,22 @@ function BlockLink({
       rel="noopener noreferrer"
       aria-label={block.title}
       className={className}
-      onClick={() => href && track(handle, { kind: "block_click", blockId: block.id, target: href })}
+      onClick={(e) => {
+        if (onEdit) {
+          e.preventDefault();
+          e.stopPropagation();
+          onEdit(block.id);
+          return;
+        }
+        if (href) track(handle, { kind: "block_click", blockId: block.id, target: href });
+      }}
     >
       {children}
     </a>
   );
 }
 
-export function PremiumView({ doc, handle, plan }: Props) {
+export function PremiumView({ doc, handle, plan, onEdit }: Props) {
   const page = (() => {
     switch (doc.theme.premium) {
       case "authority":
@@ -93,6 +107,21 @@ export function PremiumView({ doc, handle, plan }: Props) {
         return null;
     }
   })();
+  if (onEdit) {
+    return (
+      <PremiumEditContext.Provider value={onEdit}>
+        <div
+          className="vita-page min-h-full cursor-pointer [&_button]:pointer-events-none"
+          onClick={(e) => {
+            e.preventDefault();
+            onEdit("appearance");
+          }}
+        >
+          {page}
+        </div>
+      </PremiumEditContext.Provider>
+    );
+  }
   return <div className="vita-page min-h-full">{page}</div>;
 }
 
