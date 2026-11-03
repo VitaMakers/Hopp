@@ -153,6 +153,21 @@ export const mapBlockSchema = z.object({
   address: z.string().max(300),
 });
 
+// Scheduling: embeds (or links to) the owner's own Google Calendar appointment
+// page or Calendly, so a visitor books a time that lands in the owner's
+// calendar. We never store availability — the provider's page is live.
+export const scheduleBlockSchema = z.object({
+  ...blockBase,
+  type: z.literal("schedule"),
+  title: z.string().max(120).default("Agende um horário"),
+  description: z.string().max(300).default(""),
+  url: z.string().max(2000).default(""),
+  buttonText: z.string().max(40).default("Agendar horário"),
+  // "button": a card with a button that opens the booking page. "inline": the
+  // provider's live calendar embedded right on the page.
+  display: z.enum(["button", "inline"]).default("button"),
+});
+
 export const contactBlockSchema = z.object({
   ...blockBase,
   type: z.literal("contact"),
@@ -247,6 +262,7 @@ export const blockSchema = z.discriminatedUnion("type", [
   imageBlockSchema,
   productBlockSchema,
   mapBlockSchema,
+  scheduleBlockSchema,
   contactBlockSchema,
   statsBlockSchema,
   galleryBlockSchema,

@@ -15,6 +15,7 @@ export const BLOCK_CATALOG: Record<BlockType, { label: string; description: stri
   image: { label: "Imagem", description: "Foto ou banner, com link opcional" },
   product: { label: "Produto", description: "Foto, preço e botão de compra" },
   map: { label: "Mapa", description: "Endereço no mapa e botão de rota" },
+  schedule: { label: "Agendamento", description: "Agenda do Google ou Calendly — o visitante marca um horário" },
   contact: { label: "Salvar contato", description: "Visitante salva seu contato no celular" },
   stats: { label: "Números", description: "Destaques como \"10+ anos\" e \"500+ clientes\"" },
   gallery: { label: "Galeria", description: "Grade de fotos, cada uma com link opcional" },
@@ -118,6 +119,16 @@ export function createBlock(type: BlockType): Block {
       };
     case "map":
       return { ...base, type, title: "Onde estamos", address: "" };
+    case "schedule":
+      return {
+        ...base,
+        type,
+        title: "Agende um horário",
+        description: "Escolha o melhor dia e horário para a gente conversar.",
+        url: "",
+        buttonText: "Agendar horário",
+        display: "button",
+      };
     case "contact":
       return { ...base, type, name: "", company: "", phone: "", email: "", buttonText: "Salvar contato" };
     case "stats":
@@ -379,6 +390,7 @@ export function blockSummary(block: Block): string {
     case "subscribe":
     case "product":
     case "map":
+    case "schedule":
       return block.title;
     case "form":
       return block.title || `Formulário (${block.fields.length} campos)`;
