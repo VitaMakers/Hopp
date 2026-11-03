@@ -417,16 +417,42 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
     case "schedule":
       return (
         <div className="flex flex-col gap-3">
+          <div className="rounded-xl bg-blue-50 p-3 text-xs text-blue-900 ring-1 ring-blue-100">
+            <p className="font-semibold">Como funciona (uma vez só):</p>
+            <ol className="mt-1 list-decimal space-y-0.5 pl-4">
+              <li>Crie a sua agenda de horários no Google (botão abaixo).</li>
+              <li>No Google, clique em <strong>Compartilhar</strong> e copie o link.</li>
+              <li>Cole o link no campo abaixo.</li>
+            </ol>
+            <a
+              href="https://calendar.google.com/calendar/u/0/r/settings/createappointmentschedule"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 font-semibold text-white hover:bg-blue-700"
+            >
+              Criar minha agenda no Google →
+            </a>
+          </div>
           <TextField label="Título" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
           <TextArea label="Descrição (opcional)" value={block.description} maxLength={300} onChange={(description) => onChange({ ...block, description })} />
           <TextField
-            label="Link da agenda (Google Agenda ou Calendly)"
+            label="Link da agenda (Google Agenda, Calendly ou Cal.com)"
             type="url"
             value={block.url}
             maxLength={2000}
             placeholder="https://calendar.app.google/..."
             onChange={(url) => onChange({ ...block, url })}
           />
+          {block.url ? (
+            <a
+              href={block.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="-mt-1 self-start text-xs font-medium text-blue-600 underline"
+            >
+              Abrir o link para testar ↗
+            </a>
+          ) : null}
           <TextField label="Texto do botão" value={block.buttonText} maxLength={40} onChange={(buttonText) => onChange({ ...block, buttonText })} />
           <Toggle
             label="Mostrar a agenda dentro da página (em vez de só um botão)"
@@ -434,9 +460,8 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
             onChange={(on) => onChange({ ...block, display: on ? "inline" : "button" })}
           />
           <p className="-mt-1 text-xs text-stone-500">
-            No Google Agenda, crie uma página de <strong>Agendamentos</strong> (os horários que você atende), copie o link e cole
-            aqui — funciona também com Calendly ou Cal.com. Os horários marcados caem direto na sua agenda, sempre atualizados e sem
-            cobrança.
+            Os horários marcados caem direto na sua agenda, sempre atualizados e sem cobrança. Na prévia aqui do editor o botão não
+            abre (clicar serve para editar) — teste pelo link acima ou na página publicada.
           </p>
         </div>
       );
