@@ -58,8 +58,9 @@ export default function Home() {
       {/* Header */}
       <header className="sticky top-0 z-30 border-b border-stone-100 bg-white/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5">
-          <span className="flex items-center gap-2 text-lg font-bold">
-            <span className="grid h-7 w-7 place-items-center rounded-lg bg-blue-600 text-sm text-white">V</span>
+          <span className="flex items-center gap-2 text-2xl font-extrabold tracking-tight">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand-mark.png" alt="" className="h-9 w-auto" />
             {APP_NAME}
           </span>
           <nav className="hidden items-center gap-7 text-sm font-medium text-stone-600 md:flex">
@@ -241,7 +242,11 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-stone-100">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 py-8 text-sm text-stone-500 sm:flex-row">
-          <span className="font-bold text-stone-900">{APP_NAME}</span>
+          <span className="flex items-center gap-2 text-base font-bold text-stone-900">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand-mark.png" alt="" className="h-6 w-auto" />
+            {APP_NAME}
+          </span>
           <nav className="flex gap-5">
             <Link href="/termos" className="hover:text-stone-900">Termos</Link>
             <Link href="/privacidade" className="hover:text-stone-900">Privacidade</Link>
