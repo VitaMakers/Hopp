@@ -99,6 +99,19 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   const maxCountry = Math.max(1, ...countries.map(([, n]) => n));
   const cities = [...byCity].sort((a, b) => b[1] - a[1]).slice(0, 6);
 
+  // Clicks per link over the last 30 days, to show distinct people this week
+  // and this month regardless of the selected window.
+  const monthAgoIso = new Date(now.getTime() - 30 * 86_400_000).toISOString();
+  const weekAgoIso = new Date(now.getTime() - 7 * 86_400_000).toISOString();
+  const { data: linkClickData } = await supabase
+    .from("events")
+    .select("block_id, visit_id, created_at")
+    .eq("owner_id", profile.id)
+    .eq("kind", "block_click")
+    .gte("created_at", monthAgoIso)
+    .limit(20000);
+  const linkClicks = (linkClickData ?? []) as { block_id: string | null; visit_id: string | null; created_at: string }[];
+
   const doc = pageDocSchema.safeParse(page?.draft);
   const blockNames = new Map<string, string>();
   const blockTypes = new Map<string, BlockType>();
@@ -109,6 +122,39 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
     }
   }
   const linkNames = new Map((links ?? []).map((link) => [link.id, link.title || `/l/${link.code}`]));
+
+  // Distinct people per link, this week and this month.
+  const linkAgg = new Map<string, { week: Set<string>; month: Set<string> }>();
+  for (const c of linkClicks) {
+    if (!c.block_id) continue;
+    let entry = linkAgg.get(c.block_id);
+    if (!entry) {
+      entry = { week: new Set(), month: new Set() };
+      linkAgg.set(c.block_id, entry);
+    }
+    const who = c.visit_id ?? c.created_at;
+    entry.month.add(who);
+    if (c.created_at >= weekAgoIso) entry.week.add(who);
+  }
+  const linkRows = [...linkAgg]
+    .map(([id, s]) => ({ name: blockNames.get(id) ?? "Bloco removido", type: blockTypes.get(id), week: s.week.size, month: s.month.size }))
+    .sort((a, b) => b.month - a.month)
+    .slice(0, 12);
+
+  // Peak hours: a weekday × hour grid of page views, in Brasília time.
+  const heat: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
+  let heatMax = 0;
+  const heatFmt = new Intl.DateTimeFormat("en-US", { timeZone: "America/Sao_Paulo", weekday: "short", hour: "2-digit", hour12: false });
+  const WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  for (const e of current) {
+    if (e.kind !== "page_view") continue;
+    const parts = heatFmt.formatToParts(new Date(e.created_at));
+    const wd = WD.indexOf(parts.find((p) => p.type === "weekday")?.value ?? "");
+    const hour = Number(parts.find((p) => p.type === "hour")?.value ?? "0") % 24;
+    if (wd < 0) continue;
+    heat[wd][hour] += 1;
+    if (heat[wd][hour] > heatMax) heatMax = heat[wd][hour];
+  }
 
   const sum = (map: Map<string, number>) => [...map.values()].reduce((a, b) => a + b, 0);
   const donut = [
@@ -200,6 +246,8 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
       ) : null}
 
       <DailyChart summary={summary} />
+
+      <Heatmap heat={heat} max={heatMax} />
 
       <div className="grid gap-4 lg:grid-cols-5">
         <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200 lg:col-span-3">
@@ -301,6 +349,36 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           )}
         </section>
       </div>
+
+      <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
+        <h2 className="font-semibold">Pessoas por link</h2>
+        <p className="mb-3 text-xs text-stone-500">Quantas pessoas diferentes clicaram em cada link.</p>
+        {linkRows.length === 0 ? (
+          <p className="py-6 text-center text-sm text-stone-500">Sem cliques nos últimos 30 dias.</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-stone-200 text-left text-xs uppercase tracking-wide text-stone-400">
+                <th className="pb-2 font-medium">Link</th>
+                <th className="pb-2 text-right font-medium">Esta semana</th>
+                <th className="pb-2 pl-3 text-right font-medium">Este mês</th>
+              </tr>
+            </thead>
+            <tbody>
+              {linkRows.map((r, i) => (
+                <tr key={i} className="border-b border-stone-100 last:border-0">
+                  <td className="py-2.5">
+                    <span className="font-medium">{r.name}</span>
+                    {r.type ? <span className="ml-2 text-xs text-stone-400">{BLOCK_CATALOG[r.type].label}</span> : null}
+                  </td>
+                  <td className="py-2.5 text-right tabular-nums">{r.week.toLocaleString("pt-BR")}</td>
+                  <td className="py-2.5 pl-3 text-right tabular-nums">{r.month.toLocaleString("pt-BR")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
 
       <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
         <h2 className="mb-3 font-semibold">Sessões por local</h2>
@@ -483,6 +561,53 @@ function DailyChart({ summary }: { summary: Summary }) {
           </span>
         ))}
       </div>
+    </section>
+  );
+}
+
+function Heatmap({ heat, max }: { heat: number[][]; max: number }) {
+  const days = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+  const cols = { gridTemplateColumns: "repeat(24, minmax(0, 1fr))" } as const;
+  const color = (v: number) => {
+    if (v <= 0) return "#f5f5f4";
+    const t = 0.18 + 0.82 * (v / max);
+    return `rgba(37, 99, 235, ${t.toFixed(2)})`;
+  };
+  return (
+    <section className="overflow-x-auto rounded-xl bg-white p-4 ring-1 ring-stone-200">
+      <h2 className="mb-1 font-semibold">Horários de pico</h2>
+      <p className="mb-3 text-xs text-stone-500">Quando as pessoas mais acessam (horário de Brasília).</p>
+      {max === 0 ? (
+        <p className="py-6 text-center text-sm text-stone-500">Ainda sem visitas suficientes para o mapa.</p>
+      ) : (
+        <div className="min-w-[560px]">
+          <div className="flex">
+            <span className="w-10 shrink-0" />
+            <div className="grid flex-1 gap-[2px]" style={cols}>
+              {Array.from({ length: 24 }).map((_, h) => (
+                <span key={h} className="text-center text-[9px] text-stone-400">
+                  {h % 6 === 0 ? `${h}h` : ""}
+                </span>
+              ))}
+            </div>
+          </div>
+          {days.map((d, wd) => (
+            <div key={d} className="mt-[2px] flex items-center">
+              <span className="w-10 shrink-0 text-xs text-stone-500">{d}</span>
+              <div className="grid flex-1 gap-[2px]" style={cols}>
+                {heat[wd].map((v, h) => (
+                  <span
+                    key={h}
+                    className="aspect-square rounded-[2px]"
+                    style={{ background: color(v) }}
+                    title={`${d}, ${h}h — ${v} ${v === 1 ? "visita" : "visitas"}`}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
