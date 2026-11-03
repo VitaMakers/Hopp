@@ -127,7 +127,7 @@ export function createBlock(type: BlockType): Block {
         description: "Escolha o melhor dia e horário para a gente conversar.",
         url: "",
         buttonText: "Agendar horário",
-        display: "button",
+        display: "reveal",
       };
     case "contact":
       return { ...base, type, name: "", company: "", phone: "", email: "", buttonText: "Salvar contato" };

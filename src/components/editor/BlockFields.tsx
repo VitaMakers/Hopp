@@ -454,14 +454,31 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
             </a>
           ) : null}
           <TextField label="Texto do botão" value={block.buttonText} maxLength={40} onChange={(buttonText) => onChange({ ...block, buttonText })} />
-          <Toggle
-            label="Mostrar a agenda dentro da página (em vez de só um botão)"
-            checked={block.display === "inline"}
-            onChange={(on) => onChange({ ...block, display: on ? "inline" : "button" })}
-          />
-          <p className="-mt-1 text-xs text-stone-500">
-            Os horários marcados caem direto na sua agenda, sempre atualizados e sem cobrança. Na prévia aqui do editor o botão não
-            abre (clicar serve para editar) — teste pelo link acima ou na página publicada.
+          <div>
+            <p className="mb-1.5 text-sm font-medium text-stone-700">Como a agenda abre</p>
+            <div className="flex flex-col gap-2">
+              {[
+                { id: "reveal", label: "Botão que abre o calendário na própria página", hint: "A pessoa clica em “Agendar” e o calendário com datas e horários aparece ali mesmo." },
+                { id: "inline", label: "Mostrar o calendário sempre visível", hint: "O calendário já aparece aberto, sem precisar clicar." },
+                { id: "button", label: "Abrir a agenda em outra aba", hint: "Clica no botão e a agenda abre numa nova aba." },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => onChange({ ...block, display: opt.id as typeof block.display })}
+                  className={`rounded-xl p-3 text-left ring-1 transition ${block.display === opt.id ? "bg-blue-50 ring-blue-400" : "ring-stone-200 hover:ring-stone-300"}`}
+                >
+                  <span className="block text-sm font-medium text-stone-800">{opt.label}</span>
+                  <span className="block text-xs text-stone-500">{opt.hint}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <p className="text-xs text-stone-500">
+            Dica: para o calendário abrir <strong>dentro da página</strong> ao clicar, use um link do <strong>Calendly</strong> (o
+            Google às vezes não deixa embutir — nesse caso use “abrir em outra aba”). Os horários caem direto na sua agenda, sempre
+            atualizados e sem cobrança. Na prévia do editor o botão não abre (clicar serve para editar) — teste pelo link acima ou na
+            página publicada.
           </p>
         </div>
       );

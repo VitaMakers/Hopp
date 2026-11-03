@@ -163,9 +163,9 @@ export const scheduleBlockSchema = z.object({
   description: z.string().max(300).default(""),
   url: z.string().max(2000).default(""),
   buttonText: z.string().max(40).default("Agendar horário"),
-  // "button": a card with a button that opens the booking page. "inline": the
-  // provider's live calendar embedded right on the page.
-  display: z.enum(["button", "inline"]).default("button"),
+  // "reveal": a button that opens the calendar in place on click (default).
+  // "inline": the calendar is always embedded. "button": opens in a new tab.
+  display: z.enum(["reveal", "inline", "button"]).default("reveal"),
 });
 
 export const contactBlockSchema = z.object({

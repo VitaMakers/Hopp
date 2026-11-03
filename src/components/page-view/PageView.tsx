@@ -430,6 +430,39 @@ function Placeholder({ handle, className, children }: { handle?: string; classNa
 
 const softBox = "rounded-[var(--box-radius)] bg-[color-mix(in_srgb,var(--page-text)_7%,transparent)]";
 
+// Scheduling block in "reveal" mode: a button that, on click, opens the
+// calendar embed in place (the visitor picks a date and time without leaving
+// the page). In the editor preview the button is disabled, so clicking it
+// opens the block's editor instead.
+function ScheduleReveal({
+  buttonClassName,
+  buttonLabel,
+  embed,
+  onOpen,
+}: {
+  buttonClassName: string;
+  buttonLabel: React.ReactNode;
+  embed: React.ReactNode;
+  onOpen?: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  if (open) return <>{embed}</>;
+  return (
+    <div className="px-4 pb-4">
+      <button
+        type="button"
+        className={buttonClassName}
+        onClick={() => {
+          setOpen(true);
+          onOpen?.();
+        }}
+      >
+        {buttonLabel}
+      </button>
+    </div>
+  );
+}
+
 function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?: string }) {
   const btn = buttonClass(doc.theme);
   const click = (target: string) => track(handle, { kind: "block_click", blockId: block.id, target });
@@ -620,37 +653,38 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
           </div>
         </div>
       );
-      if (block.display === "inline" && href) {
-        return (
-          <section className={`${softBox} w-full overflow-hidden`}>
-            {header}
-            <iframe
-              src={href}
-              title={block.title || "Agendamento"}
-              className="h-[620px] w-full border-0 bg-white"
-              loading="lazy"
-            />
-            <a href={href} target="_blank" rel="noopener noreferrer" onClick={() => click(href)} className="block px-4 py-3 text-center text-sm font-medium underline opacity-80">
-              Não consegue ver a agenda? Abrir em nova aba
-            </a>
-          </section>
-        );
-      }
+      const embed = (
+        <>
+          <iframe src={href ?? ""} title={block.title || "Agendamento"} className="h-[620px] w-full border-0 bg-white" loading="lazy" />
+          <a href={href ?? "#"} target="_blank" rel="noopener noreferrer" onClick={() => href && click(href)} className="block px-4 py-3 text-center text-sm font-medium underline opacity-80">
+            Não consegue ver a agenda? Abrir em nova aba
+          </a>
+        </>
+      );
+      const buttonLabel = (
+        <span className="flex items-center justify-center gap-2">
+          {calIcon}
+          {block.buttonText || "Agendar horário"}
+        </span>
+      );
       return (
         <section className={`${softBox} w-full overflow-hidden`}>
           {header}
-          <div className="px-4 pb-4">
-            {href ? (
+          {!href ? (
+            <div className="px-4 pb-4">
+              <Placeholder handle={handle} className={btn}>{buttonLabel}</Placeholder>
+            </div>
+          ) : block.display === "inline" ? (
+            embed
+          ) : block.display === "reveal" ? (
+            <ScheduleReveal buttonClassName={btn} buttonLabel={buttonLabel} embed={embed} onOpen={() => click(href)} />
+          ) : (
+            <div className="px-4 pb-4">
               <a href={href} target="_blank" rel="noopener noreferrer" onClick={() => click(href)} className={btn}>
-                <span className="flex items-center justify-center gap-2">
-                  {calIcon}
-                  {block.buttonText || "Agendar horário"}
-                </span>
+                {buttonLabel}
               </a>
-            ) : (
-              <Placeholder handle={handle} className={btn}>{block.buttonText || "Agendar horário"}</Placeholder>
-            )}
-          </div>
+            </div>
+          )}
         </section>
       );
     }
