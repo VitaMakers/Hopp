@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { imageSrc } from "@/lib/page/links";
 import type { PageDoc, Theme } from "@/lib/page/schema";
 import { TextArea, TextField } from "./fields";
@@ -456,4 +457,99 @@ export function PremiumSectionBody({ id, doc, onChange }: { id: string; doc: Pag
       void design;
       return null;
   }
+}
+
+// One collapsible card for a premium section (used in the Aparência tab).
+function PremiumSectionCard({
+  id,
+  label,
+  summary,
+  open,
+  onToggleOpen,
+  doc,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  summary: string;
+  open: boolean;
+  onToggleOpen: () => void;
+  doc: PageDoc;
+  onChange: (doc: PageDoc) => void;
+}) {
+  return (
+    <div
+      id={`blk-${id}`}
+      className={`scroll-mt-24 rounded-xl bg-white ring-1 transition ${open ? "ring-2 ring-blue-500" : "ring-stone-200"}`}
+    >
+      <button type="button" onClick={onToggleOpen} className="flex w-full items-center gap-2 p-3 text-left">
+        <span className="min-w-0 flex-1">
+          <span className="block text-xs uppercase tracking-wide text-stone-400">Parte do modelo</span>
+          <span className="block truncate font-medium">{label}</span>
+          {summary ? <span className="block truncate text-xs text-stone-500">{summary}</span> : null}
+        </span>
+        <span className="text-stone-400">{open ? "▾" : "▸"}</span>
+      </button>
+      {open ? (
+        <div className="border-t border-stone-100 p-4">
+          <PremiumSectionBody id={id} doc={doc} onChange={onChange} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+// The whole "Partes do modelo" editor shown in the Aparência tab for a premium
+// model: every section as a card, plus an exit action. Opens/scrolls to the
+// card named by `focus` (set when an area is clicked in the preview).
+export function PremiumSectionsEditor({
+  doc,
+  onChange,
+  focus,
+}: {
+  doc: PageDoc;
+  onChange: (doc: PageDoc) => void;
+  focus?: { id: string; n: number } | null;
+}) {
+  const design = doc.theme.premium as Design;
+  const sections = getPremiumSections(design);
+  const [openId, setOpenId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!focus) return;
+    setOpenId(focus.id);
+    const timer = window.setTimeout(() => {
+      document.getElementById(`blk-${focus.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 60);
+    return () => window.clearTimeout(timer);
+  }, [focus]);
+
+  return (
+    <div className="flex flex-col gap-3">
+      {/* Scroll target used when a premium area is clicked in the preview. */}
+      <div id="blk-premium:__group" className="scroll-mt-24" />
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">Partes do modelo</p>
+        <button
+          type="button"
+          onClick={() => onChange({ ...doc, theme: { ...doc.theme, premium: "" } })}
+          className="text-xs text-stone-500 underline"
+        >
+          Sair do modelo
+        </button>
+      </div>
+      {sections.map((section) => (
+        <PremiumSectionCard
+          key={section.id}
+          id={section.id}
+          label={section.label}
+          summary={premiumSectionSummary(section.id, doc)}
+          open={openId === section.id}
+          onToggleOpen={() => setOpenId(openId === section.id ? null : section.id)}
+          doc={doc}
+          onChange={onChange}
+        />
+      ))}
+    </div>
+  );
 }

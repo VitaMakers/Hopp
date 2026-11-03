@@ -41,14 +41,16 @@ export function Editor({
 
   function handleEdit(target: string) {
     if (target === "profile") return setTab("profile");
-    // Legacy: "appearance" opens the theme tab on normal pages; on premium
-    // models everything lives in Blocos, so send it there.
-    if (target === "appearance") return setTab(doc.theme.premium ? "blocks" : "theme");
-    // A premium area ("premium" group, "premium:<section>") or a real block id
-    // all open the Blocos tab and focus the matching card.
+    // Premium model parts live in the Aparência (theme) tab: open it and focus
+    // the matching card.
+    if (target === "appearance" || target === "premium" || target.startsWith("premium:")) {
+      setTab("theme");
+      const id = target === "appearance" || target === "premium" ? "premium:__group" : target;
+      return setFocus((f) => ({ id, n: (f?.n ?? 0) + 1 }));
+    }
+    // A real block id opens the Blocos tab and focuses that block.
     setTab("blocks");
-    const id = target === "premium" ? "premium:__group" : target;
-    setFocus((f) => ({ id, n: (f?.n ?? 0) + 1 }));
+    setFocus((f) => ({ id: target, n: (f?.n ?? 0) + 1 }));
   }
   const [status, setStatus] = useState<Status>("saved");
   const [publishedAt, setPublishedAt] = useState(initialPublishedAt);
@@ -166,7 +168,7 @@ export function Editor({
         {tab === "templates" ? <TemplatesPanel doc={doc} onChange={setDoc} plan={plan} onGoToBlocks={() => setTab("blocks")} /> : null}
         {tab === "blocks" ? <BlocksPanel doc={doc} onChange={setDoc} focus={focus} /> : null}
         {tab === "profile" ? <ProfilePanel doc={doc} onChange={setDoc} plan={plan} /> : null}
-        {tab === "theme" ? <ThemePanel doc={doc} onChange={setDoc} /> : null}
+        {tab === "theme" ? <ThemePanel doc={doc} onChange={setDoc} focus={focus} /> : null}
         {tab === "seo" ? <SeoPanel doc={doc} onChange={setDoc} handle={handle} /> : null}
       </section>
 
