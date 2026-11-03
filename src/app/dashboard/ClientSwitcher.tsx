@@ -14,15 +14,14 @@ function initials(name: string) {
 export function ClientSwitcher({ clients, currentId }: { clients: Client[]; currentId: string }) {
   const [open, setOpen] = useState(false);
   const current = clients.find((c) => c.id === currentId) ?? clients[0];
-  // With a single client there is nothing to switch; keep the header clean.
-  if (clients.length <= 1) return null;
+  if (!current) return null;
 
   return (
     <div className="relative">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-sm font-medium hover:border-stone-400"
+        className="flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm font-medium shadow-sm hover:border-stone-400"
       >
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-stone-900 text-[10px] font-semibold text-white">
           {initials(current.display_name || current.handle)}
@@ -34,7 +33,7 @@ export function ClientSwitcher({ clients, currentId }: { clients: Client[]; curr
       {open ? (
         <>
           <button type="button" aria-label="Fechar" className="fixed inset-0 z-30 cursor-default" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-full z-40 mt-1 w-64 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg">
+          <div className="absolute left-1/2 top-full z-40 mt-1 w-64 -translate-x-1/2 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg">
             <p className="px-3 pt-3 text-[11px] font-semibold uppercase tracking-wide text-stone-400">Clientes</p>
             <div className="max-h-72 overflow-y-auto py-1">
               {clients.map((client) => {

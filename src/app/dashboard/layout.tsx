@@ -1,36 +1,36 @@
-import Link from "next/link";
-import { APP_NAME } from "@/lib/env";
 import { isAdmin } from "@/lib/admin";
-import { signOut } from "@/app/login/actions";
 import { getOwner } from "./context";
-import { DashboardNav } from "./DashboardNav";
 import { ClientSwitcher } from "./ClientSwitcher";
+import { Sidebar } from "./Sidebar";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, profile, clients } = await getOwner();
   const admin = isAdmin(user.email);
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900">
-      <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-          <Link href="/dashboard" className="font-bold">
-            {APP_NAME}
-          </Link>
-          <ClientSwitcher clients={clients} currentId={profile.id} />
-          <DashboardNav isAdmin={admin} />
-          <div className="ml-auto flex items-center gap-3 text-sm">
-            <a href={`/${profile.handle}`} target="_blank" rel="noreferrer" className="text-stone-600 underline">
-              /{profile.handle}
-            </a>
-            <form action={signOut}>
-              <button type="submit" className="text-stone-500 hover:text-stone-900">
-                Sair
-              </button>
-            </form>
+    <div className="flex min-h-screen bg-stone-50 text-stone-900">
+      <Sidebar isAdmin={admin} />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/90 backdrop-blur">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-2.5">
+            {/* left spacer (keeps room for the mobile hamburger) */}
+            <div className="h-9" />
+            {/* center: which client is being edited + create a new one */}
+            <ClientSwitcher clients={clients} currentId={profile.id} />
+            {/* right: open the public page */}
+            <div className="flex items-center justify-end">
+              <a
+                href={`/${profile.handle}`}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-stone-600 ring-1 ring-stone-200 hover:ring-stone-400"
+              >
+                /{profile.handle}
+              </a>
+            </div>
           </div>
-        </div>
-      </header>
-      <div className="mx-auto max-w-6xl px-4 py-6">{children}</div>
+        </header>
+        <main className="mx-auto w-full max-w-5xl px-4 py-6">{children}</main>
+      </div>
     </div>
   );
 }

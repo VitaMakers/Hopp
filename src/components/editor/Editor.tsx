@@ -12,13 +12,18 @@ import { SeoPanel } from "./SeoPanel";
 import { TemplatesPanel } from "./TemplatesPanel";
 import { ThemePanel } from "./ThemePanel";
 
-const TABS = [
-  { id: "templates", label: "Modelos" },
-  { id: "blocks", label: "Blocos" },
-  { id: "profile", label: "Perfil" },
-  { id: "theme", label: "Aparência" },
-  { id: "seo", label: "SEO" },
-] as const;
+// The active section is chosen in the left sidebar (src/app/dashboard/Sidebar.tsx).
+// They stay in sync through the URL hash and a "vita:section" window event, so
+// switching never reloads the page or drops unsaved edits.
+const TAB_IDS = ["templates", "blocks", "profile", "theme", "seo"] as const;
+type TabId = (typeof TAB_IDS)[number];
+const TAB_LABELS: Record<TabId, string> = {
+  templates: "Modelos",
+  blocks: "Blocos",
+  profile: "Perfil",
+  theme: "Aparência",
+  seo: "SEO",
+};
 
 type Status = "saved" | "dirty" | "saving" | "error";
 
@@ -34,22 +39,44 @@ export function Editor({
   publishedAt: string | null;
 }) {
   const [doc, setDoc] = useState(initialDoc);
-  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("blocks");
+  const [tab, setTab] = useState<TabId>("blocks");
   // When a block is clicked in the preview, jump to its editor (the nonce lets
   // the same block re-focus on a repeat click).
   const [focus, setFocus] = useState<{ id: string; n: number } | null>(null);
 
+  // Switch section and let the sidebar follow (via the hash + event).
+  function selectTab(id: TabId) {
+    setTab(id);
+    if (typeof window !== "undefined") {
+      history.replaceState(null, "", `#${id}`);
+      window.dispatchEvent(new CustomEvent("vita:section", { detail: id }));
+    }
+  }
+
+  // Follow the sidebar: open the section named in the hash, and whenever the
+  // sidebar fires "vita:section".
+  useEffect(() => {
+    const fromHash = window.location.hash.slice(1) as TabId;
+    if (TAB_IDS.includes(fromHash)) setTab(fromHash);
+    const onSection = (e: Event) => {
+      const id = (e as CustomEvent).detail as TabId;
+      if (TAB_IDS.includes(id)) setTab(id);
+    };
+    window.addEventListener("vita:section", onSection);
+    return () => window.removeEventListener("vita:section", onSection);
+  }, []);
+
   function handleEdit(target: string) {
-    if (target === "profile") return setTab("profile");
+    if (target === "profile") return selectTab("profile");
     // Premium model parts live in the Aparência (theme) tab: open it and focus
     // the matching card.
     if (target === "appearance" || target === "premium" || target.startsWith("premium:")) {
-      setTab("theme");
+      selectTab("theme");
       const id = target === "appearance" || target === "premium" ? "premium:__group" : target;
       return setFocus((f) => ({ id, n: (f?.n ?? 0) + 1 }));
     }
     // A real block id opens the Blocos tab and focuses that block.
-    setTab("blocks");
+    selectTab("blocks");
     setFocus((f) => ({ id: target, n: (f?.n ?? 0) + 1 }));
   }
   const [status, setStatus] = useState<Status>("saved");
@@ -115,18 +142,7 @@ export function Editor({
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
       <section className="min-w-0">
         <div className="mb-4 flex flex-wrap items-center gap-3">
-          <div className="flex rounded-lg bg-white p-1 ring-1 ring-stone-200">
-            {TABS.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setTab(item.id)}
-                className={`rounded-md px-3 py-1.5 text-sm ${tab === item.id ? "bg-stone-900 text-white" : "text-stone-600"}`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
+          <h1 className="text-xl font-bold">{TAB_LABELS[tab]}</h1>
           <span className="text-xs text-stone-500">{statusLabel[status]}</span>
           <div className="ml-auto flex items-center gap-3">
             {publishedAt ? (
@@ -165,7 +181,7 @@ export function Editor({
         </div>
         {message ? <p className="mb-3 text-sm text-stone-700">{message}</p> : null}
 
-        {tab === "templates" ? <TemplatesPanel doc={doc} onChange={setDoc} plan={plan} onGoToBlocks={() => setTab("blocks")} /> : null}
+        {tab === "templates" ? <TemplatesPanel doc={doc} onChange={setDoc} plan={plan} onGoToBlocks={() => selectTab("blocks")} /> : null}
         {tab === "blocks" ? <BlocksPanel doc={doc} onChange={setDoc} focus={focus} /> : null}
         {tab === "profile" ? <ProfilePanel doc={doc} onChange={setDoc} plan={plan} /> : null}
         {tab === "theme" ? <ThemePanel doc={doc} onChange={setDoc} focus={focus} /> : null}
