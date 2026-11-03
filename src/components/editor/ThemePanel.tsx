@@ -3,8 +3,9 @@
 import { THEME_PRESETS } from "@/lib/page/catalog";
 import type { PageDoc, Theme } from "@/lib/page/schema";
 import { Card, TextField, Toggle } from "./fields";
+import { PremiumSectionsEditor } from "./PremiumSections";
 
-type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void };
+type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void; focus?: { id: string; n: number } | null };
 
 const LAYOUT_LABELS: Record<Theme["layout"], string> = {
   classic: "Clássico",
@@ -90,17 +91,20 @@ const PREMIUM_NAMES: Record<Exclude<Theme["premium"], "">, string> = {
   casa: "Restaurante Elegante",
 };
 
-export function ThemePanel({ doc, onChange }: PanelProps) {
+export function ThemePanel({ doc, onChange, focus }: PanelProps) {
   const setTheme = (patch: Partial<Theme>) => onChange({ ...doc, theme: { ...doc.theme, ...patch } });
   if (doc.theme.premium) {
     const design = doc.theme.premium as Exclude<Theme["premium"], "">;
     return (
-      <Card title={`Modelo premium: ${PREMIUM_NAMES[design]}`}>
-        <p className="-mt-2 text-sm text-stone-600">
-          Este modelo é editado na aba <strong>Blocos</strong>: lá estão todas as partes do modelo (cores, capa, cartões, rodapé…)
-          e também os produtos e links. O nome, a bio e a foto ficam na aba <strong>Perfil</strong>.
-        </p>
-      </Card>
+      <div className="flex flex-col gap-4">
+        <Card title={`Modelo premium: ${PREMIUM_NAMES[design]}`}>
+          <p className="-mt-2 text-sm text-stone-600">
+            Edite aqui cada parte do modelo. Os produtos e links ficam na aba <strong>Blocos</strong>; o nome, a bio e a foto, na
+            aba <strong>Perfil</strong>.
+          </p>
+        </Card>
+        <PremiumSectionsEditor doc={doc} onChange={onChange} focus={focus} />
+      </div>
     );
   }
   return (
