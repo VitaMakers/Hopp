@@ -114,7 +114,7 @@ export function Editor({
       <section className="min-w-0">
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <div className="flex rounded-lg bg-white p-1 ring-1 ring-stone-200">
-            {TABS.filter((item) => item.id !== "theme" || !doc.theme.premium).map((item) => (
+            {TABS.map((item) => (
               <button
                 key={item.id}
                 type="button"
