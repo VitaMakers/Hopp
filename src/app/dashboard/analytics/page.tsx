@@ -309,7 +309,9 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
             Sem dados de localização ainda — vão aparecer conforme as novas visitas chegarem.
           </p>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2">
+          <>
+            <WorldMap countries={countries} />
+            <div className="grid gap-6 md:grid-cols-2">
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Países</p>
               <ul className="flex flex-col gap-2.5 text-sm">
@@ -347,7 +349,8 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
                 </ol>
               )}
             </div>
-          </div>
+            </div>
+          </>
         )}
       </section>
 
@@ -598,6 +601,71 @@ const COUNTRY_NAMES: Record<string, string> = {
 };
 function countryName(cc: string): string {
   return COUNTRY_NAMES[cc.toUpperCase()] ?? cc.toUpperCase();
+}
+
+// Rough continent blobs (equirectangular, in degrees) used to draw a dotted
+// world map. Each is [centerLon, centerLat, radiusLon, radiusLat]; a grid point
+// is "land" when it falls inside any blob.
+const CONTINENTS: [number, number, number, number][] = [
+  [-100, 45, 34, 20], // North America
+  [-95, 62, 32, 13], // Canada
+  [-85, 14, 11, 9], // Central America
+  [-42, 72, 12, 9], // Greenland
+  [-60, -15, 17, 30], // South America
+  [-66, 3, 13, 11], // northern South America
+  [15, 52, 27, 13], // Europe
+  [18, 2, 23, 33], // Africa
+  [95, 50, 52, 26], // Asia
+  [80, 22, 12, 14], // India
+  [112, 8, 17, 11], // Southeast Asia
+  [134, -25, 17, 11], // Australia
+];
+function isLand(lon: number, lat: number): boolean {
+  return CONTINENTS.some(([cx, cy, rx, ry]) => ((lon - cx) / rx) ** 2 + ((lat - cy) / ry) ** 2 <= 1);
+}
+
+// Approximate country centroids [lon, lat] for placing pins.
+const CENTROIDS: Record<string, [number, number]> = {
+  BR: [-52, -10], PT: [-8, 39.5], US: [-98, 39], AR: [-64, -38], CL: [-71, -35], CO: [-73, 4],
+  MX: [-102, 23], UY: [-56, -33], PY: [-58, -23], PE: [-76, -10], ES: [-4, 40], GB: [-2, 54],
+  FR: [2, 47], DE: [10, 51], IT: [12, 42], CA: [-106, 56], JP: [138, 36], AU: [134, -25],
+  AO: [17, -12], MZ: [35, -18],
+};
+
+// A dotted world map with a pin per country, sized by sessions.
+function WorldMap({ countries }: { countries: [string, number][] }) {
+  const max = Math.max(1, ...countries.map(([, n]) => n));
+  const lats: number[] = [];
+  for (let lat = 78; lat >= -56; lat -= 4) lats.push(lat);
+  const lons: number[] = [];
+  for (let lon = -170; lon <= 178; lon += 4) lons.push(lon);
+  const dots = lats.flatMap((lat) =>
+    lons
+      .filter((lon) => isLand(lon, lat))
+      .map((lon) => <circle key={`${lon},${lat}`} cx={lon + 180} cy={90 - lat} r={1.1} className="fill-stone-300" />),
+  );
+  const pins = countries
+    .filter(([cc]) => CENTROIDS[cc])
+    .map(([cc, count]) => {
+      const [lon, lat] = CENTROIDS[cc];
+      const r = 2.2 + (count / max) * 5;
+      return (
+        <g key={cc}>
+          <circle cx={lon + 180} cy={90 - lat} r={r + 2} fill="#2563eb" fillOpacity={0.15} />
+          <circle cx={lon + 180} cy={90 - lat} r={r} fill="#2563eb" stroke="#fff" strokeWidth={0.8}>
+            <title>{`${countryName(cc)}: ${count.toLocaleString("pt-BR")} ${count === 1 ? "sessão" : "sessões"}`}</title>
+          </circle>
+        </g>
+      );
+    });
+  return (
+    <div className="mb-5 overflow-hidden rounded-xl bg-stone-50 ring-1 ring-stone-100">
+      <svg viewBox="8 14 344 150" className="h-56 w-full" role="img" aria-label="Mapa de sessões por país">
+        {dots}
+        {pins}
+      </svg>
+    </div>
+  );
 }
 
 function Ranking({ title, rows }: { title: string; rows: [string, number][] }) {
