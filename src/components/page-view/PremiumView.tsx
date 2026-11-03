@@ -16,9 +16,10 @@ import { VerifiedCheck } from "./VerifiedCheck";
 
 type Props = { doc: PageDoc; handle?: string; plan?: string; onEdit?: (target: string) => void };
 
-// In the editor, premium block links open the block; everything else (hero,
-// promo, etc.) opens the Aparência tab. Threaded via context to avoid passing
-// onEdit through every renderer.
+// In the editor, premium block links open the block; a tagged area (hero,
+// promo, etc.) opens its card in the Blocos tab, and anything else opens the
+// model's parts there. Threaded via context to avoid passing onEdit through
+// every renderer.
 const PremiumEditContext = createContext<((target: string) => void) | null>(null);
 
 // The footer credit. Profissional keeps its own brand; every other plan
@@ -114,7 +115,10 @@ export function PremiumView({ doc, handle, plan, onEdit }: Props) {
           className="vita-page min-h-full cursor-pointer [&_button]:pointer-events-none"
           onClick={(e) => {
             e.preventDefault();
-            onEdit("appearance");
+            // Open the nearest tagged section ("premium:<section>"); otherwise
+            // just jump to the model's parts in the Blocos tab.
+            const el = (e.target as HTMLElement).closest<HTMLElement>("[data-edit]");
+            onEdit(el?.dataset.edit || "premium");
           }}
         >
           {page}
@@ -659,7 +663,7 @@ function Store({ doc, handle, plan }: Props) {
           </section>
         ) : null}
         {whatsapp && (premium.sizes.length > 0 || premium.sizeTitle) ? <StoreSize premium={premium} whatsapp={whatsapp} handle={handle} /> : null}
-        <footer className="store-footer">
+        <footer className="store-footer" data-edit="premium:nav">
           <span className="store-footer-brand">{brand}</span>
           {premium.navLinks.length ? (
             <nav className="store-nav">
@@ -704,7 +708,7 @@ function StoreHero({
   if (!count) return null;
   const active = Math.min(index, count - 1);
   return (
-    <section className="store-hero">
+    <section className="store-hero" data-edit="premium:hero">
       <div className="store-hero-track" style={{ transform: `translateX(-${active * 100}%)` }}>
         {slides.map((slide, slideIndex) => (
           <StoreSlide key={slideIndex} slide={slide} brand={brand} verified={verified} pill={pill} pillUrl={pillUrl} handle={handle} />
@@ -810,7 +814,7 @@ function StorePromo({ premium, brand, handle }: { premium: PremiumFields; brand:
     }
   };
   return (
-    <section className="store-promo">
+    <section className="store-promo" data-edit="premium:promo">
       <div className="store-promo-top">
         <div>
           {premium.promoBadge ? <span className="store-promo-badge">{premium.promoBadge}</span> : null}
@@ -900,7 +904,7 @@ function StoreFeature({ premium, handle }: { premium: PremiumFields; handle?: st
   const href = linkHref(premium.featureUrl);
   const go = () => href && track(handle, { kind: "block_click", blockId: "feature", target: href });
   return (
-    <a className="store-feature" href={href ?? "#"} target="_blank" rel="noopener noreferrer" onClick={go}>
+    <a className="store-feature" data-edit="premium:feature" href={href ?? "#"} target="_blank" rel="noopener noreferrer" onClick={go}>
       {image ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={image} alt={premium.featureTitle} className="store-feature-img" loading="lazy" />
@@ -965,7 +969,7 @@ function StoreProduct({ block, handle }: { block: ProductBlock; handle?: string 
 function StoreSize({ premium, whatsapp, handle }: { premium: PremiumFields; whatsapp: string; handle?: string }) {
   const image = imageSrc(premium.sizeImageUrl);
   return (
-    <section className="store-size">
+    <section className="store-size" data-edit="premium:size">
       {image ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={image} alt="" className="store-size-img" loading="lazy" />
