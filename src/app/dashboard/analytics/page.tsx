@@ -75,6 +75,30 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
     return `${Math.floor(sec / 60)}min ${sec % 60}s`;
   };
 
+  // Visitor location — a separate, error-tolerant query so missing country/city
+  // columns (migration 0011 not run) never break the dashboard.
+  const { data: geoData } = await supabase
+    .from("events")
+    .select("country, city")
+    .eq("owner_id", profile.id)
+    .eq("kind", "page_view")
+    .gte("created_at", windowStart.toISOString())
+    .not("country", "is", null)
+    .limit(5000);
+  const geoRows = (geoData ?? []) as { country: string | null; city: string | null }[];
+  const byCountry = new Map<string, number>();
+  const byCity = new Map<string, number>();
+  for (const r of geoRows) {
+    if (r.country) byCountry.set(r.country, (byCountry.get(r.country) ?? 0) + 1);
+    if (r.city) {
+      const key = r.country ? `${r.city}|${r.country}` : r.city;
+      byCity.set(key, (byCity.get(key) ?? 0) + 1);
+    }
+  }
+  const countries = [...byCountry].sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const maxCountry = Math.max(1, ...countries.map(([, n]) => n));
+  const cities = [...byCity].sort((a, b) => b[1] - a[1]).slice(0, 6);
+
   const doc = pageDocSchema.safeParse(page?.draft);
   const blockNames = new Map<string, string>();
   const blockTypes = new Map<string, BlockType>();
@@ -277,6 +301,55 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           )}
         </section>
       </div>
+
+      <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
+        <h2 className="mb-3 font-semibold">Sessões por local</h2>
+        {countries.length === 0 ? (
+          <p className="py-6 text-center text-sm text-stone-500">
+            Sem dados de localização ainda — vão aparecer conforme as novas visitas chegarem.
+          </p>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2">
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Países</p>
+              <ul className="flex flex-col gap-2.5 text-sm">
+                {countries.map(([cc, count]) => (
+                  <li key={cc} className="flex items-center gap-3">
+                    <span className="w-32 shrink-0 truncate">
+                      {flagEmoji(cc)} {countryName(cc)}
+                    </span>
+                    <span className="h-2 flex-1 overflow-hidden rounded-full bg-stone-100">
+                      <span className="block h-full rounded-full bg-[#2563eb]" style={{ width: `${(count / maxCountry) * 100}%` }} />
+                    </span>
+                    <span className="w-10 text-right tabular-nums text-stone-500">{count.toLocaleString("pt-BR")}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Cidades</p>
+              {cities.length === 0 ? (
+                <p className="text-sm text-stone-500">Sem cidade identificada.</p>
+              ) : (
+                <ol className="flex flex-col gap-2 text-sm">
+                  {cities.map(([key, count]) => {
+                    const [city, cc] = key.split("|");
+                    return (
+                      <li key={key} className="flex justify-between gap-3">
+                        <span className="truncate">
+                          {cc ? `${flagEmoji(cc)} ` : ""}
+                          {city}
+                        </span>
+                        <span className="tabular-nums text-stone-600">{count.toLocaleString("pt-BR")}</span>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
+            </div>
+          </div>
+        )}
+      </section>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Ranking
@@ -492,6 +565,39 @@ function FreeAnalytics({ visits }: { visits: number }) {
       </div>
     </div>
   );
+}
+
+// ISO-3166 alpha-2 → emoji flag (regional indicator letters).
+function flagEmoji(cc: string): string {
+  if (!/^[A-Za-z]{2}$/.test(cc)) return "🌐";
+  const base = 0x1f1e6;
+  return String.fromCodePoint(...[...cc.toUpperCase()].map((c) => base + c.charCodeAt(0) - 65));
+}
+
+const COUNTRY_NAMES: Record<string, string> = {
+  BR: "Brasil",
+  PT: "Portugal",
+  US: "Estados Unidos",
+  AR: "Argentina",
+  CL: "Chile",
+  CO: "Colômbia",
+  MX: "México",
+  UY: "Uruguai",
+  PY: "Paraguai",
+  PE: "Peru",
+  ES: "Espanha",
+  GB: "Reino Unido",
+  FR: "França",
+  DE: "Alemanha",
+  IT: "Itália",
+  CA: "Canadá",
+  JP: "Japão",
+  AU: "Austrália",
+  AO: "Angola",
+  MZ: "Moçambique",
+};
+function countryName(cc: string): string {
+  return COUNTRY_NAMES[cc.toUpperCase()] ?? cc.toUpperCase();
 }
 
 function Ranking({ title, rows }: { title: string; rows: [string, number][] }) {

@@ -35,7 +35,30 @@ export async function POST(request: Request) {
     visit_id: visitId ?? null,
   };
   if (kind === "session" && duration != null) row.duration_ms = duration * 1000;
-  const { error } = await createAdminClient().from("events").insert(row);
+
+  // Visitor location, from the edge/CDN geo headers (Vercel). Only on a page
+  // view, so we count one location per visit.
+  const geo: Record<string, unknown> = {};
+  if (kind === "page_view") {
+    const country = request.headers.get("x-vercel-ip-country");
+    const cityRaw = request.headers.get("x-vercel-ip-city");
+    if (country) geo.country = country.slice(0, 2).toUpperCase();
+    if (cityRaw) {
+      try {
+        geo.city = decodeURIComponent(cityRaw).slice(0, 120);
+      } catch {
+        geo.city = cityRaw.slice(0, 120);
+      }
+    }
+  }
+
+  const admin = createAdminClient();
+  let { error } = await admin.from("events").insert({ ...row, ...geo });
+  // The country/city columns may not exist yet (migration 0011 not run) — if so,
+  // retry without them so tracking never breaks.
+  if (error && (geo.country || geo.city)) {
+    ({ error } = await admin.from("events").insert(row));
+  }
   if (error) console.error("track insert failed", error.message);
   return NextResponse.json({ ok: !error });
 }
