@@ -72,7 +72,7 @@ export default function Home() {
             <Link href="/login" className="rounded-lg px-3 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-100">
               Entrar
             </Link>
-            <Link href="/login" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">
+            <Link href="/login?criar" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">
               Criar grátis
             </Link>
           </div>
@@ -93,7 +93,7 @@ export default function Home() {
             Monte em minutos uma página com tudo o que você faz e acompanhe quem clica em quê.
           </p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row md:justify-start">
-            <Link href="/login" className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-base font-semibold text-white transition hover:bg-blue-700 sm:w-auto">
+            <Link href="/login?criar" className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-base font-semibold text-white transition hover:bg-blue-700 sm:w-auto">
               Criar minha página grátis <span aria-hidden>→</span>
             </Link>
             <a href="#planos" className="inline-flex w-full items-center justify-center rounded-xl border border-stone-200 px-6 py-3.5 text-base font-semibold text-stone-700 transition hover:bg-stone-50 sm:w-auto">
@@ -220,7 +220,7 @@ export default function Home() {
                   <li key={f} className="flex items-start gap-2"><span className="text-blue-500">✓</span> {f}</li>
                 ))}
               </ul>
-              <Link href="/login" className={`mt-6 rounded-lg py-2.5 text-center text-sm font-semibold ${p.highlight ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-stone-100 text-stone-800 hover:bg-stone-200"}`}>
+              <Link href={p.price === "R$ 0" ? "/login?criar" : "/login"} className={`mt-6 rounded-lg py-2.5 text-center text-sm font-semibold ${p.highlight ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-stone-100 text-stone-800 hover:bg-stone-200"}`}>
                 {p.price === "R$ 0" ? "Criar grátis" : "Assinar"}
               </Link>
             </div>
@@ -233,7 +233,7 @@ export default function Home() {
         <div className="mx-auto max-w-5xl rounded-3xl bg-stone-900 px-6 py-14 text-center text-white">
           <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Sua página no ar hoje.</h2>
           <p className="mx-auto mt-3 max-w-md text-stone-300">Leva minutos. Escolha um modelo, personalize e compartilhe.</p>
-          <Link href="/login" className="mt-7 inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-7 py-3.5 text-base font-semibold text-white transition hover:bg-blue-700">
+          <Link href="/login?criar" className="mt-7 inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-7 py-3.5 text-base font-semibold text-white transition hover:bg-blue-700">
             Criar minha página grátis <span aria-hidden>→</span>
           </Link>
         </div>
