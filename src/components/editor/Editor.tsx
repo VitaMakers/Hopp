@@ -35,6 +35,16 @@ export function Editor({
 }) {
   const [doc, setDoc] = useState(initialDoc);
   const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("blocks");
+  // When a block is clicked in the preview, jump to its editor (the nonce lets
+  // the same block re-focus on a repeat click).
+  const [focus, setFocus] = useState<{ id: string; n: number } | null>(null);
+
+  function handleEdit(target: string) {
+    if (target === "appearance") return setTab("theme");
+    if (target === "profile") return setTab("profile");
+    setTab("blocks");
+    setFocus((f) => ({ id: target, n: (f?.n ?? 0) + 1 }));
+  }
   const [status, setStatus] = useState<Status>("saved");
   const [publishedAt, setPublishedAt] = useState(initialPublishedAt);
   const [message, setMessage] = useState<string | null>(null);
@@ -149,7 +159,7 @@ export function Editor({
         {message ? <p className="mb-3 text-sm text-stone-700">{message}</p> : null}
 
         {tab === "templates" ? <TemplatesPanel doc={doc} onChange={setDoc} plan={plan} onGoToBlocks={() => setTab("blocks")} /> : null}
-        {tab === "blocks" ? <BlocksPanel doc={doc} onChange={setDoc} /> : null}
+        {tab === "blocks" ? <BlocksPanel doc={doc} onChange={setDoc} focus={focus} /> : null}
         {tab === "profile" ? <ProfilePanel doc={doc} onChange={setDoc} plan={plan} /> : null}
         {tab === "theme" ? <ThemePanel doc={doc} onChange={setDoc} /> : null}
         {tab === "seo" ? <SeoPanel doc={doc} onChange={setDoc} handle={handle} /> : null}
@@ -161,6 +171,7 @@ export function Editor({
           <PageView
             doc={doc}
             plan={plan}
+            onEdit={handleEdit}
             footer={
               showsBadge(plan) ? (
                 <div className="mt-12 flex flex-col items-center gap-0.5 text-center opacity-70">

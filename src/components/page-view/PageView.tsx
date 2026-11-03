@@ -16,6 +16,9 @@ type Props = {
   // Set on the published page; omitted in the editor preview, which then
   // neither records analytics nor submits forms.
   handle?: string;
+  // In the editor, clicking a block opens its editor. The target is a block
+  // id, or "appearance"/"profile" for premium field areas.
+  onEdit?: (target: string) => void;
   // The owner's plan, so the footer credit can follow it (Profissional keeps
   // its own name; other plans show the Virtú.bio brand).
   plan?: string;
@@ -25,7 +28,27 @@ type Props = {
   still?: boolean;
 };
 
-export function PageView({ doc, handle, plan, footer, still }: Props) {
+// Makes a preview block clickable in the editor: inner links/buttons are
+// disabled and the whole block, on click, opens its editor.
+function EditWrap({ onEdit, target, children }: { onEdit?: (t: string) => void; target: string; children: React.ReactNode }) {
+  if (!onEdit) return <>{children}</>;
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onEdit(target);
+      }}
+      className="w-full cursor-pointer rounded-xl ring-2 ring-transparent transition hover:ring-blue-500/50 [&_a]:pointer-events-none [&_button]:pointer-events-none [&_input]:pointer-events-none"
+    >
+      {children}
+    </div>
+  );
+}
+
+export function PageView({ doc, handle, plan, footer, still, onEdit }: Props) {
   const { theme } = doc;
   const blocks = doc.blocks.filter((block) => block.enabled);
 
@@ -48,7 +71,7 @@ export function PageView({ doc, handle, plan, footer, still }: Props) {
     };
   }, [handle]);
 
-  if (theme.premium) return <PremiumView doc={doc} handle={handle} plan={plan} />;
+  if (theme.premium) return <PremiumView doc={doc} handle={handle} plan={plan} onEdit={onEdit} />;
 
   const content = (
     <>
@@ -56,7 +79,9 @@ export function PageView({ doc, handle, plan, footer, still }: Props) {
       {theme.layout === "band" ? null : <Socials doc={doc} handle={handle} />}
       <div className="mt-7 flex w-full flex-col gap-3.5">
         {blocks.map((block) => (
-          <BlockView key={block.id} block={block} doc={doc} handle={handle} />
+          <EditWrap key={block.id} onEdit={onEdit} target={block.id}>
+            <BlockView block={block} doc={doc} handle={handle} />
+          </EditWrap>
         ))}
       </div>
       {footer}
