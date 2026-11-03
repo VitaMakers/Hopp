@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LiveVisitors } from "./LiveVisitors";
 import { pctChange, referrerName, summarize, type EventRow, type Summary } from "@/lib/analytics";
 import { hasFullAnalytics } from "@/lib/entitlements";
 import { BLOCK_CATALOG, SOCIAL_LABELS, blockSummary } from "@/lib/page/catalog";
@@ -44,6 +45,12 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   const previous = events.filter((e) => e.created_at < windowStart.toISOString());
   const summary = summarize(current, days, now);
   const prev = summarize(previous, days, windowStart);
+
+  // Visitors active in the last 5 minutes (seeds the live banner).
+  const fiveMinAgo = new Date(now.getTime() - 5 * 60_000).toISOString();
+  const initialLive = new Set(
+    events.filter((e) => e.kind === "page_view" && e.created_at >= fiveMinAgo).map((e) => e.visit_id).filter(Boolean),
+  ).size;
 
   // Average time on page — a separate, error-tolerant query so a missing
   // duration_ms column (migration 0010 not run) never breaks the dashboard.
@@ -139,10 +146,12 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
         </div>
       </div>
 
+      <LiveVisitors initial={initialLive} />
+
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <Kpi label="Visitas" value={summary.views} delta={pctChange(summary.views, prev.views)} />
+        <Kpi label="Visitas" value={summary.views} delta={pctChange(summary.views, prev.views)} spark={summary.daily.map((d) => d.views)} sparkColor="#2563eb" />
         <Kpi label="Visitantes" value={summary.visitors} delta={pctChange(summary.visitors, prev.visitors)} hint="Pessoas diferentes" />
-        <Kpi label="Toques em botões" value={summary.clicks} delta={pctChange(summary.clicks, prev.clicks)} />
+        <Kpi label="Toques em botões" value={summary.clicks} delta={pctChange(summary.clicks, prev.clicks)} spark={summary.daily.map((d) => d.clicks)} sparkColor="#111827" />
         <Kpi
           label="Visitas com toque"
           value={`${(summary.clickRate * 100).toFixed(1).replace(".", ",")}%`}
@@ -280,7 +289,21 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   );
 }
 
-function Kpi({ label, value, delta, hint }: { label: string; value: number | string; delta: number | null; hint?: string }) {
+function Kpi({
+  label,
+  value,
+  delta,
+  hint,
+  spark,
+  sparkColor = "#2563eb",
+}: {
+  label: string;
+  value: number | string;
+  delta: number | null;
+  hint?: string;
+  spark?: number[];
+  sparkColor?: string;
+}) {
   return (
     <div className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
       <p className="text-sm text-stone-500">{label}</p>
@@ -288,8 +311,36 @@ function Kpi({ label, value, delta, hint }: { label: string; value: number | str
         <p className="text-3xl font-bold tabular-nums">{typeof value === "number" ? value.toLocaleString("pt-BR") : value}</p>
         <Delta value={delta} />
       </div>
-      {hint ? <p className="mt-1 text-xs text-stone-400">{hint}</p> : null}
+      {spark && spark.some((v) => v > 0) ? (
+        <div className="mt-2">
+          <Spark data={spark} color={sparkColor} />
+        </div>
+      ) : hint ? (
+        <p className="mt-1 text-xs text-stone-400">{hint}</p>
+      ) : null}
     </div>
+  );
+}
+
+function Spark({ data, color }: { data: number[]; color: string }) {
+  const n = data.length;
+  const max = Math.max(1, ...data);
+  const x = (i: number) => (n <= 1 ? 50 : (i / (n - 1)) * 100);
+  const y = (v: number) => 28 - (v / max) * 24 - 2;
+  const line = data.map((v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(" ");
+  const area = `${line} L 100 28 L 0 28 Z`;
+  const id = `spark-${color.replace("#", "")}`;
+  return (
+    <svg viewBox="0 0 100 28" className="h-7 w-full" preserveAspectRatio="none" aria-hidden>
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={color} stopOpacity="0.2" />
+          <stop offset="1" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={area} fill={`url(#${id})`} />
+      <path d={line} fill="none" stroke={color} strokeWidth="1.5" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+    </svg>
   );
 }
 
@@ -306,41 +357,55 @@ function Delta({ value }: { value: number | null }) {
 }
 
 function DailyChart({ summary }: { summary: Summary }) {
-  const max = Math.max(1, ...summary.daily.map((d) => Math.max(d.views, d.clicks)));
-  const n = summary.daily.length;
+  const daily = summary.daily;
+  const n = daily.length;
+  const max = Math.max(1, ...daily.map((d) => Math.max(d.views, d.clicks)));
+  const W = 600;
+  const H = 180;
+  const padX = 4;
+  const padTop = 10;
+  const x = (i: number) => (n <= 1 ? W / 2 : (i / (n - 1)) * (W - padX * 2) + padX);
+  const y = (v: number) => H - (v / max) * (H - padTop) - 2;
+  const buildLine = (sel: (d: (typeof daily)[number]) => number) =>
+    daily.map((d, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)} ${y(sel(d)).toFixed(1)}`).join(" ");
+  const viewsLine = buildLine((d) => d.views);
+  const viewsArea = `${viewsLine} L ${x(n - 1).toFixed(1)} ${H} L ${x(0).toFixed(1)} ${H} Z`;
+  const clicksLine = buildLine((d) => d.clicks);
   const step = n > 30 ? 10 : n > 10 ? 5 : 2;
+  const labels = daily.filter((_, i) => i % step === 0);
   return (
     <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="font-semibold">Visitas e cliques por dia</h2>
         <div className="flex gap-4 text-xs text-stone-500">
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-sm bg-stone-300" /> Visitas
+            <span className="h-0.5 w-3 rounded-full bg-[#2563eb]" /> Visitas
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-sm bg-stone-800" /> Cliques
+            <span className="h-0.5 w-3 rounded-full bg-stone-800" /> Cliques
           </span>
         </div>
       </div>
-      <div className="flex h-44 items-end gap-[3px]" role="img" aria-label="Gráfico de visitas e cliques por dia">
-        {summary.daily.map((day) => (
-          <div
-            key={day.day}
-            title={`${day.day.split("-").reverse().join("/")}: ${day.views} visitas, ${day.clicks} cliques`}
-            className="relative flex flex-1 items-end justify-center"
-            style={{ height: "100%" }}
-          >
-            <div className="w-full rounded-t bg-stone-200" style={{ height: `${Math.max(2, (day.views / max) * 100)}%` }} />
-            <div className="absolute bottom-0 w-1/2 rounded-t bg-stone-800" style={{ height: `${Math.max(day.clicks ? 2 : 0, (day.clicks / max) * 100)}%` }} />
-          </div>
-        ))}
+      <div className="relative">
+        <span className="absolute left-0 top-0 text-[10px] text-stone-400">{max.toLocaleString("pt-BR")}</span>
+        <svg viewBox={`0 0 ${W} ${H}`} className="h-48 w-full" preserveAspectRatio="none" role="img" aria-label="Gráfico de visitas e cliques por dia">
+          <defs>
+            <linearGradient id="viewsFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#2563eb" stopOpacity="0.22" />
+              <stop offset="1" stopColor="#2563eb" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d={viewsArea} fill="url(#viewsFill)" />
+          <path d={viewsLine} fill="none" stroke="#2563eb" strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round" />
+          <path d={clicksLine} fill="none" stroke="#111827" strokeWidth="1.5" strokeDasharray="4 3" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+        </svg>
       </div>
       <div className="mt-2 flex justify-between text-[10px] text-stone-400">
-        {summary.daily
-          .filter((_, i) => i % step === 0)
-          .map((d) => (
-            <span key={d.day}>{d.day.slice(8, 10)}/{d.day.slice(5, 7)}</span>
-          ))}
+        {labels.map((d) => (
+          <span key={d.day}>
+            {d.day.slice(8, 10)}/{d.day.slice(5, 7)}
+          </span>
+        ))}
       </div>
     </section>
   );
