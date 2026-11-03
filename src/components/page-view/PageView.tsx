@@ -601,6 +601,59 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
         </a>
       );
     }
+    case "schedule": {
+      const href = linkHref(block.url);
+      const calIcon = (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden>
+          <rect x="3" y="4" width="18" height="18" rx="2" />
+          <path d="M3 10h18M8 2v4M16 2v4" />
+        </svg>
+      );
+      const header = (
+        <div className="flex items-start gap-3 p-4">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white" style={{ background: "var(--page-accent)" }}>
+            {calIcon}
+          </span>
+          <div className="min-w-0">
+            <h2 className="font-semibold">{block.title || "Agende um horário"}</h2>
+            {block.description ? <p className="mt-0.5 text-[15px] opacity-80">{block.description}</p> : null}
+          </div>
+        </div>
+      );
+      if (block.display === "inline" && href) {
+        return (
+          <section className={`${softBox} w-full overflow-hidden`}>
+            {header}
+            <iframe
+              src={href}
+              title={block.title || "Agendamento"}
+              className="h-[620px] w-full border-0 bg-white"
+              loading="lazy"
+            />
+            <a href={href} target="_blank" rel="noopener noreferrer" onClick={() => click(href)} className="block px-4 py-3 text-center text-sm font-medium underline opacity-80">
+              Não consegue ver a agenda? Abrir em nova aba
+            </a>
+          </section>
+        );
+      }
+      return (
+        <section className={`${softBox} w-full overflow-hidden`}>
+          {header}
+          <div className="px-4 pb-4">
+            {href ? (
+              <a href={href} target="_blank" rel="noopener noreferrer" onClick={() => click(href)} className={btn}>
+                <span className="flex items-center justify-center gap-2">
+                  {calIcon}
+                  {block.buttonText || "Agendar horário"}
+                </span>
+              </a>
+            ) : (
+              <Placeholder handle={handle} className={btn}>{block.buttonText || "Agendar horário"}</Placeholder>
+            )}
+          </div>
+        </section>
+      );
+    }
     case "image": {
       const src = imageSrc(block.imageUrl);
       if (!src) return <Placeholder handle={handle} className={`${softBox} block w-full py-10 text-center`}>Imagem sem endereço</Placeholder>;

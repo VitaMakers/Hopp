@@ -414,6 +414,32 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
           <TextField label="Endereço" value={block.address} maxLength={300} placeholder="Av. Paulista, 1000 - São Paulo" onChange={(address) => onChange({ ...block, address })} />
         </div>
       );
+    case "schedule":
+      return (
+        <div className="flex flex-col gap-3">
+          <TextField label="Título" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
+          <TextArea label="Descrição (opcional)" value={block.description} maxLength={300} onChange={(description) => onChange({ ...block, description })} />
+          <TextField
+            label="Link da agenda (Google Agenda ou Calendly)"
+            type="url"
+            value={block.url}
+            maxLength={2000}
+            placeholder="https://calendar.app.google/..."
+            onChange={(url) => onChange({ ...block, url })}
+          />
+          <TextField label="Texto do botão" value={block.buttonText} maxLength={40} onChange={(buttonText) => onChange({ ...block, buttonText })} />
+          <Toggle
+            label="Mostrar a agenda dentro da página (em vez de só um botão)"
+            checked={block.display === "inline"}
+            onChange={(on) => onChange({ ...block, display: on ? "inline" : "button" })}
+          />
+          <p className="-mt-1 text-xs text-stone-500">
+            No Google Agenda, crie uma página de <strong>Agendamentos</strong> (os horários que você atende), copie o link e cole
+            aqui — funciona também com Calendly ou Cal.com. Os horários marcados caem direto na sua agenda, sempre atualizados e sem
+            cobrança.
+          </p>
+        </div>
+      );
     case "contact":
       return (
         <div className="flex flex-col gap-3">
