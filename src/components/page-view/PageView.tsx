@@ -54,7 +54,14 @@ export function PageView({ doc, handle, plan, footer, still, onEdit }: Props) {
 
   useEffect(() => {
     startVisit();
-    track(handle, { kind: "page_view", referrer: document.referrer });
+    const utm = new URLSearchParams(window.location.search);
+    track(handle, {
+      kind: "page_view",
+      referrer: document.referrer,
+      utmSource: utm.get("utm_source") ?? "",
+      utmMedium: utm.get("utm_medium") ?? "",
+      utmCampaign: utm.get("utm_campaign") ?? "",
+    });
     const start = Date.now();
     let sent = false;
     const send = () => {

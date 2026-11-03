@@ -99,6 +99,36 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   const maxCountry = Math.max(1, ...countries.map(([, n]) => n));
   const cities = [...byCity].sort((a, b) => b[1] - a[1]).slice(0, 6);
 
+  // Device and campaign — error-tolerant (missing columns before migration 0012).
+  const { data: uaData } = await supabase
+    .from("events")
+    .select("device, browser, utm_source, utm_campaign")
+    .eq("owner_id", profile.id)
+    .eq("kind", "page_view")
+    .gte("created_at", windowStart.toISOString())
+    .limit(5000);
+  const uaRows = (uaData ?? []) as {
+    device: string | null;
+    browser: string | null;
+    utm_source: string | null;
+    utm_campaign: string | null;
+  }[];
+  const byDevice = new Map<string, number>();
+  const byBrowser = new Map<string, number>();
+  const byUtmSource = new Map<string, number>();
+  const byCampaign = new Map<string, number>();
+  for (const r of uaRows) {
+    if (r.device) byDevice.set(r.device, (byDevice.get(r.device) ?? 0) + 1);
+    if (r.browser) byBrowser.set(r.browser, (byBrowser.get(r.browser) ?? 0) + 1);
+    if (r.utm_source) byUtmSource.set(r.utm_source, (byUtmSource.get(r.utm_source) ?? 0) + 1);
+    if (r.utm_campaign) byCampaign.set(r.utm_campaign, (byCampaign.get(r.utm_campaign) ?? 0) + 1);
+  }
+  const devices = [...byDevice].sort((a, b) => b[1] - a[1]);
+  const maxDevice = Math.max(1, ...devices.map(([, n]) => n));
+  const browsers = [...byBrowser].sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const campaignSources = [...byUtmSource].sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const campaigns = [...byCampaign].sort((a, b) => b[1] - a[1]).slice(0, 6);
+
   // Clicks per link over the last 30 days, to show distinct people this week
   // and this month regardless of the selected window.
   const monthAgoIso = new Date(now.getTime() - 30 * 86_400_000).toISOString();
@@ -431,6 +461,83 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           </>
         )}
       </section>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
+          <h2 className="mb-3 font-semibold">Dispositivos</h2>
+          {devices.length === 0 ? (
+            <p className="py-6 text-center text-sm text-stone-500">Sem dados de dispositivo ainda.</p>
+          ) : (
+            <>
+              <ul className="flex flex-col gap-2.5 text-sm">
+                {devices.map(([name, count]) => (
+                  <li key={name} className="flex items-center gap-3">
+                    <span className="w-24 shrink-0">{name}</span>
+                    <span className="h-2 flex-1 overflow-hidden rounded-full bg-stone-100">
+                      <span className="block h-full rounded-full bg-[#2563eb]" style={{ width: `${(count / maxDevice) * 100}%` }} />
+                    </span>
+                    <span className="w-10 text-right tabular-nums text-stone-500">{count.toLocaleString("pt-BR")}</span>
+                  </li>
+                ))}
+              </ul>
+              {browsers.length ? (
+                <div className="mt-4 border-t border-stone-100 pt-3">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Navegadores</p>
+                  <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-stone-600">
+                    {browsers.map(([name, count]) => (
+                      <li key={name} className="tabular-nums">
+                        {name} <span className="text-stone-400">{count.toLocaleString("pt-BR")}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </>
+          )}
+        </section>
+
+        <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
+          <h2 className="mb-3 font-semibold">Campanhas</h2>
+          {campaignSources.length === 0 && campaigns.length === 0 ? (
+            <div className="py-4 text-sm text-stone-500">
+              <p>Nenhuma campanha ainda.</p>
+              <p className="mt-2">
+                Adicione <code className="rounded bg-stone-100 px-1">?utm_source=instagram&amp;utm_campaign=promo</code> no fim do seu
+                link ao divulgar — assim dá para medir de qual post/anúncio veio cada visita.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {campaignSources.length ? (
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Origem (utm_source)</p>
+                  <ul className="flex flex-col gap-1.5 text-sm">
+                    {campaignSources.map(([name, count]) => (
+                      <li key={name} className="flex justify-between gap-3">
+                        <span className="truncate">{name}</span>
+                        <span className="tabular-nums text-stone-600">{count.toLocaleString("pt-BR")}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {campaigns.length ? (
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Campanha (utm_campaign)</p>
+                  <ul className="flex flex-col gap-1.5 text-sm">
+                    {campaigns.map(([name, count]) => (
+                      <li key={name} className="flex justify-between gap-3">
+                        <span className="truncate">{name}</span>
+                        <span className="tabular-nums text-stone-600">{count.toLocaleString("pt-BR")}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+          )}
+        </section>
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Ranking
