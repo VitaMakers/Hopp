@@ -3,6 +3,7 @@ import { siteOrigin } from "@/lib/request";
 import { shortLinkLimit } from "@/lib/entitlements";
 import { deleteShortLink } from "../actions";
 import { getOwner } from "../context";
+import { CampaignLinkForm } from "./CampaignLinkForm";
 import { NewLinkForm } from "./NewLinkForm";
 
 export default async function LinksPage() {
@@ -40,7 +41,15 @@ export default async function LinksPage() {
           <Link href="/dashboard/plans" className="font-semibold underline">faça upgrade</Link>.
         </p>
       ) : (
-        <NewLinkForm base={base} />
+        <div className="flex flex-col gap-4">
+          <CampaignLinkForm base={base} handle={profile.handle} />
+          <details className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
+            <summary className="cursor-pointer text-sm font-medium text-stone-700">Criar um link curto comum (sem campanha)</summary>
+            <div className="mt-3">
+              <NewLinkForm base={base} />
+            </div>
+          </details>
+        </div>
       )}
       <div className="overflow-x-auto rounded-xl bg-white ring-1 ring-stone-200">
         <table className="w-full text-left text-sm">
