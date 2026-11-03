@@ -19,14 +19,17 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { BLOCK_CATALOG, blockSummary, createBlock } from "@/lib/page/catalog";
-import type { Block, BlockType, PageDoc } from "@/lib/page/schema";
+import type { Block, BlockType, PageDoc, Theme } from "@/lib/page/schema";
 import { BlockFields } from "./BlockFields";
+import { getPremiumSections, PremiumSectionBody, premiumSectionSummary } from "./PremiumSections";
 
 type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void; focus?: { id: string; n: number } | null };
 
 export function BlocksPanel({ doc, onChange, focus }: PanelProps) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const premium = doc.theme.premium;
+  const sections = premium ? getPremiumSections(premium as Exclude<Theme["premium"], "">) : [];
 
   // When a block is clicked in the preview, open it here and scroll to it.
   useEffect(() => {
@@ -60,6 +63,35 @@ export function BlocksPanel({ doc, onChange, focus }: PanelProps) {
 
   return (
     <div className="flex flex-col gap-3">
+      {premium ? (
+        <div className="flex flex-col gap-3">
+          {/* Scroll target used when a premium area is clicked in the preview. */}
+          <div id="blk-premium:__group" className="scroll-mt-24" />
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">Partes do modelo</p>
+            <button
+              type="button"
+              onClick={() => onChange({ ...doc, theme: { ...doc.theme, premium: "" } })}
+              className="text-xs text-stone-500 underline"
+            >
+              Sair do modelo
+            </button>
+          </div>
+          {sections.map((section) => (
+            <PremiumSectionCard
+              key={section.id}
+              id={section.id}
+              label={section.label}
+              summary={premiumSectionSummary(section.id, doc)}
+              open={openId === section.id}
+              onToggleOpen={() => setOpenId(openId === section.id ? null : section.id)}
+              doc={doc}
+              onChange={onChange}
+            />
+          ))}
+          <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-stone-400">Produtos e links</p>
+        </div>
+      ) : null}
       <button type="button" onClick={() => setAdding(!adding)} className="btn-primary self-start">
         + Adicionar bloco
       </button>
@@ -100,6 +132,45 @@ export function BlocksPanel({ doc, onChange, focus }: PanelProps) {
           ))}
         </SortableContext>
       </DndContext>
+    </div>
+  );
+}
+
+function PremiumSectionCard({
+  id,
+  label,
+  summary,
+  open,
+  onToggleOpen,
+  doc,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  summary: string;
+  open: boolean;
+  onToggleOpen: () => void;
+  doc: PageDoc;
+  onChange: (doc: PageDoc) => void;
+}) {
+  return (
+    <div
+      id={`blk-${id}`}
+      className={`scroll-mt-24 rounded-xl bg-white ring-1 transition ${open ? "ring-2 ring-blue-500" : "ring-stone-200"}`}
+    >
+      <button type="button" onClick={onToggleOpen} className="flex w-full items-center gap-2 p-3 text-left">
+        <span className="min-w-0 flex-1">
+          <span className="block text-xs uppercase tracking-wide text-stone-400">Parte do modelo</span>
+          <span className="block truncate font-medium">{label}</span>
+          {summary ? <span className="block truncate text-xs text-stone-500">{summary}</span> : null}
+        </span>
+        <span className="text-stone-400">{open ? "▾" : "▸"}</span>
+      </button>
+      {open ? (
+        <div className="border-t border-stone-100 p-4">
+          <PremiumSectionBody id={id} doc={doc} onChange={onChange} />
+        </div>
+      ) : null}
     </div>
   );
 }

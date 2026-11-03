@@ -40,10 +40,15 @@ export function Editor({
   const [focus, setFocus] = useState<{ id: string; n: number } | null>(null);
 
   function handleEdit(target: string) {
-    if (target === "appearance") return setTab("theme");
     if (target === "profile") return setTab("profile");
+    // Legacy: "appearance" opens the theme tab on normal pages; on premium
+    // models everything lives in Blocos, so send it there.
+    if (target === "appearance") return setTab(doc.theme.premium ? "blocks" : "theme");
+    // A premium area ("premium" group, "premium:<section>") or a real block id
+    // all open the Blocos tab and focus the matching card.
     setTab("blocks");
-    setFocus((f) => ({ id: target, n: (f?.n ?? 0) + 1 }));
+    const id = target === "premium" ? "premium:__group" : target;
+    setFocus((f) => ({ id, n: (f?.n ?? 0) + 1 }));
   }
   const [status, setStatus] = useState<Status>("saved");
   const [publishedAt, setPublishedAt] = useState(initialPublishedAt);
@@ -109,7 +114,7 @@ export function Editor({
       <section className="min-w-0">
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <div className="flex rounded-lg bg-white p-1 ring-1 ring-stone-200">
-            {TABS.map((item) => (
+            {TABS.filter((item) => item.id !== "theme" || !doc.theme.premium).map((item) => (
               <button
                 key={item.id}
                 type="button"
