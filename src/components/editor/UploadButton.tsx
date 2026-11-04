@@ -5,9 +5,9 @@ import { createClient } from "@/lib/supabase/client";
 
 // Phone photos are often 8–15MB. We accept large originals and shrink them in
 // the browser before upload, so uploads rarely fail and pages stay light.
-const MAX_INPUT_MB = 25; // reject truly huge files up front
-const MAX_OUTPUT_MB = 8; // after compression
-const MAX_DIM = 1600; // longest side, in pixels
+const MAX_INPUT_MB = 50; // reject truly huge files up front
+const MAX_OUTPUT_MB = 12; // after compression
+const MAX_DIM = 2000; // longest side, in pixels
 
 // Downscale and re-encode an image. Keeps PNG (transparency) and skips vector
 // or animated formats; falls back to the original if it can't do better.
