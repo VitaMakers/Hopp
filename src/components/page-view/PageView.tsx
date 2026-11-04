@@ -79,17 +79,19 @@ export function PageView({ doc, handle, plan, footer, still, onEdit }: Props) {
   }, [handle]);
 
   if (theme.premium) {
-    // Premium designs render a curated set of block types. Scheduling blocks
-    // are shown below the design (styled with the page's colors) so they work
-    // on premium models too.
-    const scheduleBlocks = blocks.filter((block) => block.type === "schedule");
+    // Premium designs only render link/product/stats blocks inside their
+    // layout. Every other block the user adds (gallery, videos, image, text,
+    // schedule…) is shown below the design, styled with the page's colors, so
+    // adding any block works on premium models too.
+    const PREMIUM_CONSUMED = ["link", "product", "stats"];
+    const extraBlocks = blocks.filter((block) => !PREMIUM_CONSUMED.includes(block.type));
     return (
       <>
         <PremiumView doc={doc} handle={handle} plan={plan} onEdit={onEdit} />
-        {scheduleBlocks.length ? (
+        {extraBlocks.length ? (
           <div style={themeVars(theme)} className="bg-[var(--page-bg)] px-5 pb-10 pt-2 text-[var(--page-text)]">
             <div className="mx-auto flex w-full max-w-[520px] flex-col gap-3">
-              {scheduleBlocks.map((block) => (
+              {extraBlocks.map((block) => (
                 <EditWrap key={block.id} onEdit={onEdit} target={block.id}>
                   <BlockView block={block} doc={doc} handle={handle} />
                 </EditWrap>
