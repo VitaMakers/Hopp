@@ -18,8 +18,8 @@ export const BLOCK_CATALOG: Record<BlockType, { label: string; description: stri
   schedule: { label: "Agendamento", description: "Agenda do Google ou Calendly — o visitante marca um horário" },
   contact: { label: "Salvar contato", description: "Visitante salva seu contato no celular" },
   stats: { label: "Números", description: "Destaques como \"10+ anos\" e \"500+ clientes\"" },
-  gallery: { label: "Galeria", description: "Grade de fotos, cada uma com link opcional" },
-  videos: { label: "Vídeos (grade)", description: "Vários vídeos em grade, cada um tocando na página" },
+  gallery: { label: "Galeria de fotos", description: "Várias fotos em grade ou carrossel (desliza)" },
+  videos: { label: "Vídeos", description: "Vários vídeos em grade ou carrossel, tocando na página" },
 };
 
 export const SOCIAL_LABELS: Record<SocialPlatform, string> = {
