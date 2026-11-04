@@ -8,7 +8,6 @@ import { showsBadge } from "@/lib/entitlements";
 import type { PageDoc } from "@/lib/page/schema";
 import { BlocksPanel } from "./BlocksPanel";
 import { ProfileHeader } from "./ProfileHeader";
-import { ProfilePanel } from "./ProfilePanel";
 import { SeoPanel } from "./SeoPanel";
 import { TemplatesPanel } from "./TemplatesPanel";
 import { ThemePanel } from "./ThemePanel";
@@ -16,12 +15,11 @@ import { ThemePanel } from "./ThemePanel";
 // The active section is chosen in the left sidebar (src/app/dashboard/Sidebar.tsx).
 // They stay in sync through the URL hash and a "vita:section" window event, so
 // switching never reloads the page or drops unsaved edits.
-const TAB_IDS = ["templates", "blocks", "profile", "theme", "seo"] as const;
+const TAB_IDS = ["templates", "blocks", "theme", "seo"] as const;
 type TabId = (typeof TAB_IDS)[number];
 const TAB_LABELS: Record<TabId, string> = {
   templates: "Modelos",
-  blocks: "Blocos",
-  profile: "Perfil",
+  blocks: "Página",
   theme: "Aparência",
   seo: "SEO",
 };
@@ -72,7 +70,8 @@ export function Editor({
   }, []);
 
   function handleEdit(target: string) {
-    if (target === "profile") return selectTab("profile");
+    // Profile (header/cover) now lives inside the Página view.
+    if (target === "profile") return selectTab("blocks");
     // Premium model parts live in the Aparência (theme) tab: open it and focus
     // the matching card.
     if (target === "appearance" || target === "premium" || target.startsWith("premium:")) {
@@ -147,7 +146,7 @@ export function Editor({
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
       <section className="min-w-0">
         <div className="mb-4">
-          <ProfileHeader doc={doc} onEdit={() => selectTab("profile")} />
+          <ProfileHeader doc={doc} onEdit={() => selectTab("blocks")} />
         </div>
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <h1 className="text-xl font-bold">{TAB_LABELS[tab]}</h1>
@@ -190,8 +189,7 @@ export function Editor({
         {message ? <p className="mb-3 text-sm text-stone-700">{message}</p> : null}
 
         {tab === "templates" ? <TemplatesPanel doc={doc} onChange={setDoc} plan={plan} onGoToBlocks={() => selectTab("blocks")} /> : null}
-        {tab === "blocks" ? <BlocksPanel doc={doc} onChange={setDoc} focus={focus} stats={stats} /> : null}
-        {tab === "profile" ? <ProfilePanel doc={doc} onChange={setDoc} plan={plan} /> : null}
+        {tab === "blocks" ? <BlocksPanel doc={doc} onChange={setDoc} focus={focus} stats={stats} plan={plan} /> : null}
         {tab === "theme" ? <ThemePanel doc={doc} onChange={setDoc} focus={focus} /> : null}
         {tab === "seo" ? <SeoPanel doc={doc} onChange={setDoc} handle={handle} /> : null}
       </section>
