@@ -7,7 +7,6 @@ import { APP_NAME, APP_TAGLINE } from "@/lib/env";
 import { showsBadge } from "@/lib/entitlements";
 import type { PageDoc } from "@/lib/page/schema";
 import { BlocksPanel } from "./BlocksPanel";
-import { ProfileHeader } from "./ProfileHeader";
 import { SeoPanel } from "./SeoPanel";
 import { TemplatesPanel } from "./TemplatesPanel";
 import { ThemePanel } from "./ThemePanel";
@@ -145,9 +144,6 @@ export function Editor({
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
       <section className="min-w-0">
-        <div className="mb-4">
-          <ProfileHeader doc={doc} onEdit={() => selectTab("blocks")} />
-        </div>
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <h1 className="text-xl font-bold">{TAB_LABELS[tab]}</h1>
           <span className="text-xs text-stone-500">{statusLabel[status]}</span>

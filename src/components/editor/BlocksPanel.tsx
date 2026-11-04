@@ -21,7 +21,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { BLOCK_CATALOG, blockSummary, createBlock } from "@/lib/page/catalog";
 import type { Block, BlockType, PageDoc } from "@/lib/page/schema";
 import { BlockFields } from "./BlockFields";
-import { PageSections } from "./PageSections";
+import { ProfileHeader } from "./ProfileHeader";
 
 type BlockStats = { views: number; clicks: Record<string, number> };
 type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void; focus?: { id: string; n: number } | null; stats?: BlockStats; plan?: string };
@@ -98,7 +98,8 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "" }: PanelPro
 
   return (
     <div className="flex flex-col gap-3">
-      <PageSections doc={doc} onChange={onChange} plan={plan} />
+      <ProfileHeader doc={doc} onChange={onChange} plan={plan} />
+      <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-stone-400">Blocos</p>
       <button type="button" onClick={() => setAdding(true)} className="btn-primary self-start">
         + Adicionar bloco
       </button>
