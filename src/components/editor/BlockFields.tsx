@@ -515,9 +515,9 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
         <div className="flex flex-col gap-3">
           <TextField label="Título (opcional)" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
           <Options
-            label="Formato"
+            label="Como mostrar"
             value={block.display}
-            options={{ grid: "Grade", carousel: "Carrossel" }}
+            options={{ grid: "Grade", carousel: "Carrossel (desliza)" }}
             onChange={(display) => onChange({ ...block, display })}
           />
           {block.items.map((item, index) => {
@@ -542,7 +542,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
             <button
               type="button"
               onClick={() => onChange({ ...block, items: [...block.items, { imageUrl: "", url: "" }] })}
-              className="self-start text-sm underline"
+              className="self-start rounded-lg border border-dashed border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-600 hover:border-stone-400"
             >
               + Adicionar foto
             </button>
@@ -554,9 +554,9 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
         <div className="flex flex-col gap-3">
           <TextField label="Título (opcional)" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
           <Options
-            label="Formato"
+            label="Como mostrar"
             value={block.display}
-            options={{ grid: "Grade", carousel: "Carrossel" }}
+            options={{ grid: "Grade", carousel: "Carrossel (desliza)" }}
             onChange={(display) => onChange({ ...block, display })}
           />
           {block.items.map((item, index) => {

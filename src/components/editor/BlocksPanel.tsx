@@ -25,6 +25,40 @@ import { BlockFields } from "./BlockFields";
 type BlockStats = { views: number; clicks: Record<string, number> };
 type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void; focus?: { id: string; n: number } | null; stats?: BlockStats };
 
+// Block picker, grouped like a store. Each block gets a friendly glyph.
+const BLOCK_ICON: Record<BlockType, string> = {
+  link: "🔗",
+  heading: "🔠",
+  text: "📝",
+  youtube: "▶️",
+  spotify: "🎵",
+  faq: "❓",
+  countdown: "⏳",
+  subscribe: "✉️",
+  form: "🧾",
+  whatsapp: "💬",
+  image: "🖼️",
+  product: "🛍️",
+  map: "📍",
+  contact: "👤",
+  stats: "📊",
+  gallery: "🏞️",
+  videos: "🎬",
+  schedule: "📅",
+};
+const BLOCK_CATEGORIES: { id: string; label: string; types: BlockType[] }[] = [
+  { id: "links", label: "Links", types: ["link"] },
+  { id: "midia", label: "Mídia", types: ["image", "gallery", "videos", "youtube", "spotify"] },
+  { id: "conteudo", label: "Conteúdo", types: ["heading", "text", "stats", "faq", "countdown"] },
+  { id: "contato", label: "Contato e formulários", types: ["whatsapp", "form", "subscribe", "contact", "map"] },
+  { id: "loja", label: "Loja e agenda", types: ["product", "schedule"] },
+];
+const norm = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
+
 const fmtN = (n: number) => new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 1 }).format(n);
 
 export function BlocksPanel({ doc, onChange, focus, stats }: PanelProps) {
@@ -63,24 +97,10 @@ export function BlocksPanel({ doc, onChange, focus, stats }: PanelProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <button type="button" onClick={() => setAdding(!adding)} className="btn-primary self-start">
+      <button type="button" onClick={() => setAdding(true)} className="btn-primary self-start">
         + Adicionar bloco
       </button>
-      {adding ? (
-        <div className="grid gap-2 rounded-xl bg-white p-3 ring-1 ring-stone-200 sm:grid-cols-2">
-          {(Object.keys(BLOCK_CATALOG) as BlockType[]).map((type) => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => add(type)}
-              className="rounded-lg p-3 text-left hover:bg-stone-100"
-            >
-              <span className="block font-medium">{BLOCK_CATALOG[type].label}</span>
-              <span className="block text-xs text-stone-500">{BLOCK_CATALOG[type].description}</span>
-            </button>
-          ))}
-        </div>
-      ) : null}
+      {adding ? <BlockPicker onPick={add} onClose={() => setAdding(false)} /> : null}
 
       {doc.blocks.length === 0 ? (
         <p className="rounded-xl border border-dashed border-stone-300 p-6 text-center text-sm text-stone-500">
@@ -104,6 +124,93 @@ export function BlocksPanel({ doc, onChange, focus, stats }: PanelProps) {
           ))}
         </SortableContext>
       </DndContext>
+    </div>
+  );
+}
+
+function BlockPicker({ onPick, onClose }: { onPick: (type: BlockType) => void; onClose: () => void }) {
+  const [query, setQuery] = useState("");
+  const [cat, setCat] = useState<string>("all");
+  const q = norm(query.trim());
+
+  const match = (type: BlockType) =>
+    !q || norm(BLOCK_CATALOG[type].label).includes(q) || norm(BLOCK_CATALOG[type].description).includes(q);
+  const groups = BLOCK_CATEGORIES.map((group) => ({
+    ...group,
+    types: group.types.filter((type) => (cat === "all" || cat === group.id) && match(type)),
+  })).filter((group) => group.types.length > 0);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true">
+      <button type="button" aria-label="Fechar" className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative flex max-h-[90vh] w-full max-w-3xl flex-col rounded-t-2xl bg-white shadow-2xl sm:max-h-[80vh] sm:rounded-2xl">
+        <div className="flex items-center justify-between border-b border-stone-100 p-4">
+          <h2 className="text-lg font-bold">Adicionar bloco</h2>
+          <button type="button" onClick={onClose} className="rounded-lg p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-700" aria-label="Fechar">
+            ✕
+          </button>
+        </div>
+        <div className="flex flex-col gap-3 border-b border-stone-100 p-4">
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Buscar blocos (ex.: galeria, whatsapp, agenda…)"
+            className="field"
+            autoFocus
+          />
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setCat("all")}
+              className={`rounded-full px-3 py-1 text-sm ring-1 ${cat === "all" ? "bg-stone-900 text-white ring-stone-900" : "text-stone-600 ring-stone-300"}`}
+            >
+              Todos
+            </button>
+            {BLOCK_CATEGORIES.map((group) => (
+              <button
+                key={group.id}
+                type="button"
+                onClick={() => setCat(group.id)}
+                className={`rounded-full px-3 py-1 text-sm ring-1 ${cat === group.id ? "bg-stone-900 text-white ring-stone-900" : "text-stone-600 ring-stone-300"}`}
+              >
+                {group.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4">
+          {groups.length === 0 ? (
+            <p className="py-10 text-center text-sm text-stone-500">Nenhum bloco encontrado.</p>
+          ) : (
+            <div className="flex flex-col gap-5">
+              {groups.map((group) => (
+                <div key={group.id}>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">{group.label}</p>
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {group.types.map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => onPick(type)}
+                        className="flex items-start gap-3 rounded-xl p-3 text-left ring-1 ring-stone-200 transition hover:ring-blue-400"
+                      >
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-stone-100 text-lg">
+                          {BLOCK_ICON[type]}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block font-medium">{BLOCK_CATALOG[type].label}</span>
+                          <span className="block text-xs text-stone-500">{BLOCK_CATALOG[type].description}</span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
