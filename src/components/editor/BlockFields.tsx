@@ -3,6 +3,16 @@
 import type { Block } from "@/lib/page/schema";
 
 // Small inline choice used by the block style pickers.
+// A labelled group of fields, so richer blocks read as organized sections.
+function Fieldset({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border border-stone-200 p-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">{title}</p>
+      {children}
+    </div>
+  );
+}
+
 function Options<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: Record<T, string>; onChange: (value: T) => void }) {
   return (
     <div>
@@ -59,50 +69,54 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
   switch (block.type) {
     case "link":
       return (
-        <div className="flex flex-col gap-3">
-          <Options
-            label="Aparência"
-            value={block.display}
-            options={{ button: "Botão", banner: "Banner com imagem", card: "Cartão" }}
-            onChange={(display) => onChange({ ...block, display })}
-          />
-          <TextField label={block.display === "button" ? "Texto do botão" : "Título"} value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
-          {block.display !== "button" || premium ? (
-            <>
-              <TextField label="Etiqueta (ex.: CURSOS)" value={block.label} maxLength={40} onChange={(label) => onChange({ ...block, label })} />
-              <TextField label="Subtítulo" value={block.subtitle} maxLength={200} onChange={(subtitle) => onChange({ ...block, subtitle })} />
-            </>
-          ) : null}
-          {block.display === "banner" || premium ? (
-            <TextField label="Texto do botão do banner" value={block.buttonText} maxLength={40} placeholder="Saiba mais" onChange={(buttonText) => onChange({ ...block, buttonText })} />
-          ) : null}
-          {block.display !== "button" || premium ? (
-            <label className="flex items-center gap-2 text-sm font-medium text-stone-700">
-              Cor da etiqueta
-              <input
-                type="color"
-                value={block.accent || "#3b6ef5"}
-                onChange={(event) => onChange({ ...block, accent: event.target.value })}
-                className="h-8 w-14 cursor-pointer rounded ring-1 ring-stone-300"
-              />
-              {block.accent ? (
-                <button type="button" onClick={() => onChange({ ...block, accent: "" })} className="text-xs text-stone-500 underline">
-                  usar a cor de destaque
-                </button>
-              ) : null}
-            </label>
-          ) : null}
-          <TextField label="Endereço" type="url" value={block.url} maxLength={2000} placeholder="https://..." onChange={(url) => onChange({ ...block, url })} />
-          <TextField
-            label={block.display === "banner" ? "Imagem de fundo do banner (link)" : "Miniatura (link da imagem, opcional)"}
-            type="url"
-            value={block.imageUrl}
-            maxLength={1000}
-            placeholder="https://..."
-            onChange={(imageUrl) => onChange({ ...block, imageUrl })}
-          />
-          <UploadButton label="Enviar imagem" onUploaded={(imageUrl) => onChange({ ...block, imageUrl })} />
-          <Toggle label="Destacar (o botão balança de tempos em tempos)" checked={block.highlight} onChange={(highlight) => onChange({ ...block, highlight })} />
+        <div className="flex flex-col gap-4">
+          <Fieldset title="Exibição">
+            <Options
+              label="Aparência"
+              value={block.display}
+              options={{ button: "Botão", banner: "Banner com imagem", card: "Cartão" }}
+              onChange={(display) => onChange({ ...block, display })}
+            />
+            {block.display !== "button" || premium ? (
+              <label className="flex items-center gap-2 text-sm font-medium text-stone-700">
+                Cor da etiqueta
+                <input
+                  type="color"
+                  value={block.accent || "#3b6ef5"}
+                  onChange={(event) => onChange({ ...block, accent: event.target.value })}
+                  className="h-8 w-14 cursor-pointer rounded ring-1 ring-stone-300"
+                />
+                {block.accent ? (
+                  <button type="button" onClick={() => onChange({ ...block, accent: "" })} className="text-xs text-stone-500 underline">
+                    usar a cor de destaque
+                  </button>
+                ) : null}
+              </label>
+            ) : null}
+            <Toggle label="Destacar (o botão balança de tempos em tempos)" checked={block.highlight} onChange={(highlight) => onChange({ ...block, highlight })} />
+          </Fieldset>
+          <Fieldset title="Conteúdo">
+            <TextField label={block.display === "button" ? "Texto do botão" : "Título"} value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
+            {block.display !== "button" || premium ? (
+              <>
+                <TextField label="Etiqueta (ex.: CURSOS)" value={block.label} maxLength={40} onChange={(label) => onChange({ ...block, label })} />
+                <TextField label="Subtítulo" value={block.subtitle} maxLength={200} onChange={(subtitle) => onChange({ ...block, subtitle })} />
+              </>
+            ) : null}
+            {block.display === "banner" || premium ? (
+              <TextField label="Texto do botão do banner" value={block.buttonText} maxLength={40} placeholder="Saiba mais" onChange={(buttonText) => onChange({ ...block, buttonText })} />
+            ) : null}
+            <TextField label="Endereço" type="url" value={block.url} maxLength={2000} placeholder="https://..." onChange={(url) => onChange({ ...block, url })} />
+            <TextField
+              label={block.display === "banner" ? "Imagem de fundo do banner (link)" : "Miniatura (link da imagem, opcional)"}
+              type="url"
+              value={block.imageUrl}
+              maxLength={1000}
+              placeholder="https://..."
+              onChange={(imageUrl) => onChange({ ...block, imageUrl })}
+            />
+            <UploadButton label="Enviar imagem" onUploaded={(imageUrl) => onChange({ ...block, imageUrl })} />
+          </Fieldset>
         </div>
       );
     case "heading":
@@ -364,47 +378,51 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
       );
     case "product":
       return (
-        <div className="flex flex-col gap-3">
-          <TextField label="Etiqueta (opcional, ex.: CURSO)" value={block.label} maxLength={40} onChange={(label) => onChange({ ...block, label })} />
-          <TextField label="Nome do produto" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
-          <TextField label="Preço" value={block.price} maxLength={40} placeholder="R$ 49,90" onChange={(price) => onChange({ ...block, price })} />
-          <TextArea label="Descrição" value={block.description} maxLength={500} onChange={(description) => onChange({ ...block, description })} />
-          <TextField label="Foto (link da imagem)" type="url" value={block.imageUrl} maxLength={1000} placeholder="https://..." onChange={(imageUrl) => onChange({ ...block, imageUrl })} />
-          <UploadButton label="Enviar foto" onUploaded={(imageUrl) => onChange({ ...block, imageUrl })} />
-          <TextField label="Texto do botão" value={block.buttonText} maxLength={40} onChange={(buttonText) => onChange({ ...block, buttonText })} />
-          <TextField
-            label="Link de pagamento"
-            type="url"
-            value={block.url}
-            maxLength={2000}
-            placeholder="https://... (Mercado Pago, Hotmart, Stripe...)"
-            onChange={(url) => onChange({ ...block, url })}
-          />
-          <Toggle
-            label="Vender com Stripe (beta)"
-            checked={block.payWithStripe}
-            onChange={(payWithStripe) => onChange({ ...block, payWithStripe })}
-          />
-          {block.payWithStripe ? (
-            <>
-              <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
-                Preço de venda (R$)
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={block.amountCents ? (block.amountCents / 100).toString() : ""}
-                  onChange={(e) => onChange({ ...block, amountCents: Math.max(0, Math.round((parseFloat(e.target.value) || 0) * 100)) })}
-                  className="field"
-                  placeholder="49,90"
-                />
-              </label>
-              <p className="-mt-1 text-xs text-stone-500">
-                O cliente paga pelo Stripe e o dinheiro cai direto na sua conta. Você precisa conectar o Stripe em
-                Configurações. Quando isto está ligado, o &quot;Link de pagamento&quot; acima é ignorado.
-              </p>
-            </>
-          ) : null}
+        <div className="flex flex-col gap-4">
+          <Fieldset title="Conteúdo">
+            <TextField label="Etiqueta (opcional, ex.: CURSO)" value={block.label} maxLength={40} onChange={(label) => onChange({ ...block, label })} />
+            <TextField label="Nome do produto" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
+            <TextField label="Preço" value={block.price} maxLength={40} placeholder="R$ 49,90" onChange={(price) => onChange({ ...block, price })} />
+            <TextArea label="Descrição" value={block.description} maxLength={500} onChange={(description) => onChange({ ...block, description })} />
+            <TextField label="Foto (link da imagem)" type="url" value={block.imageUrl} maxLength={1000} placeholder="https://..." onChange={(imageUrl) => onChange({ ...block, imageUrl })} />
+            <UploadButton label="Enviar foto" onUploaded={(imageUrl) => onChange({ ...block, imageUrl })} />
+            <TextField label="Texto do botão" value={block.buttonText} maxLength={40} onChange={(buttonText) => onChange({ ...block, buttonText })} />
+          </Fieldset>
+          <Fieldset title="Pagamento">
+            <TextField
+              label="Link de pagamento"
+              type="url"
+              value={block.url}
+              maxLength={2000}
+              placeholder="https://... (Mercado Pago, Hotmart, Stripe...)"
+              onChange={(url) => onChange({ ...block, url })}
+            />
+            <Toggle
+              label="Vender com Stripe (beta)"
+              checked={block.payWithStripe}
+              onChange={(payWithStripe) => onChange({ ...block, payWithStripe })}
+            />
+            {block.payWithStripe ? (
+              <>
+                <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+                  Preço de venda (R$)
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={block.amountCents ? (block.amountCents / 100).toString() : ""}
+                    onChange={(e) => onChange({ ...block, amountCents: Math.max(0, Math.round((parseFloat(e.target.value) || 0) * 100)) })}
+                    className="field"
+                    placeholder="49,90"
+                  />
+                </label>
+                <p className="-mt-1 text-xs text-stone-500">
+                  O cliente paga pelo Stripe e o dinheiro cai direto na sua conta. Você precisa conectar o Stripe em
+                  Configurações. Quando isto está ligado, o &quot;Link de pagamento&quot; acima é ignorado.
+                </p>
+              </>
+            ) : null}
+          </Fieldset>
         </div>
       );
     case "map":
