@@ -22,9 +22,12 @@ import { BLOCK_CATALOG, blockSummary, createBlock } from "@/lib/page/catalog";
 import type { Block, BlockType, PageDoc } from "@/lib/page/schema";
 import { BlockFields } from "./BlockFields";
 
-type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void; focus?: { id: string; n: number } | null };
+type BlockStats = { views: number; clicks: Record<string, number> };
+type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void; focus?: { id: string; n: number } | null; stats?: BlockStats };
 
-export function BlocksPanel({ doc, onChange, focus }: PanelProps) {
+const fmtN = (n: number) => new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 1 }).format(n);
+
+export function BlocksPanel({ doc, onChange, focus, stats }: PanelProps) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
 
@@ -96,6 +99,7 @@ export function BlocksPanel({ doc, onChange, focus }: PanelProps) {
               onToggleOpen={() => setOpenId(openId === block.id ? null : block.id)}
               onChange={(next) => setBlocks(doc.blocks.map((item) => (item.id === next.id ? next : item)))}
               onRemove={() => setBlocks(doc.blocks.filter((item) => item.id !== block.id))}
+              stats={stats}
             />
           ))}
         </SortableContext>
@@ -111,6 +115,7 @@ function SortableBlock({
   onToggleOpen,
   onChange,
   onRemove,
+  stats,
 }: {
   block: Block;
   premium: PageDoc["theme"]["premium"];
@@ -118,7 +123,9 @@ function SortableBlock({
   onToggleOpen: () => void;
   onChange: (block: Block) => void;
   onRemove: () => void;
+  stats?: BlockStats;
 }) {
+  const blockClicks = stats?.clicks[block.id] ?? 0;
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: block.id,
   });
@@ -146,6 +153,12 @@ function SortableBlock({
           <span className={`block truncate ${block.enabled ? "" : "text-stone-400 line-through"}`}>
             {blockSummary(block)}
           </span>
+          {stats ? (
+            <span className="mt-0.5 block text-xs text-stone-400">
+              {fmtN(stats.views)} {stats.views === 1 ? "visualização" : "visualizações"}
+              {blockClicks > 0 ? ` · ${fmtN(blockClicks)} ${blockClicks === 1 ? "clique" : "cliques"}` : ""}
+            </span>
+          ) : null}
         </button>
         <label className="flex items-center gap-1 text-xs text-stone-500">
           <input
