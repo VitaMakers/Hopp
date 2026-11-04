@@ -28,16 +28,20 @@ const TAB_LABELS: Record<TabId, string> = {
 
 type Status = "saved" | "dirty" | "saving" | "error";
 
+export type BlockStats = { views: number; clicks: Record<string, number> };
+
 export function Editor({
   initialDoc,
   handle,
   plan,
   publishedAt: initialPublishedAt,
+  stats,
 }: {
   initialDoc: PageDoc;
   handle: string;
   plan: string;
   publishedAt: string | null;
+  stats?: BlockStats;
 }) {
   const [doc, setDoc] = useState(initialDoc);
   const [tab, setTab] = useState<TabId>("blocks");
@@ -186,7 +190,7 @@ export function Editor({
         {message ? <p className="mb-3 text-sm text-stone-700">{message}</p> : null}
 
         {tab === "templates" ? <TemplatesPanel doc={doc} onChange={setDoc} plan={plan} onGoToBlocks={() => selectTab("blocks")} /> : null}
-        {tab === "blocks" ? <BlocksPanel doc={doc} onChange={setDoc} focus={focus} /> : null}
+        {tab === "blocks" ? <BlocksPanel doc={doc} onChange={setDoc} focus={focus} stats={stats} /> : null}
         {tab === "profile" ? <ProfilePanel doc={doc} onChange={setDoc} plan={plan} /> : null}
         {tab === "theme" ? <ThemePanel doc={doc} onChange={setDoc} focus={focus} /> : null}
         {tab === "seo" ? <SeoPanel doc={doc} onChange={setDoc} handle={handle} /> : null}
