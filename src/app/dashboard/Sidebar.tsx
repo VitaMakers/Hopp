@@ -39,8 +39,7 @@ function Icon({ name }: { name: IconName }) {
 
 // Editor sections (open inside /dashboard without a reload) and page routes.
 const SECTIONS: { id: string; label: string; icon: IconName }[] = [
-  { id: "blocks", label: "Blocos", icon: "blocks" },
-  { id: "profile", label: "Perfil", icon: "profile" },
+  { id: "blocks", label: "Página", icon: "blocks" },
   { id: "theme", label: "Aparência", icon: "theme" },
   { id: "templates", label: "Modelos", icon: "templates" },
   { id: "seo", label: "SEO", icon: "seo" },
