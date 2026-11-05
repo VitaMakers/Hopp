@@ -335,6 +335,8 @@ export const premiumFieldsSchema = z.object({
   // image shows when several are added (auto-rotating cover).
   coverHeight: z.number().int().min(0).max(900).default(0),
   heroSeconds: z.number().int().min(1).max(30).default(4),
+  // Hide the brand name text on the cover (e.g. when a logo is enough).
+  hideName: z.boolean().default(false),
   heroSlides: z
     .array(
       z.object({
