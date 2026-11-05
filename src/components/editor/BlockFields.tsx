@@ -3,6 +3,59 @@
 import type { Block } from "@/lib/page/schema";
 
 // Small inline choice used by the block style pickers.
+// Visual picker for the link's button layout (Classic / Featured / Card).
+function LinkLayoutPicker({ value, onChange }: { value: "button" | "banner" | "card"; onChange: (v: "button" | "banner" | "card") => void }) {
+  const preview = (id: string) => {
+    if (id === "banner") {
+      return (
+        <div className="relative h-12 w-full overflow-hidden rounded-md bg-gradient-to-br from-stone-300 to-stone-400">
+          <div className="absolute inset-x-1.5 bottom-1.5 h-3 rounded bg-white/90" />
+        </div>
+      );
+    }
+    if (id === "card") {
+      return (
+        <div className="flex h-12 items-center gap-1.5 rounded-md bg-stone-100 p-1.5">
+          <div className="h-full w-7 shrink-0 rounded bg-stone-300" />
+          <div className="flex-1 space-y-1">
+            <div className="h-2 rounded bg-stone-300" />
+            <div className="h-2 w-2/3 rounded bg-stone-200" />
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="flex h-12 items-center justify-center rounded-md bg-stone-100">
+        <div className="h-5 w-4/5 rounded-full bg-stone-800" />
+      </div>
+    );
+  };
+  const items: { id: "button" | "banner" | "card"; label: string }[] = [
+    { id: "button", label: "Clássico" },
+    { id: "banner", label: "Destaque" },
+    { id: "card", label: "Cartão" },
+  ];
+  return (
+    <div>
+      <p className="mb-1.5 text-sm font-medium text-stone-700">Formato do botão</p>
+      <div className="grid grid-cols-3 gap-2">
+        {items.map((it) => (
+          <button
+            key={it.id}
+            type="button"
+            onClick={() => onChange(it.id)}
+            className={`rounded-xl p-2 ring-1 transition ${value === it.id ? "bg-blue-50 ring-2 ring-blue-500" : "ring-stone-200 hover:ring-stone-300"}`}
+          >
+            {preview(it.id)}
+            <span className="mt-1.5 block text-center text-xs font-medium text-stone-700">{it.label}</span>
+          </button>
+        ))}
+      </div>
+      {value === "banner" ? <p className="mt-1.5 text-xs text-stone-500">O formato Destaque usa uma imagem de fundo (adicione abaixo).</p> : null}
+    </div>
+  );
+}
+
 // A labelled group of fields, so richer blocks read as organized sections.
 function Fieldset({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -71,12 +124,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
       return (
         <div className="flex flex-col gap-4">
           <Fieldset title="Exibição">
-            <Options
-              label="Aparência"
-              value={block.display}
-              options={{ button: "Botão", banner: "Banner com imagem", card: "Cartão" }}
-              onChange={(display) => onChange({ ...block, display })}
-            />
+            <LinkLayoutPicker value={block.display} onChange={(display) => onChange({ ...block, display })} />
             {block.display !== "button" || premium ? (
               <label className="flex items-center gap-2 text-sm font-medium text-stone-700">
                 Cor da etiqueta
