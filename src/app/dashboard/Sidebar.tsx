@@ -40,7 +40,7 @@ function Icon({ name }: { name: IconName }) {
 // Editor sections (open inside /dashboard without a reload) and page routes.
 const SECTIONS: { id: string; label: string; icon: IconName }[] = [
   { id: "blocks", label: "Página", icon: "blocks" },
-  { id: "theme", label: "Design", icon: "theme" },
+  { id: "theme", label: "Aparência", icon: "theme" },
   { id: "templates", label: "Modelos", icon: "templates" },
   { id: "seo", label: "SEO", icon: "seo" },
 ];
@@ -53,7 +53,7 @@ const PAGE_ITEMS: { href: string; label: string; icon: IconName }[] = [
 const ACCOUNT_ITEMS: { href: string; label: string; icon: IconName }[] = [
   { href: "/dashboard/clientes", label: "Clientes", icon: "clients" },
   { href: "/dashboard/plans", label: "Planos", icon: "plans" },
-  { href: "/dashboard/settings", label: "Config", icon: "settings" },
+  { href: "/dashboard/settings", label: "Configurações", icon: "settings" },
 ];
 
 export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
@@ -61,6 +61,7 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
   const router = useRouter();
   const onEditor = pathname === "/dashboard";
   const [section, setSection] = useState("blocks");
+  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Keep the highlighted section in sync with the editor (hash + events).
@@ -72,11 +73,24 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
       if (SECTIONS.some((s) => s.id === id)) setSection(id);
     };
     window.addEventListener("vita:section", onSection);
+    try {
+      setCollapsed(localStorage.getItem("vita-sidebar") === "1");
+    } catch {}
     return () => window.removeEventListener("vita:section", onSection);
   }, []);
 
   // Close the mobile drawer on navigation.
   useEffect(() => setMobileOpen(false), [pathname]);
+
+  function toggleCollapsed() {
+    setCollapsed((v) => {
+      const next = !v;
+      try {
+        localStorage.setItem("vita-sidebar", next ? "1" : "0");
+      } catch {}
+      return next;
+    });
+  }
 
   function goSection(id: string) {
     setMobileOpen(false);
@@ -89,45 +103,62 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
     }
   }
 
-  // Compact icon-over-label rail (Hopp style).
+  const w = collapsed ? "lg:w-16" : "lg:w-60";
+  const rowBase = "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition";
+
   const content = (
-    <nav className="flex h-full w-full flex-col items-center gap-1 overflow-y-auto py-3">
-      <Link href="/dashboard" className="mb-2" aria-label={APP_NAME}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/brand-mark.png" alt="" className="h-7 w-auto" />
-      </Link>
+    <div className="flex h-full flex-col gap-1 overflow-y-auto px-3 py-4">
+      <div className="mb-2 flex items-center justify-between px-1">
+        <Link href="/dashboard" className={`flex items-center gap-2 font-extrabold tracking-tight ${collapsed ? "lg:justify-center" : ""}`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand-mark.png" alt="" className="h-7 w-auto" />
+          <span className={collapsed ? "lg:hidden" : ""}>{APP_NAME}</span>
+        </Link>
+        <button type="button" onClick={toggleCollapsed} className="hidden rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-700 lg:block" aria-label="Recolher menu">
+          <Icon name="collapse" />
+        </button>
+      </div>
 
-      {SECTIONS.map((s) => (
-        <RailItem key={s.id} icon={s.icon} label={s.label} active={onEditor && section === s.id} onClick={() => goSection(s.id)} />
-      ))}
-
-      <Divider />
+      <Group label="Esta página" collapsed={collapsed} />
+      {SECTIONS.map((s) => {
+        const active = onEditor && section === s.id;
+        return (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => goSection(s.id)}
+            title={s.label}
+            className={`${rowBase} ${collapsed ? "lg:justify-center" : ""} ${active ? "bg-stone-100 font-semibold text-stone-900" : "text-stone-600 hover:bg-stone-50"}`}
+          >
+            <Icon name={s.icon} />
+            <span className={collapsed ? "lg:hidden" : ""}>{s.label}</span>
+          </button>
+        );
+      })}
       {PAGE_ITEMS.map((item) => (
-        <RailLink key={item.href} item={item} pathname={pathname} />
+        <NavLink key={item.href} item={item} pathname={pathname} collapsed={collapsed} rowBase={rowBase} />
       ))}
 
-      <Divider />
+      <Group label="Conta" collapsed={collapsed} />
       {ACCOUNT_ITEMS.map((item) => (
-        <RailLink key={item.href} item={item} pathname={pathname} />
+        <NavLink key={item.href} item={item} pathname={pathname} collapsed={collapsed} rowBase={rowBase} />
       ))}
-      {isAdmin ? <RailLink item={{ href: "/dashboard/admin", label: "Admin", icon: "shield" }} pathname={pathname} /> : null}
+      {isAdmin ? (
+        <NavLink item={{ href: "/dashboard/admin", label: "Admin", icon: "shield" }} pathname={pathname} collapsed={collapsed} rowBase={rowBase} />
+      ) : null}
 
-      <form action={signOut} className="mt-auto w-full px-2">
-        <button
-          type="submit"
-          title="Sair"
-          className="flex w-full flex-col items-center gap-1 rounded-xl px-1 py-2 text-center text-[11px] font-medium leading-tight text-stone-500 transition hover:bg-stone-50 hover:text-stone-900"
-        >
+      <form action={signOut} className="mt-auto pt-2">
+        <button type="submit" title="Sair" className={`${rowBase} w-full ${collapsed ? "lg:justify-center" : ""} text-stone-500 hover:bg-stone-50 hover:text-stone-900`}>
           <Icon name="logout" />
-          <span>Sair</span>
+          <span className={collapsed ? "lg:hidden" : ""}>Sair</span>
         </button>
       </form>
-    </nav>
+    </div>
   );
 
   return (
     <>
-      {/* Mobile top bar with a hamburger (the desktop rail is static). */}
+      {/* Mobile top bar with a hamburger (the desktop sidebar is static). */}
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
@@ -137,41 +168,46 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
         <Icon name="menu" />
       </button>
 
-      {/* Desktop: static rail */}
-      <aside className="sticky top-0 hidden h-screen w-[88px] shrink-0 border-r border-stone-200 bg-white lg:block">{content}</aside>
+      {/* Desktop: static sidebar */}
+      <aside className={`sticky top-0 hidden h-screen shrink-0 border-r border-stone-200 bg-white lg:block ${w}`}>{content}</aside>
 
       {/* Mobile: slide-over drawer */}
       {mobileOpen ? (
         <div className="fixed inset-0 z-50 lg:hidden">
           <button type="button" aria-label="Fechar" className="absolute inset-0 bg-black/30" onClick={() => setMobileOpen(false)} />
-          <aside className="absolute left-0 top-0 h-full w-[96px] border-r border-stone-200 bg-white shadow-xl">{content}</aside>
+          <aside className="absolute left-0 top-0 h-full w-64 border-r border-stone-200 bg-white shadow-xl">{content}</aside>
         </div>
       ) : null}
     </>
   );
 }
 
-const RAIL_CELL = "flex w-[72px] flex-col items-center gap-1 rounded-xl px-1 py-2 text-center text-[11px] font-medium leading-tight transition";
-
-function Divider() {
-  return <hr className="my-1 w-8 border-t border-stone-100" />;
-}
-
-function RailItem({ icon, label, active, onClick }: { icon: IconName; label: string; active: boolean; onClick: () => void }) {
+function Group({ label, collapsed }: { label: string; collapsed: boolean }) {
   return (
-    <button type="button" onClick={onClick} title={label} className={`${RAIL_CELL} ${active ? "bg-stone-100 text-stone-900" : "text-stone-500 hover:bg-stone-50"}`}>
-      <Icon name={icon} />
-      <span className="line-clamp-2">{label}</span>
-    </button>
+    <p className={`mt-4 px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-stone-400 ${collapsed ? "lg:hidden" : ""}`}>{label}</p>
   );
 }
 
-function RailLink({ item, pathname }: { item: { href: string; label: string; icon: IconName }; pathname: string }) {
+function NavLink({
+  item,
+  pathname,
+  collapsed,
+  rowBase,
+}: {
+  item: { href: string; label: string; icon: IconName };
+  pathname: string;
+  collapsed: boolean;
+  rowBase: string;
+}) {
   const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
   return (
-    <Link href={item.href} title={item.label} className={`${RAIL_CELL} ${active ? "bg-stone-100 text-stone-900" : "text-stone-500 hover:bg-stone-50"}`}>
+    <Link
+      href={item.href}
+      title={item.label}
+      className={`${rowBase} ${collapsed ? "lg:justify-center" : ""} ${active ? "bg-stone-100 font-semibold text-stone-900" : "text-stone-600 hover:bg-stone-50"}`}
+    >
       <Icon name={item.icon} />
-      <span className="line-clamp-2">{item.label}</span>
+      <span className={collapsed ? "lg:hidden" : ""}>{item.label}</span>
     </Link>
   );
 }
