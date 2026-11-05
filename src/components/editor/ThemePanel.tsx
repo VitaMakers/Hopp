@@ -5,7 +5,7 @@ import type { PageDoc, Theme } from "@/lib/page/schema";
 import { Card, TextField, Toggle } from "./fields";
 import { PremiumSectionsEditor } from "./PremiumSections";
 
-type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void; focus?: { id: string; n: number } | null };
+type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void; focus?: { id: string; n: number } | null; onActive?: (id: string | null) => void };
 
 const LAYOUT_LABELS: Record<Theme["layout"], string> = {
   classic: "Clássico",
@@ -91,7 +91,7 @@ const PREMIUM_NAMES: Record<Exclude<Theme["premium"], "">, string> = {
   casa: "Restaurante Elegante",
 };
 
-export function ThemePanel({ doc, onChange, focus }: PanelProps) {
+export function ThemePanel({ doc, onChange, focus, onActive }: PanelProps) {
   const setTheme = (patch: Partial<Theme>) => onChange({ ...doc, theme: { ...doc.theme, ...patch } });
   if (doc.theme.premium) {
     const design = doc.theme.premium as Exclude<Theme["premium"], "">;
@@ -103,7 +103,7 @@ export function ThemePanel({ doc, onChange, focus }: PanelProps) {
             aba <strong>Perfil</strong>.
           </p>
         </Card>
-        <PremiumSectionsEditor doc={doc} onChange={onChange} focus={focus} />
+        <PremiumSectionsEditor doc={doc} onChange={onChange} focus={focus} onActive={onActive} />
       </div>
     );
   }

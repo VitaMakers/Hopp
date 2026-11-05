@@ -58,6 +58,7 @@ function BlockLink({
       rel="noopener noreferrer"
       aria-label={block.title}
       className={className}
+      data-edit={block.id}
       onClick={(e) => {
         if (onEdit) {
           e.preventDefault();

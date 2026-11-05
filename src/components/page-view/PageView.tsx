@@ -36,6 +36,7 @@ function EditWrap({ onEdit, target, children }: { onEdit?: (t: string) => void; 
     <div
       role="button"
       tabIndex={0}
+      data-edit={target}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
