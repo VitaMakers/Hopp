@@ -91,7 +91,10 @@ export function PageView({ doc, handle, plan, footer, still, onEdit }: Props) {
       <>
         <PremiumView doc={doc} handle={handle} plan={plan} onEdit={onEdit} />
         {extraBlocks.length ? (
-          <div style={themeVars(theme)} className="bg-[var(--page-bg)] px-5 pb-10 pt-2 text-[var(--page-text)]">
+          <div
+            style={{ ...themeVars(theme), ["--btn-bg"]: theme.accent, ["--btn-text"]: theme.background } as React.CSSProperties}
+            className="bg-[var(--page-bg)] px-5 pb-10 pt-2 text-[var(--page-text)]"
+          >
             <div className="mx-auto flex w-full max-w-[520px] flex-col gap-3">
               {extraBlocks.map((block) => (
                 <EditWrap key={block.id} onEdit={onEdit} target={block.id}>
