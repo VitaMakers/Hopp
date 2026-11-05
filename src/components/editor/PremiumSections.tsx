@@ -200,6 +200,32 @@ function HeroFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Par
   return (
     <div className="flex flex-col gap-3">
       <div className="grid grid-cols-2 gap-3">
+        <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+          Altura da capa
+          <input
+            type="range"
+            min={0}
+            max={620}
+            step={20}
+            value={p.coverHeight}
+            onChange={(e) => setPremium({ coverHeight: Number(e.target.value) })}
+          />
+          <span className="text-xs text-stone-500">{p.coverHeight ? `${p.coverHeight}px` : "Automático (padrão)"}</span>
+        </label>
+        <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+          Tempo de cada imagem (segundos)
+          <input
+            type="number"
+            min={1}
+            max={30}
+            value={p.heroSeconds}
+            onChange={(e) => setPremium({ heroSeconds: Math.min(30, Math.max(1, Number(e.target.value) || 4)) })}
+            className="field"
+          />
+          <span className="text-xs text-stone-500">Com 2+ imagens, a capa vira um carrossel automático.</span>
+        </label>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
         <TextField label="Texto do selo (canto superior)" value={p.heroPill} maxLength={40} onChange={(heroPill) => setPremium({ heroPill })} />
         <TextField label="Link do selo" type="url" value={p.heroPillUrl} maxLength={2000} onChange={(heroPillUrl) => setPremium({ heroPillUrl })} />
       </div>

@@ -1622,11 +1622,41 @@ function bistroNavIcon(label: string) {
   return <svg {...c} aria-hidden><path d="M4 3v18M8 3v6a2 2 0 0 1-4 0M18 3c-1.5 0-3 1.8-3 5s1.5 4 3 4m0 0v9" /></svg>;
 }
 
+// A cover that crossfades through several images on a timer (auto carousel).
+function RotatingHeroImages({ images, seconds, alt }: { images: string[]; seconds: number; alt: string }) {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const ms = Math.max(1, seconds) * 1000;
+    const t = setInterval(() => setI((v) => (v + 1) % images.length), ms);
+    return () => clearInterval(t);
+  }, [images.length, seconds]);
+  if (images.length === 0) return <div className="bistro-hero-img bistro-ph" />;
+  const active = Math.min(i, images.length - 1);
+  return (
+    <>
+      {images.map((src, idx) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={idx}
+          src={src}
+          alt={idx === 0 ? alt : ""}
+          className="bistro-hero-img"
+          loading="lazy"
+          style={{ opacity: idx === active ? 1 : 0, transition: "opacity 0.9s ease" }}
+        />
+      ))}
+    </>
+  );
+}
+
 function Bistro({ doc, handle, plan }: Props) {
   const { profile, theme, premium } = doc;
   const brand = profile.name || APP_NAME;
   const slide = premium.heroSlides[0];
-  const heroImg = imageSrc(slide?.imageUrl || profile.coverUrl);
+  const heroImages = premium.heroSlides.map((s) => imageSrc(s.imageUrl)).filter((x): x is string => !!x);
+  const coverFallback = imageSrc(profile.coverUrl);
+  if (heroImages.length === 0 && coverFallback) heroImages.push(coverFallback);
   const logo = imageSrc(profile.logo);
   const ribbon = slide?.productLabel || premium.promoBadge;
   const tagline = slide?.headline || premium.heading;
@@ -1661,13 +1691,12 @@ function Bistro({ doc, handle, plan }: Props) {
       style={{ "--bistro-wine": theme.background, "--bistro-cream": theme.text, "--bistro-gold": theme.accent } as React.CSSProperties}
     >
       {/* 1. Hero */}
-      <header className="bistro-hero" data-edit="premium:hero">
-        {heroImg ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img className="bistro-hero-img" src={heroImg} alt={brand} />
-        ) : (
-          <div className="bistro-hero-img bistro-ph" />
-        )}
+      <header
+        className="bistro-hero"
+        data-edit="premium:hero"
+        style={premium.coverHeight ? ({ aspectRatio: "auto", minHeight: 0, height: premium.coverHeight } as React.CSSProperties) : undefined}
+      >
+        <RotatingHeroImages images={heroImages} seconds={premium.heroSeconds} alt={brand} />
         <div className="bistro-hero-shade" />
         {ribbon ? <span className="bistro-ribbon">{ribbon}</span> : null}
         <div className="bistro-hero-center">
