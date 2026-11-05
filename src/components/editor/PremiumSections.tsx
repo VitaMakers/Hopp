@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { imageSrc } from "@/lib/page/links";
 import type { PageDoc, Theme } from "@/lib/page/schema";
 import { TextArea, TextField } from "./fields";
+import { UploadButton } from "./UploadButton";
 
 // Premium designs keep their content in doc.premium / doc.theme / doc.profile
 // (not in blocks). This module exposes that same editing — unchanged — as a
@@ -211,6 +212,7 @@ function HeroFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Par
             </button>
           </div>
           <TextField label="Imagem (link)" type="url" value={slide.imageUrl} placeholder="https://..." onChange={(imageUrl) => setSlide(index, { imageUrl })} />
+          <UploadButton label="Enviar imagem" onUploaded={(imageUrl) => setSlide(index, { imageUrl })} />
           <TextField label="Título (use Enter para quebrar a linha)" value={slide.headline} maxLength={80} onChange={(headline) => setSlide(index, { headline })} />
           <div className="grid grid-cols-2 gap-2">
             <TextField label="Rótulo do produto" value={slide.productLabel} maxLength={20} onChange={(productLabel) => setSlide(index, { productLabel })} />
@@ -263,6 +265,7 @@ function FeatureFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: 
         <TextField label="Título" value={p.featureTitle} maxLength={40} onChange={(featureTitle) => setPremium({ featureTitle })} />
       </div>
       <TextField label="Imagem (link)" type="url" value={p.featureImageUrl} placeholder="https://..." onChange={(featureImageUrl) => setPremium({ featureImageUrl })} />
+      <UploadButton label="Enviar imagem" onUploaded={(featureImageUrl) => setPremium({ featureImageUrl })} />
       <TextField label="Link" type="url" value={p.featureUrl} maxLength={2000} onChange={(featureUrl) => setPremium({ featureUrl })} />
       <TextField label="Etiquetas (separe por vírgula)" value={p.featureTags.join(", ")} onChange={(value) => setPremium({ featureTags: toList(value).slice(0, 5) })} />
       <TextField label="Cores em destaque (hex, separe por vírgula)" value={p.featureColors.join(", ")} onChange={(value) => setPremium({ featureColors: toList(value).slice(0, 8) })} />
@@ -280,6 +283,7 @@ function SizeFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Par
         <TextField label="Tamanho em destaque" value={p.sizeActive} maxLength={6} onChange={(sizeActive) => setPremium({ sizeActive })} />
       </div>
       <TextField label="Imagem (link, opcional)" type="url" value={p.sizeImageUrl} placeholder="https://..." onChange={(sizeImageUrl) => setPremium({ sizeImageUrl })} />
+      <UploadButton label="Enviar imagem" onUploaded={(sizeImageUrl) => setPremium({ sizeImageUrl })} />
     </div>
   );
 }
