@@ -1657,6 +1657,7 @@ function Bistro({ doc, handle, plan }: Props) {
   const heroImages = premium.heroSlides.map((s) => imageSrc(s.imageUrl)).filter((x): x is string => !!x);
   const coverFallback = imageSrc(profile.coverUrl);
   if (heroImages.length === 0 && coverFallback) heroImages.push(coverFallback);
+  const isHidden = (sec: string) => premium.hiddenParts.includes(sec);
   const logo = imageSrc(profile.logo);
   const ribbon = slide?.productLabel || premium.promoBadge;
   const tagline = slide?.headline || premium.heading;
@@ -1691,22 +1692,24 @@ function Bistro({ doc, handle, plan }: Props) {
       style={{ "--bistro-wine": theme.background, "--bistro-cream": theme.text, "--bistro-gold": theme.accent } as React.CSSProperties}
     >
       {/* 1. Hero */}
-      <header
-        className="bistro-hero"
-        data-edit="premium:hero"
-        style={premium.coverHeight ? ({ aspectRatio: "auto", minHeight: 0, height: premium.coverHeight } as React.CSSProperties) : undefined}
-      >
-        <RotatingHeroImages images={heroImages} seconds={premium.heroSeconds} alt={brand} />
-        <div className="bistro-hero-shade" />
-        {ribbon ? <span className="bistro-ribbon">{ribbon}</span> : null}
-        <div className="bistro-hero-center">
-          <Signature />
-          {tagline ? <p className="bistro-hero-tagline">{tagline}</p> : null}
-        </div>
-      </header>
+      {!isHidden("premium:hero") ? (
+        <header
+          className="bistro-hero"
+          data-edit="premium:hero"
+          style={premium.coverHeight ? ({ aspectRatio: "auto", minHeight: 0, height: premium.coverHeight } as React.CSSProperties) : undefined}
+        >
+          <RotatingHeroImages images={heroImages} seconds={premium.heroSeconds} alt={brand} />
+          <div className="bistro-hero-shade" />
+          {ribbon ? <span className="bistro-ribbon">{ribbon}</span> : null}
+          <div className="bistro-hero-center">
+            <Signature />
+            {tagline ? <p className="bistro-hero-tagline">{tagline}</p> : null}
+          </div>
+        </header>
+      ) : null}
 
       {/* 2. Order CTA (cream) */}
-      {premium.featureLabel || premium.featureTitle || premium.promoButton ? (
+      {!isHidden("premium:feature") && (premium.featureLabel || premium.featureTitle || premium.promoButton) ? (
         <section className="bistro-band bistro-cream bistro-order" data-edit="premium:feature">
           {premium.featureLabel ? <span className="bistro-eyebrow bistro-eyebrow-wine">{premium.featureLabel}</span> : null}
           {premium.featureTitle ? <h2 className="bistro-heading bistro-heading-wine">{premium.featureTitle}</h2> : null}
@@ -1719,7 +1722,7 @@ function Bistro({ doc, handle, plan }: Props) {
       ) : null}
 
       {/* 3. Dishes (wine) */}
-      {dishes.length ? (
+      {dishes.length && !isHidden("premium:text") ? (
         <section className="bistro-band bistro-wine-bg bistro-dishes" data-edit="premium:text">
           {premium.sectionTitle ? <span className="bistro-eyebrow bistro-eyebrow-gold">{premium.sectionTitle}</span> : null}
           {premium.heading ? <h2 className="bistro-heading bistro-heading-cream">{premium.heading}</h2> : null}
@@ -1756,7 +1759,7 @@ function Bistro({ doc, handle, plan }: Props) {
       ) : null}
 
       {/* 4. Quick links (cream) */}
-      {premium.quote || premium.navLinks.length ? (
+      {!isHidden("premium:nav") && (premium.quote || premium.navLinks.length) ? (
         <section className="bistro-band bistro-cream bistro-links-band" data-edit="premium:nav">
           {premium.quote ? <h2 className="bistro-heading bistro-heading-wine">{premium.quote}</h2> : null}
           {premium.navLinks.length ? (
