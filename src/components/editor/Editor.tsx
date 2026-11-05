@@ -45,6 +45,24 @@ export function Editor({
   // When a block is clicked in the preview, jump to its editor (the nonce lets
   // the same block re-focus on a repeat click).
   const [focus, setFocus] = useState<{ id: string; n: number } | null>(null);
+  // What is being edited right now, highlighted in green in the preview.
+  const [active, setActive] = useState<string | null>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  // Paint a green outline on the preview element that matches what's being
+  // edited (a block, or a premium area tagged with data-edit).
+  useEffect(() => {
+    const root = previewRef.current;
+    if (!root) return;
+    root.querySelectorAll(".vita-edit-highlight").forEach((el) => el.classList.remove("vita-edit-highlight"));
+    if (!active) return;
+    const safe = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(active) : active;
+    const el = root.querySelector(`[data-edit="${safe}"]`);
+    if (el) {
+      el.classList.add("vita-edit-highlight");
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [active, doc]);
 
   // Switch section and let the sidebar follow (via the hash + event).
   function selectTab(id: TabId) {
@@ -185,14 +203,14 @@ export function Editor({
         {message ? <p className="mb-3 text-sm text-stone-700">{message}</p> : null}
 
         {tab === "templates" ? <TemplatesPanel doc={doc} onChange={setDoc} plan={plan} onGoToBlocks={() => selectTab("blocks")} /> : null}
-        {tab === "blocks" ? <BlocksPanel doc={doc} onChange={setDoc} focus={focus} stats={stats} plan={plan} /> : null}
-        {tab === "theme" ? <ThemePanel doc={doc} onChange={setDoc} focus={focus} /> : null}
+        {tab === "blocks" ? <BlocksPanel doc={doc} onChange={setDoc} focus={focus} stats={stats} plan={plan} onActive={setActive} /> : null}
+        {tab === "theme" ? <ThemePanel doc={doc} onChange={setDoc} focus={focus} onActive={setActive} /> : null}
         {tab === "seo" ? <SeoPanel doc={doc} onChange={setDoc} handle={handle} /> : null}
       </section>
 
       <aside className="lg:sticky lg:top-20 lg:self-start">
         <p className="mb-2 text-center text-xs text-stone-500">Prévia</p>
-        <div className="mx-auto h-[680px] w-full max-w-[360px] overflow-y-auto rounded-[2.2rem] border-[10px] border-stone-900 bg-white shadow-xl">
+        <div ref={previewRef} className="mx-auto h-[680px] w-full max-w-[360px] overflow-y-auto rounded-[2.2rem] border-[10px] border-stone-900 bg-white shadow-xl">
           <PageView
             doc={doc}
             plan={plan}

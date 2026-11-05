@@ -43,3 +43,11 @@ body {
 }
 .hero-scroll { animation: heroScroll 17s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .hero-scroll { animation: none; } }
+
+/* Green "you are editing this" highlight in the editor preview. */
+.vita-edit-highlight {
+  outline: 3px solid #22c55e !important;
+  outline-offset: 2px;
+  border-radius: 12px;
+  transition: outline-color 0.15s ease;
+}

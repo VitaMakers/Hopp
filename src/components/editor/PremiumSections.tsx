@@ -506,10 +506,12 @@ export function PremiumSectionsEditor({
   doc,
   onChange,
   focus,
+  onActive,
 }: {
   doc: PageDoc;
   onChange: (doc: PageDoc) => void;
   focus?: { id: string; n: number } | null;
+  onActive?: (id: string | null) => void;
 }) {
   const design = doc.theme.premium as Design;
   const sections = getPremiumSections(design);
@@ -523,6 +525,12 @@ export function PremiumSectionsEditor({
     }, 60);
     return () => window.clearTimeout(timer);
   }, [focus]);
+
+  // Highlight the matching premium area in the preview while a card is open.
+  useEffect(() => {
+    onActive?.(openId);
+    return () => onActive?.(null);
+  }, [openId, onActive]);
 
   return (
     <div className="flex flex-col gap-3">

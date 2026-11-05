@@ -24,7 +24,14 @@ import { BlockFields } from "./BlockFields";
 import { ProfileHeader } from "./ProfileHeader";
 
 type BlockStats = { views: number; clicks: Record<string, number> };
-type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void; focus?: { id: string; n: number } | null; stats?: BlockStats; plan?: string };
+type PanelProps = {
+  doc: PageDoc;
+  onChange: (doc: PageDoc) => void;
+  focus?: { id: string; n: number } | null;
+  stats?: BlockStats;
+  plan?: string;
+  onActive?: (id: string | null) => void;
+};
 
 // Block picker, grouped like a store. Each block gets a friendly glyph.
 const BLOCK_ICON: Record<BlockType, string> = {
@@ -62,9 +69,15 @@ const norm = (s: string) =>
 
 const fmtN = (n: number) => new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 1 }).format(n);
 
-export function BlocksPanel({ doc, onChange, focus, stats, plan = "" }: PanelProps) {
+export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }: PanelProps) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+
+  // Tell the editor which block is open, so the preview highlights it in green.
+  useEffect(() => {
+    onActive?.(openId);
+    return () => onActive?.(null);
+  }, [openId, onActive]);
 
   // When a block is clicked in the preview, open it here and scroll to it.
   useEffect(() => {
