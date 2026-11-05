@@ -80,12 +80,13 @@ export function PageView({ doc, handle, plan, footer, still, onEdit }: Props) {
   }, [handle]);
 
   if (theme.premium) {
-    // Premium designs only render link/product/stats blocks inside their
-    // layout. Every other block the user adds (gallery, videos, image, text,
-    // schedule…) is shown below the design, styled with the page's colors, so
-    // adding any block works on premium models too.
-    const PREMIUM_CONSUMED = ["link", "product", "stats"];
-    const extraBlocks = blocks.filter((block) => !PREMIUM_CONSUMED.includes(block.type));
+    // Each premium design renders a specific set of block types inside its own
+    // layout. Any block the user adds whose type this design does NOT render
+    // (e.g. a button/link on a restaurant model) is shown below the design,
+    // styled with the page's colors — so adding any block always works and is
+    // never dropped or double-rendered.
+    const rendered = PREMIUM_RENDERS[theme.premium] ?? ["link", "product", "stats"];
+    const extraBlocks = blocks.filter((block) => !rendered.includes(block.type));
     return (
       <>
         <PremiumView doc={doc} handle={handle} plan={plan} onEdit={onEdit} />
@@ -460,6 +461,26 @@ function Placeholder({ handle, className, children }: { handle?: string; classNa
 }
 
 const softBox = "rounded-[var(--box-radius)] bg-[color-mix(in_srgb,var(--page-text)_7%,transparent)]";
+
+// Which block types each premium design draws inside its own layout. Anything
+// not listed is appended below the design (see the premium branch of PageView),
+// so every added block shows exactly once on every model.
+const PREMIUM_RENDERS: Record<string, string[]> = {
+  authority: ["link"],
+  spotlight: ["link"],
+  ecosystem: ["link", "stats"],
+  experience: ["stats", "heading", "text", "youtube", "link"],
+  catalog: ["product"],
+  store: ["product"],
+  lookbook: ["product"],
+  mosaic: ["product"],
+  dropz: ["product"],
+  promo: ["link"],
+  menu: ["product"],
+  bistro: ["product"],
+  bar: ["product"],
+  casa: ["link"],
+};
 
 // Scheduling block in "reveal" mode: a button that, on click, opens the
 // calendar embed in place (the visitor picks a date and time without leaving
