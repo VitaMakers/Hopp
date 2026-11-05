@@ -331,6 +331,10 @@ export const premiumFieldsSchema = z.object({
   // blocks. Every list defaults to empty; the template ships the samples.
   heroPill: z.string().max(40).default("Black Antecipada"),
   heroPillUrl: z.string().max(2000).default(""),
+  // Cover height in px (0 = the design's default) and how many seconds each
+  // image shows when several are added (auto-rotating cover).
+  coverHeight: z.number().int().min(0).max(900).default(0),
+  heroSeconds: z.number().int().min(1).max(30).default(4),
   heroSlides: z
     .array(
       z.object({
