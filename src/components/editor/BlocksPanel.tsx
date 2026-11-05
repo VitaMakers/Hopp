@@ -22,6 +22,7 @@ import { BLOCK_CATALOG, blockSummary, createBlock } from "@/lib/page/catalog";
 import type { Block, BlockType, PageDoc } from "@/lib/page/schema";
 import { BlockFields } from "./BlockFields";
 import { ProfileHeader } from "./ProfileHeader";
+import { ThemePanel } from "./ThemePanel";
 
 type BlockStats = { views: number; clicks: Record<string, number> };
 type PanelProps = {
@@ -140,6 +141,11 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
           ))}
         </SortableContext>
       </DndContext>
+
+      {/* Appearance (model parts + colors) lives here too — only the header is separate. */}
+      <div className="mt-2">
+        <ThemePanel doc={doc} onChange={onChange} focus={focus} onActive={onActive} />
+      </div>
     </div>
   );
 }
