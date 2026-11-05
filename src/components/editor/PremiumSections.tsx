@@ -515,19 +515,37 @@ function PremiumSectionCard({
   doc: PageDoc;
   onChange: (doc: PageDoc) => void;
 }) {
+  const parts = doc.premium.hiddenParts;
+  const hidden = parts.includes(id);
+  // Colors are global; everything else can be turned off.
+  const canHide = id !== "premium:colors";
+  const toggleVisible = () =>
+    onChange({
+      ...doc,
+      premium: { ...doc.premium, hiddenParts: hidden ? parts.filter((x) => x !== id) : [...parts, id] },
+    });
+
   return (
     <div
       id={`blk-${id}`}
       className={`scroll-mt-24 rounded-xl bg-white ring-1 transition ${open ? "ring-2 ring-blue-500" : "ring-stone-200"}`}
     >
-      <button type="button" onClick={onToggleOpen} className="flex w-full items-center gap-2 p-3 text-left">
-        <span className="min-w-0 flex-1">
+      <div className="flex items-center gap-2 p-3">
+        <button type="button" onClick={onToggleOpen} className="min-w-0 flex-1 text-left">
           <span className="block text-xs uppercase tracking-wide text-stone-400">Parte do modelo</span>
-          <span className="block truncate font-medium">{label}</span>
+          <span className={`block truncate font-medium ${hidden ? "text-stone-400 line-through" : ""}`}>{label}</span>
           {summary ? <span className="block truncate text-xs text-stone-500">{summary}</span> : null}
-        </span>
-        <span className="text-stone-400">{open ? "▾" : "▸"}</span>
-      </button>
+        </button>
+        {canHide ? (
+          <label className="flex items-center gap-1 text-xs text-stone-500">
+            <input type="checkbox" checked={!hidden} onChange={toggleVisible} />
+            Visível
+          </label>
+        ) : null}
+        <button type="button" onClick={onToggleOpen} className="text-stone-400" aria-label="Abrir">
+          {open ? "▾" : "▸"}
+        </button>
+      </div>
       {open ? (
         <div className="border-t border-stone-100 p-4">
           <PremiumSectionBody id={id} doc={doc} onChange={onChange} />

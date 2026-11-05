@@ -337,6 +337,8 @@ export const premiumFieldsSchema = z.object({
   heroSeconds: z.number().int().min(1).max(30).default(4),
   // Hide the brand name text on the cover (e.g. when a logo is enough).
   hideName: z.boolean().default(false),
+  // Section ids (premium:*) the owner turned off, hidden from the page.
+  hiddenParts: z.array(z.string().max(40)).max(30).default([]),
   heroSlides: z
     .array(
       z.object({
