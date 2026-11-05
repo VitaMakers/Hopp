@@ -9,17 +9,15 @@ import type { PageDoc } from "@/lib/page/schema";
 import { BlocksPanel } from "./BlocksPanel";
 import { SeoPanel } from "./SeoPanel";
 import { TemplatesPanel } from "./TemplatesPanel";
-import { ThemePanel } from "./ThemePanel";
 
 // The active section is chosen in the left sidebar (src/app/dashboard/Sidebar.tsx).
 // They stay in sync through the URL hash and a "vita:section" window event, so
 // switching never reloads the page or drops unsaved edits.
-const TAB_IDS = ["templates", "blocks", "theme", "seo"] as const;
+const TAB_IDS = ["templates", "blocks", "seo"] as const;
 type TabId = (typeof TAB_IDS)[number];
 const TAB_LABELS: Record<TabId, string> = {
   templates: "Modelos",
   blocks: "Página",
-  theme: "Aparência",
   seo: "SEO",
 };
 
@@ -87,12 +85,10 @@ export function Editor({
   }, []);
 
   function handleEdit(target: string) {
-    // Profile (header/cover) now lives inside the Página view.
+    // The header, the model parts and the blocks all live in the Página view now.
     if (target === "profile") return selectTab("blocks");
-    // Premium model parts live in the Aparência (theme) tab: open it and focus
-    // the matching card.
     if (target === "appearance" || target === "premium" || target.startsWith("premium:")) {
-      selectTab("theme");
+      selectTab("blocks");
       const id = target === "appearance" || target === "premium" ? "premium:__group" : target;
       return setFocus((f) => ({ id, n: (f?.n ?? 0) + 1 }));
     }
@@ -204,7 +200,6 @@ export function Editor({
 
         {tab === "templates" ? <TemplatesPanel doc={doc} onChange={setDoc} plan={plan} onGoToBlocks={() => selectTab("blocks")} /> : null}
         {tab === "blocks" ? <BlocksPanel doc={doc} onChange={setDoc} focus={focus} stats={stats} plan={plan} onActive={setActive} /> : null}
-        {tab === "theme" ? <ThemePanel doc={doc} onChange={setDoc} focus={focus} onActive={setActive} /> : null}
         {tab === "seo" ? <SeoPanel doc={doc} onChange={setDoc} handle={handle} /> : null}
       </section>
 
