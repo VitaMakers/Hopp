@@ -50,11 +50,18 @@ export function getPremiumSections(design: Design): PremiumSection[] {
     case "experience":
       return [COLORS, { id: "premium:text", label: "Logo, frases e abas" }];
     case "bistro":
-      return [COLORS, { id: "premium:text", label: "Textos do restaurante" }, ...STORE_SECTIONS];
     case "bar":
-      return [COLORS, { id: "premium:text", label: "Textos do bar" }, ...STORE_SECTIONS];
     case "casa":
-      return [COLORS, { id: "premium:text", label: "Textos do restaurante" }, ...STORE_SECTIONS];
+      // Ordered to match the restaurant layout top-to-bottom in the preview.
+      return [
+        COLORS,
+        { id: "premium:hero", label: "Capa / topo" },
+        { id: "premium:feature", label: "Chamada de pedido" },
+        { id: "premium:text", label: design === "bar" ? "Textos do bar" : "Textos do restaurante" },
+        { id: "premium:nav", label: "Atalhos / rodapé" },
+        { id: "premium:promo", label: "Cartão de oferta" },
+        { id: "premium:size", label: "Cartão de tamanho" },
+      ];
     default:
       // store, lookbook, mosaic, dropz, promo, menu
       return [COLORS, ...STORE_SECTIONS];

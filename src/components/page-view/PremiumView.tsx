@@ -1661,7 +1661,7 @@ function Bistro({ doc, handle, plan }: Props) {
       style={{ "--bistro-wine": theme.background, "--bistro-cream": theme.text, "--bistro-gold": theme.accent } as React.CSSProperties}
     >
       {/* 1. Hero */}
-      <header className="bistro-hero">
+      <header className="bistro-hero" data-edit="premium:hero">
         {heroImg ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img className="bistro-hero-img" src={heroImg} alt={brand} />
@@ -1678,7 +1678,7 @@ function Bistro({ doc, handle, plan }: Props) {
 
       {/* 2. Order CTA (cream) */}
       {premium.featureLabel || premium.featureTitle || premium.promoButton ? (
-        <section className="bistro-band bistro-cream bistro-order">
+        <section className="bistro-band bistro-cream bistro-order" data-edit="premium:feature">
           {premium.featureLabel ? <span className="bistro-eyebrow bistro-eyebrow-wine">{premium.featureLabel}</span> : null}
           {premium.featureTitle ? <h2 className="bistro-heading bistro-heading-wine">{premium.featureTitle}</h2> : null}
           {orderHref || premium.promoButton ? (
@@ -1691,7 +1691,7 @@ function Bistro({ doc, handle, plan }: Props) {
 
       {/* 3. Dishes (wine) */}
       {dishes.length ? (
-        <section className="bistro-band bistro-wine-bg bistro-dishes">
+        <section className="bistro-band bistro-wine-bg bistro-dishes" data-edit="premium:text">
           {premium.sectionTitle ? <span className="bistro-eyebrow bistro-eyebrow-gold">{premium.sectionTitle}</span> : null}
           {premium.heading ? <h2 className="bistro-heading bistro-heading-cream">{premium.heading}</h2> : null}
           <div className="bistro-dish-list">
@@ -1728,7 +1728,7 @@ function Bistro({ doc, handle, plan }: Props) {
 
       {/* 4. Quick links (cream) */}
       {premium.quote || premium.navLinks.length ? (
-        <section className="bistro-band bistro-cream bistro-links-band">
+        <section className="bistro-band bistro-cream bistro-links-band" data-edit="premium:nav">
           {premium.quote ? <h2 className="bistro-heading bistro-heading-wine">{premium.quote}</h2> : null}
           {premium.navLinks.length ? (
             <nav className="bistro-links">
