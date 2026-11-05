@@ -1672,7 +1672,7 @@ function Bistro({ doc, handle, plan }: Props) {
       {logo ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img className="bistro-logo-img" src={logo} alt={brand} />
-      ) : (
+      ) : premium.hideName ? null : (
         <span className="bistro-logo-name">{brand}</span>
       )}
       {premium.credential ? (

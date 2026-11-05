@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { imageSrc } from "@/lib/page/links";
 import type { PageDoc, Theme } from "@/lib/page/schema";
-import { TextArea, TextField } from "./fields";
+import { TextArea, TextField, Toggle } from "./fields";
 import { UploadButton } from "./UploadButton";
 
 // Premium designs keep their content in doc.premium / doc.theme / doc.profile
@@ -390,6 +390,7 @@ function TextSection({ doc, onChange, setPremium }: { doc: PageDoc; onChange: (d
   if (design === "bistro") {
     return (
       <div className="flex flex-col gap-3">
+        <Toggle label="Mostrar o nome na capa" checked={!p.hideName} onChange={(on) => setPremium({ hideName: !on })} />
         <TextField label="Subtítulo do logo (ex.: RESTAURANTE)" value={p.credential} maxLength={80} onChange={(credential) => setPremium({ credential })} />
         <TextField label="Seção dos pratos — rótulo (ex.: ESCOLHAS DA CASA)" value={p.sectionTitle} maxLength={60} onChange={(sectionTitle) => setPremium({ sectionTitle })} />
         <TextField label="Seção dos pratos — título (ex.: Hoje combina com...)" value={p.heading} maxLength={240} onChange={(heading) => setPremium({ heading })} />
