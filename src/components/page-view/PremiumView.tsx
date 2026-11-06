@@ -37,20 +37,42 @@ function visible<T extends Block["type"]>(doc: PageDoc, type: T) {
   return doc.blocks.filter((block): block is Extract<Block, { type: T }> => block.enabled && block.type === type);
 }
 
+// Readable text colour (dark or white) for a given background, by luminance.
+function textOn(hex: string): string {
+  const h = hex.replace("#", "");
+  if (h.length !== 6) return "#111827";
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? "#111827" : "#ffffff";
+}
+
+// Inline tint from a link's per-button colour. Empty keeps the model's own look.
+function linkTint(buttonColor?: string): React.CSSProperties | undefined {
+  if (!buttonColor) return undefined;
+  return { background: buttonColor, color: textOn(buttonColor), borderColor: buttonColor };
+}
+
 function BlockLink({
   block,
   handle,
   href,
   className,
+  style,
   children,
 }: {
-  block: { id: string; title: string };
+  block: { id: string; title: string; buttonColor?: string };
   handle?: string;
   href: string | null;
   className?: string;
+  style?: React.CSSProperties;
   children: React.ReactNode;
 }) {
   const onEdit = useContext(PremiumEditContext);
+  // The per-button colour tints the model's native link; an explicit `style`
+  // (banner/card variants) wins over it.
+  const tint = linkTint(block.buttonColor);
+  const merged = tint || style ? { ...tint, ...style } : undefined;
   return (
     <a
       href={href ?? "#"}
@@ -58,6 +80,7 @@ function BlockLink({
       rel="noopener noreferrer"
       aria-label={block.title}
       className={className}
+      style={merged}
       data-edit={block.id}
       onClick={(e) => {
         if (onEdit) {
@@ -71,6 +94,82 @@ function BlockLink({
     >
       {children}
     </a>
+  );
+}
+
+// A link inside a premium model. "Clássico" keeps the model's own markup
+// (tinted live by the per-button colour, passed as `children`); "Destaque" and
+// "Cartão" switch to a universal banner/card, so the format picker always
+// changes the preview the moment it is clicked — the same controls as Linktree.
+function PremiumLink({ block, handle, children }: { block: LinkBlock; handle?: string; children: React.ReactNode }) {
+  if (block.display === "banner") return <PremiumBanner block={block} handle={handle} />;
+  if (block.display === "card") return <PremiumCard block={block} handle={handle} />;
+  return <>{children}</>;
+}
+
+// "Destaque": a full-width image banner (universal across every model).
+function PremiumBanner({ block, handle }: { block: LinkBlock; handle?: string }) {
+  const href = linkHref(block.url);
+  const thumb = imageSrc(block.imageUrl);
+  const accent = block.buttonColor || block.accent || "#4f46e5";
+  return (
+    <BlockLink
+      block={{ id: block.id, title: block.title }}
+      handle={handle}
+      href={href}
+      className="relative flex min-h-[150px] w-full flex-col items-start justify-end overflow-hidden rounded-[18px] p-5 text-left text-white"
+      style={{ background: `linear-gradient(135deg, ${accent}, #0b0b12)` }}
+    >
+      {thumb ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={thumb} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+      ) : null}
+      <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/5" />
+      <span className="relative flex flex-col items-start gap-2">
+        {block.label ? (
+          <span className="rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white" style={{ background: accent }}>
+            {block.label}
+          </span>
+        ) : null}
+        <span className="text-xl font-bold leading-tight">{block.title}</span>
+        {block.subtitle ? <span className="text-sm opacity-85">{block.subtitle}</span> : null}
+        {block.buttonText ? <span className="mt-1 rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-black">{block.buttonText} →</span> : null}
+      </span>
+    </BlockLink>
+  );
+}
+
+// "Cartão": a horizontal card, white by default, recoloured by the colour picker.
+function PremiumCard({ block, handle }: { block: LinkBlock; handle?: string }) {
+  const href = linkHref(block.url);
+  const thumb = imageSrc(block.imageUrl);
+  const accent = block.accent || "#4f46e5";
+  const colored = !!block.buttonColor;
+  return (
+    <BlockLink
+      block={{ id: block.id, title: block.title }}
+      handle={handle}
+      href={href}
+      className="flex w-full items-center gap-3 rounded-[18px] bg-white p-4 text-left text-stone-900 ring-1 ring-black/10"
+      style={colored ? { background: block.buttonColor, color: textOn(block.buttonColor as string) } : undefined}
+    >
+      {thumb ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={thumb} alt="" className="h-14 w-14 shrink-0 rounded-xl object-cover" />
+      ) : null}
+      <span className="flex min-w-0 flex-1 flex-col">
+        {block.label ? (
+          <span className="text-[11px] font-semibold uppercase tracking-wider" style={colored ? undefined : { color: accent }}>
+            {block.label}
+          </span>
+        ) : null}
+        <span className="font-semibold leading-snug">{block.title}</span>
+        {block.subtitle ? <span className="text-sm opacity-70">{block.subtitle}</span> : null}
+      </span>
+      <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg text-white" style={{ background: accent }}>
+        ↗
+      </span>
+    </BlockLink>
   );
 }
 
@@ -146,24 +245,25 @@ function Authority({ doc, handle, plan }: Props) {
         {visible(doc, "link").map((block: LinkBlock) => {
           const image = imageSrc(block.imageUrl);
           return (
-            <section
-              key={block.id}
-              className="premium-card"
-              style={{ "--premium-accent": block.accent || theme.accent } as React.CSSProperties}
-            >
-              <BlockLink block={block} handle={handle} href={linkHref(block.url)}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                {image ? <img src={image} alt="" loading="lazy" /> : null}
-                <div className="premium-card-shade" />
-                <div className="premium-card-copy">
-                  {block.label ? <span className="premium-category">{block.label}</span> : null}
-                  <strong>{block.title}</strong>
-                  <span className="premium-card-cta">
-                    {block.buttonText || "Saiba mais"} <span aria-hidden="true">→</span>
-                  </span>
-                </div>
-              </BlockLink>
-            </section>
+            <PremiumLink key={block.id} block={block} handle={handle}>
+              <section
+                className="premium-card"
+                style={{ "--premium-accent": block.accent || theme.accent } as React.CSSProperties}
+              >
+                <BlockLink block={block} handle={handle} href={linkHref(block.url)}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {image ? <img src={image} alt="" loading="lazy" /> : null}
+                  <div className="premium-card-shade" />
+                  <div className="premium-card-copy">
+                    {block.label ? <span className="premium-category">{block.label}</span> : null}
+                    <strong>{block.title}</strong>
+                    <span className="premium-card-cta">
+                      {block.buttonText || "Saiba mais"} <span aria-hidden="true">→</span>
+                    </span>
+                  </div>
+                </BlockLink>
+              </section>
+            </PremiumLink>
           );
         })}
       </div>
@@ -239,22 +339,23 @@ function Spotlight({ doc, handle, plan }: Props) {
         {visible(doc, "link").map((block: LinkBlock) => {
           const image = imageSrc(block.imageUrl);
           return (
-            <section
-              key={block.id}
-              className="spotlight-project"
-              style={{ "--spotlight-accent": block.accent || theme.accent } as React.CSSProperties}
-            >
-              <BlockLink block={block} handle={handle} href={linkHref(block.url)}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                {image ? <img src={image} alt="" loading="lazy" /> : null}
-                <div className="spotlight-project-shade" />
-                <div className="spotlight-project-copy">
-                  {block.label ? <small>{block.label}</small> : null}
-                  <strong>{block.title}</strong>
-                  {block.buttonText ? <span>{block.buttonText} →</span> : null}
-                </div>
-              </BlockLink>
-            </section>
+            <PremiumLink key={block.id} block={block} handle={handle}>
+              <section
+                className="spotlight-project"
+                style={{ "--spotlight-accent": block.accent || theme.accent } as React.CSSProperties}
+              >
+                <BlockLink block={block} handle={handle} href={linkHref(block.url)}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {image ? <img src={image} alt="" loading="lazy" /> : null}
+                  <div className="spotlight-project-shade" />
+                  <div className="spotlight-project-copy">
+                    {block.label ? <small>{block.label}</small> : null}
+                    <strong>{block.title}</strong>
+                    {block.buttonText ? <span>{block.buttonText} →</span> : null}
+                  </div>
+                </BlockLink>
+              </section>
+            </PremiumLink>
           );
         })}
       </div>
@@ -1457,11 +1558,13 @@ function Promo({ doc, handle, plan }: Props) {
         {offers.length ? (
           <section className="promo-offers">
             {offers.map((block: LinkBlock) => (
-              <BlockLink key={block.id} block={block} handle={handle} href={linkHref(block.url)} className="promo-offer">
-                {block.label ? <small>{block.label}</small> : null}
-                <strong>{block.title}</strong>
-                {block.buttonText ? <span className="promo-offer-cta">{block.buttonText} →</span> : null}
-              </BlockLink>
+              <PremiumLink key={block.id} block={block} handle={handle}>
+                <BlockLink block={block} handle={handle} href={linkHref(block.url)} className="promo-offer">
+                  {block.label ? <small>{block.label}</small> : null}
+                  <strong>{block.title}</strong>
+                  {block.buttonText ? <span className="promo-offer-cta">{block.buttonText} →</span> : null}
+                </BlockLink>
+              </PremiumLink>
             ))}
           </section>
         ) : null}
@@ -2096,16 +2199,15 @@ function Casa({ doc, handle, plan }: Props) {
         {premium.heading ? <h1 className="casa-heading">{premium.heading}</h1> : null}
         {links.length ? (
           <nav className="casa-links" aria-label="Atalhos">
-            {links.map((block: LinkBlock) => {
-              const href = linkHref(block.url);
-              return (
-                <BlockLink key={block.id} block={block} handle={handle} href={href} className="casa-link">
+            {links.map((block: LinkBlock) => (
+              <PremiumLink key={block.id} block={block} handle={handle}>
+                <BlockLink block={block} handle={handle} href={linkHref(block.url)} className="casa-link">
                   {casaIcon(block.label || block.title)}
                   <span className="casa-link-label">{block.title}</span>
                   <span className="casa-link-arrow" aria-hidden>↗</span>
                 </BlockLink>
-              );
-            })}
+              </PremiumLink>
+            ))}
           </nav>
         ) : null}
         {premium.promoNote ? <p className="casa-hours">{premium.promoNote}</p> : null}

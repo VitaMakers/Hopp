@@ -125,7 +125,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
         <div className="flex flex-col gap-4">
           <Fieldset title="Exibição">
             <LinkLayoutPicker value={block.display} onChange={(display) => onChange({ ...block, display })} />
-            {block.display === "button" ? (
+            {block.display === "button" || block.display === "card" ? (
               <label className="flex items-center gap-2 text-sm font-medium text-stone-700">
                 Cor do botão
                 <input
