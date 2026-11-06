@@ -96,6 +96,7 @@ function link(fields: Partial<Extract<Block, { type: "link" }>> & { title: strin
     subtitle: "",
     buttonText: "",
     accent: "",
+    buttonColor: "",
     ...fields,
   };
 }

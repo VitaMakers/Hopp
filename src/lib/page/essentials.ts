@@ -19,7 +19,7 @@ type LinkBlock = Extract<Block, { type: "link" }>;
 type L = { t: string; u: string; bt?: string; l?: string; s?: string };
 
 function lk(x: L, extra: Partial<LinkBlock> = {}): Block {
-  return { id: bid(), enabled: true, type: "link", title: x.t, url: x.u, imageUrl: "", highlight: false, display: "button", label: x.l ?? "", subtitle: x.s ?? "", buttonText: x.bt ?? "", accent: "", ...extra };
+  return { id: bid(), enabled: true, type: "link", title: x.t, url: x.u, imageUrl: "", highlight: false, display: "button", label: x.l ?? "", subtitle: x.s ?? "", buttonText: x.bt ?? "", accent: "", buttonColor: "", ...extra };
 }
 function banner(x: L, seed: string): Block {
   return lk(x, { display: "banner", imageUrl: pic(seed, 1000, 700), buttonText: x.bt ?? "Saiba mais" });

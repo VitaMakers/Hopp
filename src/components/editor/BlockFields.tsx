@@ -125,6 +125,24 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
         <div className="flex flex-col gap-4">
           <Fieldset title="Exibição">
             <LinkLayoutPicker value={block.display} onChange={(display) => onChange({ ...block, display })} />
+            {block.display === "button" ? (
+              <label className="flex items-center gap-2 text-sm font-medium text-stone-700">
+                Cor do botão
+                <input
+                  type="color"
+                  value={block.buttonColor || "#ffffff"}
+                  onChange={(event) => onChange({ ...block, buttonColor: event.target.value })}
+                  className="h-8 w-14 cursor-pointer rounded ring-1 ring-stone-300"
+                />
+                {block.buttonColor ? (
+                  <button type="button" onClick={() => onChange({ ...block, buttonColor: "" })} className="text-xs text-stone-500 underline">
+                    padrão (branco)
+                  </button>
+                ) : (
+                  <span className="text-xs text-stone-400">Branco por padrão</span>
+                )}
+              </label>
+            ) : null}
             {block.display !== "button" || premium ? (
               <label className="flex items-center gap-2 text-sm font-medium text-stone-700">
                 Cor da etiqueta

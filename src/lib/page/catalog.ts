@@ -54,6 +54,7 @@ export function createBlock(type: BlockType): Block {
         subtitle: "",
         buttonText: "",
         accent: "",
+        buttonColor: "",
       };
     case "heading":
       return { ...base, type, text: "Nova seção", style: "plain" };
