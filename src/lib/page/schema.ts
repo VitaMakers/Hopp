@@ -54,6 +54,8 @@ export const linkBlockSchema = z.object({
   subtitle: z.string().max(200).default(""),
   buttonText: z.string().max(40).default(""),
   accent: optionalColor,
+  // Per-button background colour for the "Clássico" layout ("" = default).
+  buttonColor: optionalColor,
 });
 
 export const headingBlockSchema = z.object({

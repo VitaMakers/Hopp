@@ -92,7 +92,7 @@ export function PageView({ doc, handle, plan, footer, still, onEdit }: Props) {
         <PremiumView doc={doc} handle={handle} plan={plan} onEdit={onEdit} />
         {extraBlocks.length ? (
           <div
-            style={{ ...themeVars(theme), ["--btn-bg"]: theme.accent, ["--btn-text"]: theme.background } as React.CSSProperties}
+            style={{ ...themeVars(theme), ["--btn-bg"]: "#ffffff", ["--btn-text"]: "#111827" } as React.CSSProperties}
             className="bg-[var(--page-bg)] px-5 pb-10 pt-2 text-[var(--page-text)]"
           >
             <div className="mx-auto flex w-full max-w-[520px] flex-col gap-3">
@@ -465,6 +465,16 @@ function Placeholder({ handle, className, children }: { handle?: string; classNa
 
 const softBox = "rounded-[var(--box-radius)] bg-[color-mix(in_srgb,var(--page-text)_7%,transparent)]";
 
+// Readable text colour (dark or white) for a given button background.
+function textOn(hex: string): string {
+  const h = hex.replace("#", "");
+  if (h.length !== 6) return "#111827";
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? "#111827" : "#ffffff";
+}
+
 // Which block types each premium design draws inside its own layout. Anything
 // not listed is appended below the design (see the premium branch of PageView),
 // so every added block shows exactly once on every model.
@@ -591,6 +601,7 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
           target="_blank"
           rel="noopener noreferrer"
           className={`${btn} relative ${thumb ? "px-16" : ""} ${block.highlight ? "btn-highlight" : ""}`}
+          style={block.buttonColor ? { background: block.buttonColor, color: textOn(block.buttonColor), borderColor: block.buttonColor } : undefined}
           onClick={() => click(href)}
         >
           {thumb ? (
