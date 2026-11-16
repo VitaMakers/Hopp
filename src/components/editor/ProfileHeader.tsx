@@ -173,7 +173,12 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
             </div>
 
             <div className="flex flex-col gap-2 rounded-lg bg-stone-50 p-2.5">
-              <p className="text-xs text-stone-500">A imagem da capa aparece sempre inteira (sem cortar), igual no celular e no computador.</p>
+              <p className="text-xs text-stone-500">A imagem aparece sempre inteira (sem cortar). Use o tamanho abaixo para deixá-la maior ou menor.</p>
+              <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+                Tamanho da capa
+                <input type="range" min={160} max={720} step={10} value={profile.coverHeight} onChange={(e) => setProfile({ coverHeight: Number(e.target.value) })} />
+                <span className="text-xs text-stone-500">{profile.coverHeight}px de altura</span>
+              </label>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium text-stone-700">Bordas:</span>
                 {([["true", "Arredondadas"], ["false", "Retas"]] as const).map(([v, l]) => (

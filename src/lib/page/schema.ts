@@ -431,7 +431,7 @@ export const pageDocSchema = z.object({
     coverPosY: z.number().int().min(0).max(100).default(50),
     // Cover banner look (classic/card layouts): height in px, rounded bottom
     // corners, and a fade into the page background to soften the edge.
-    coverHeight: z.number().int().min(120).max(900).default(176),
+    coverHeight: z.number().int().min(120).max(900).default(420),
     coverRounded: z.boolean().default(true),
     coverShade: z.boolean().default(false),
     // How the cover image fits: "cover" fills the banner (may crop), "contain"
