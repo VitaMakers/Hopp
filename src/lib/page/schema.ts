@@ -406,9 +406,26 @@ export const pageDocSchema = z.object({
     // rotates coverImages; "video" rotates coverVideos. Backward compatible —
     // existing pages default to "image" and still honour coverVideo.
     coverType: z.enum(["image", "carousel", "video"]).default("image"),
-    coverImages: z.array(z.string().max(1000)).max(8).default([]),
+    // Carousel images, each with its own framing (object-position %). Old
+    // pages stored plain strings; they are coerced to { url } here.
+    coverImages: z
+      .array(
+        z.preprocess(
+          (v) => (typeof v === "string" ? { url: v } : v),
+          z.object({
+            url: z.string().max(1000).default(""),
+            x: z.number().int().min(0).max(100).default(50),
+            y: z.number().int().min(0).max(100).default(50),
+          }),
+        ),
+      )
+      .max(8)
+      .default([]),
     coverVideos: z.array(z.string().max(1000)).max(8).default([]),
     coverSeconds: z.number().int().min(1).max(30).default(4),
+    // Framing of the single cover image (image type), as object-position %.
+    coverPosX: z.number().int().min(0).max(100).default(50),
+    coverPosY: z.number().int().min(0).max(100).default(50),
     // Cover banner look (classic/card layouts): height in px, rounded bottom
     // corners, and a fade into the page background to soften the edge.
     coverHeight: z.number().int().min(120).max(900).default(176),

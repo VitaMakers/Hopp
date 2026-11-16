@@ -198,6 +198,10 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
               <>
                 <TextField label="Imagem da capa (link ou envie)" type="url" value={profile.coverUrl} placeholder="https://..." onChange={(coverUrl) => setProfile({ coverUrl })} />
                 <UploadButton label="Enviar capa" onUploaded={(coverUrl) => setProfile({ coverUrl })} />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-stone-500">Enquadramento:</span>
+                  <FocalGrid x={profile.coverPosX} y={profile.coverPosY} onChange={(x, y) => setProfile({ coverPosX: x, coverPosY: y })} />
+                </div>
                 <p className="-mt-1 text-xs text-stone-500">Tamanho recomendado: 1080 × 1350 px (retrato).</p>
               </>
             ) : profile.coverType === "carousel" ? (
@@ -209,19 +213,20 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
                     mostrar links
                   </label>
                 </div>
-                {profile.coverImages.map((url, i) => (
+                {profile.coverImages.map((img, i) => (
                   <div key={i} className="flex items-center gap-2 rounded-lg bg-stone-50 p-2">
-                    {imageSrc(url) ? (
+                    {imageSrc(img.url) ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={imageSrc(url) as string} alt="" className="h-11 w-11 shrink-0 rounded object-cover" />
+                      <img src={imageSrc(img.url) as string} alt="" className="h-11 w-11 shrink-0 rounded object-cover" style={{ objectPosition: `${img.x}% ${img.y}%` }} />
                     ) : (
                       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded bg-stone-200 text-xs font-semibold text-stone-500">{i + 1}</span>
                     )}
+                    <FocalGrid x={img.x} y={img.y} onChange={(x, y) => setProfile({ coverImages: profile.coverImages.map((it, j) => (j === i ? { ...it, x, y } : it)) })} />
                     <div className="flex min-w-0 flex-1 flex-col gap-1">
                       {showLinks ? (
-                        <TextField label="" type="url" value={url} placeholder="https://..." onChange={(v) => setProfile({ coverImages: profile.coverImages.map((x, j) => (j === i ? v : x)) })} />
+                        <TextField label="" type="url" value={img.url} placeholder="https://..." onChange={(v) => setProfile({ coverImages: profile.coverImages.map((it, j) => (j === i ? { ...it, url: v } : it)) })} />
                       ) : null}
-                      <UploadButton label={url ? "Trocar imagem" : "Enviar imagem"} onUploaded={(v) => setProfile({ coverImages: profile.coverImages.map((x, j) => (j === i ? v : x)) })} />
+                      <UploadButton label={img.url ? "Trocar imagem" : "Enviar imagem"} onUploaded={(v) => setProfile({ coverImages: profile.coverImages.map((it, j) => (j === i ? { ...it, url: v } : it)) })} />
                     </div>
                     <button type="button" onClick={() => setProfile({ coverImages: profile.coverImages.filter((_, j) => j !== i) })} className="shrink-0 text-xs text-red-500">
                       Remover
@@ -229,7 +234,7 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
                   </div>
                 ))}
                 {profile.coverImages.length < 8 ? (
-                  <button type="button" onClick={() => setProfile({ coverImages: [...profile.coverImages, ""] })} className="self-start rounded-lg border border-dashed border-stone-300 px-3 py-1.5 text-sm text-stone-600">
+                  <button type="button" onClick={() => setProfile({ coverImages: [...profile.coverImages, { url: "", x: 50, y: 50 }] })} className="self-start rounded-lg border border-dashed border-stone-300 px-3 py-1.5 text-sm text-stone-600">
                     + Adicionar imagem
                   </button>
                 ) : null}
@@ -271,6 +276,30 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
             Concluir
           </button>
         </div>
+      )}
+    </div>
+  );
+}
+
+// A compact 3×3 picker for the focal point of a cover image (object-position).
+// The middle dot centres it; corners/edges pull the framing that way.
+function FocalGrid({ x, y, onChange }: { x: number; y: number; onChange: (x: number, y: number) => void }) {
+  const pts = [0, 50, 100];
+  return (
+    <div className="grid shrink-0 grid-cols-3 gap-0.5 rounded bg-white p-1 ring-1 ring-stone-200" title="Enquadramento da imagem (clique para centralizar/ajustar)">
+      {pts.flatMap((py) =>
+        pts.map((px) => {
+          const on = x === px && y === py;
+          return (
+            <button
+              key={`${px}-${py}`}
+              type="button"
+              onClick={() => onChange(px, py)}
+              aria-label={`Enquadrar em ${px}% ${py}%`}
+              className={`h-3.5 w-3.5 rounded-sm ${on ? "bg-stone-900" : "bg-stone-200 hover:bg-stone-400"}`}
+            />
+          );
+        }),
       )}
     </div>
   );

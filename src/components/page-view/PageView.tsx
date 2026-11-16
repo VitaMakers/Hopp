@@ -195,9 +195,13 @@ function RotatingVideos({ videos, seconds, poster, className, style, alt }: { vi
   );
 }
 
+// A cover image with its own framing (object-position percentages).
+type CoverImg = { src: string; x: number; y: number };
+
 // Rotating cover images, switching on a timer when 2+. One <img> whose src
-// swaps (a clean cut), so it keeps the exact sizing of a single cover image.
-function RotatingImages({ images, seconds, className, style, alt }: { images: string[]; seconds: number; className: string; style?: React.CSSProperties; alt: string }) {
+// swaps (a clean cut); each image uses its own framing so it is centred the
+// way the owner set it.
+function RotatingImages({ images, seconds, className, style, alt }: { images: CoverImg[]; seconds: number; className: string; style?: React.CSSProperties; alt: string }) {
   const [i, setI] = useState(0);
   useEffect(() => {
     if (images.length <= 1) return;
@@ -205,8 +209,9 @@ function RotatingImages({ images, seconds, className, style, alt }: { images: st
     return () => clearInterval(t);
   }, [images.length, seconds]);
   const active = Math.min(i, images.length - 1);
+  const img = images[active];
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={images[active]} alt={alt} className={className} style={style} />;
+  return <img src={img.src} alt={alt} className={className} style={{ ...style, objectPosition: `${img.x}% ${img.y}%` }} />;
 }
 
 // The cover of a simple-layout header: video(s) take priority, then image(s)
@@ -221,14 +226,14 @@ function CoverMedia({
   style,
 }: {
   videos: string[];
-  images: string[];
+  images: CoverImg[];
   seconds: number;
   fallback: string | null;
   alt: string;
   className: string;
   style?: React.CSSProperties;
 }) {
-  if (videos.length) return <RotatingVideos videos={videos} seconds={seconds} poster={images[0] ?? fallback} className={className} style={style} alt={alt} />;
+  if (videos.length) return <RotatingVideos videos={videos} seconds={seconds} poster={images[0]?.src ?? fallback} className={className} style={style} alt={alt} />;
   if (images.length) return <RotatingImages images={images} seconds={seconds} className={className} style={style} alt={alt} />;
   // eslint-disable-next-line @next/next/no-img-element
   return fallback ? <img src={fallback} alt={alt} className={className} style={style} /> : null;
@@ -244,9 +249,13 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
   const coverVideos = (still ? [] : profile.coverType === "video" ? profile.coverVideos : profile.coverVideo ? [profile.coverVideo] : [])
     .map(videoSrc)
     .filter((x): x is string => !!x);
-  const coverImages = (profile.coverType === "carousel" ? profile.coverImages : profile.coverUrl ? [profile.coverUrl] : [])
-    .map(imageSrc)
-    .filter((x): x is string => !!x);
+  const coverImages: CoverImg[] = (
+    profile.coverType === "carousel"
+      ? profile.coverImages.map((i) => ({ src: imageSrc(i.url), x: i.x, y: i.y }))
+      : profile.coverUrl
+        ? [{ src: imageSrc(profile.coverUrl), x: profile.coverPosX, y: profile.coverPosY }]
+        : []
+  ).filter((i): i is CoverImg => !!i.src);
   const hasCover = coverVideos.length > 0 || coverImages.length > 0;
 
   // The page starts straight with its blocks (a title block usually opens it).
@@ -374,7 +383,7 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
     return (
       <div className="-mx-5 flex w-[calc(100%+2.5rem)] flex-col items-center">
         <div className="relative w-full">
-          <CoverMedia videos={coverVideos} images={avatarImg ? [avatarImg] : []} seconds={coverSeconds} fallback={null} alt={profile.name} className="aspect-[4/5] max-h-[460px] w-full object-cover" />
+          <CoverMedia videos={coverVideos} images={avatarImg ? [{ src: avatarImg, x: 50, y: 50 }] : []} seconds={coverSeconds} fallback={null} alt={profile.name} className="aspect-[4/5] max-h-[460px] w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent from-55% to-[var(--page-bg)]" />
           <div className="absolute inset-x-0 bottom-2 px-5">
             <Name doc={doc} big />
