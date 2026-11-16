@@ -5,6 +5,12 @@ body {
   height: 100%;
 }
 
+/* Never let anything spill sideways on any device — the page always fits the
+   screen width (phone or computer). "clip" doesn't break position: sticky. */
+html {
+  overflow-x: clip;
+}
+
 body {
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
