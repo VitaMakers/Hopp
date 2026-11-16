@@ -399,18 +399,26 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
   // Show the cover (image/carousel/video) at the top whenever one is set — on
   // the classic and card layouts too, so adding a cover appears right away.
   const showBanner = hasCover;
+  const coverContain = profile.coverFit === "contain";
   return (
     <>
       {showBanner ? (
         <div
           className={`relative -mx-5 w-[calc(100%+2.5rem)] overflow-hidden ${profile.coverRounded ? "sm:rounded-b-3xl" : ""}`}
-          style={{ height: profile.coverHeight }}
+          style={coverContain ? { background: "var(--page-bg)" } : { height: profile.coverHeight }}
         >
-          <CoverMedia videos={coverVideos} images={coverImages} seconds={coverSeconds} fallback={null} alt="" className="h-full w-full object-cover" />
+          <CoverMedia
+            videos={coverVideos}
+            images={coverImages}
+            seconds={coverSeconds}
+            fallback={null}
+            alt=""
+            className={coverContain ? "block h-auto w-full object-contain" : "h-full w-full object-cover"}
+          />
           {profile.coverShade ? <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-b from-transparent to-[var(--page-bg)]" /> : null}
         </div>
       ) : null}
-      <div className={`flex flex-col items-center ${showBanner ? "-mt-12" : theme.layout === "card" ? "" : "pt-12"}`}>
+      <div className={`flex flex-col items-center ${showBanner ? (coverContain ? "pt-5" : "-mt-12") : theme.layout === "card" ? "" : "pt-12"}`}>
         <Avatar doc={doc} size="h-24 w-24" />
         <div className="mt-4 flex flex-col items-center">
           <Logo doc={doc} className="mb-2 h-10 w-auto object-contain" />

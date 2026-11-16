@@ -173,11 +173,29 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
             </div>
 
             <div className="flex flex-col gap-2 rounded-lg bg-stone-50 p-2.5">
-              <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
-                Tamanho da capa
-                <input type="range" min={120} max={520} step={10} value={profile.coverHeight} onChange={(e) => setProfile({ coverHeight: Number(e.target.value) })} />
-                <span className="text-xs text-stone-500">{profile.coverHeight}px</span>
-              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-medium text-stone-700">Imagem:</span>
+                {([["contain", "Mostrar inteira"], ["cover", "Preencher (corta)"]] as const).map(([v, l]) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setProfile({ coverFit: v })}
+                    className={`rounded-lg px-3 py-1 text-sm ring-1 ${profile.coverFit === v ? "bg-stone-900 text-white ring-stone-900" : "text-stone-600 ring-stone-300"}`}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
+              <p className="-mt-1 text-xs text-stone-500">
+                {profile.coverFit === "contain" ? "A imagem aparece inteira, sem cortar (a altura segue a foto)." : "A imagem preenche a faixa e pode cortar as bordas. Use a altura abaixo."}
+              </p>
+              {profile.coverFit === "cover" ? (
+                <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+                  Tamanho da capa
+                  <input type="range" min={120} max={520} step={10} value={profile.coverHeight} onChange={(e) => setProfile({ coverHeight: Number(e.target.value) })} />
+                  <span className="text-xs text-stone-500">{profile.coverHeight}px</span>
+                </label>
+              ) : null}
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium text-stone-700">Bordas:</span>
                 {([["true", "Arredondadas"], ["false", "Retas"]] as const).map(([v, l]) => (
