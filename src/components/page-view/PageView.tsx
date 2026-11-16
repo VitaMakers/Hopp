@@ -386,7 +386,9 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
     );
   }
 
-  const showBanner = theme.layout === "cover" && hasCover;
+  // Show the cover (image/carousel/video) at the top whenever one is set — on
+  // the classic and card layouts too, so adding a cover appears right away.
+  const showBanner = hasCover;
   return (
     <>
       {showBanner ? (
