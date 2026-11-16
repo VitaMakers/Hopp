@@ -156,6 +156,7 @@ function Avatar({ doc, size }: { doc: PageDoc; size: string }) {
 }
 
 function Name({ doc, big = false }: { doc: PageDoc; big?: boolean }) {
+  if (doc.profile.hideName) return null;
   return (
     <h1 className={`flex items-center justify-center gap-1.5 text-center font-bold [font-family:var(--heading-font)] ${big ? "text-4xl leading-tight tracking-tight" : "text-xl"}`}>
       {doc.profile.name}

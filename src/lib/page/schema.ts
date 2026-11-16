@@ -419,6 +419,8 @@ export const pageDocSchema = z.object({
     verified: z.boolean().default(false),
     // Hide the profile photo/logo on the public page (the circle at the top).
     hideAvatar: z.boolean().default(false),
+    // Hide the name text on the public page (e.g. when the cover/logo is enough).
+    hideName: z.boolean().default(false),
     // A WhatsApp number shown as a floating button on the public page.
     floatingWhatsapp: z.string().max(30).default(""),
   }),
