@@ -399,7 +399,9 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
   // Show the cover (image/carousel/video) at the top whenever one is set — on
   // the classic and card layouts too, so adding a cover appears right away.
   const showBanner = hasCover;
-  const coverContain = profile.coverFit === "contain";
+  // The cover always shows the whole image (never cropped), so it looks the same
+  // on phone and computer and matches the editor preview.
+  const coverContain = true;
   return (
     <>
       {showBanner ? (
