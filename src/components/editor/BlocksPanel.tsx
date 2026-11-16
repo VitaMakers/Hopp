@@ -18,6 +18,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { nanoid } from "nanoid";
 import { BLOCK_CATALOG, blockSummary, createBlock } from "@/lib/page/catalog";
 import type { Block, BlockType, PageDoc } from "@/lib/page/schema";
 import { BlockFields } from "./BlockFields";
@@ -119,6 +120,24 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
     setBlocks(arrayMove(doc.blocks, from, to));
   }
 
+  // Duplicate a block right below the original (a copy with a fresh id), then
+  // open it — the fastest way to make a second button/card like one you have.
+  function duplicate(id: string) {
+    const i = doc.blocks.findIndex((b) => b.id === id);
+    if (i < 0) return;
+    const copy = { ...doc.blocks[i], id: nanoid(10) } as Block;
+    const next = [...doc.blocks];
+    next.splice(i + 1, 0, copy);
+    setBlocks(next);
+    setOpenId(copy.id);
+  }
+
+  // Remove a block, asking first so a tap never deletes content by accident.
+  function remove(id: string) {
+    if (typeof window !== "undefined" && !window.confirm("Excluir este bloco?")) return;
+    setBlocks(doc.blocks.filter((item) => item.id !== id));
+  }
+
   return (
     <div className="flex flex-col gap-3">
       <ProfileHeader doc={doc} onChange={onChange} plan={plan} />
@@ -144,7 +163,8 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
               open={openId === block.id}
               onToggleOpen={() => setOpenId(openId === block.id ? null : block.id)}
               onChange={(next) => setBlocks(doc.blocks.map((item) => (item.id === next.id ? next : item)))}
-              onRemove={() => setBlocks(doc.blocks.filter((item) => item.id !== block.id))}
+              onRemove={() => remove(block.id)}
+              onDuplicate={() => duplicate(block.id)}
               onMoveUp={() => move(block.id, -1)}
               onMoveDown={() => move(block.id, 1)}
               isFirst={index === 0}
@@ -154,6 +174,16 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
           ))}
         </SortableContext>
       </DndContext>
+
+      {doc.blocks.length > 0 ? (
+        <button
+          type="button"
+          onClick={() => setAdding(true)}
+          className="self-start rounded-lg px-3 py-2 text-sm font-semibold text-stone-600 ring-1 ring-stone-300 transition hover:ring-stone-900"
+        >
+          + Adicionar outro bloco
+        </button>
+      ) : null}
 
       {/* Appearance (model parts + colors) lives here too — only the header is separate. */}
       <div className="mt-2">
@@ -257,6 +287,7 @@ function SortableBlock({
   onToggleOpen,
   onChange,
   onRemove,
+  onDuplicate,
   onMoveUp,
   onMoveDown,
   isFirst,
@@ -269,6 +300,7 @@ function SortableBlock({
   onToggleOpen: () => void;
   onChange: (block: Block) => void;
   onRemove: () => void;
+  onDuplicate: () => void;
   onMoveUp: () => void;
   onMoveDown: () => void;
   isFirst: boolean;
@@ -338,13 +370,36 @@ function SortableBlock({
           />
           Visível
         </label>
+        <button
+          type="button"
+          onClick={onDuplicate}
+          aria-label="Duplicar bloco"
+          title="Duplicar"
+          className="rounded-md px-1.5 py-1 text-stone-400 transition hover:bg-stone-100 hover:text-stone-900"
+        >
+          ⧉
+        </button>
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label="Excluir bloco"
+          title="Excluir"
+          className="rounded-md px-1.5 py-1 text-stone-400 transition hover:bg-red-50 hover:text-red-600"
+        >
+          🗑
+        </button>
       </div>
       {open ? (
         <div className="border-t border-stone-100 p-4">
           <BlockFields block={block} premium={premium} onChange={onChange} />
-          <button type="button" onClick={onRemove} className="mt-4 text-sm text-red-600">
-            Excluir bloco
-          </button>
+          <div className="mt-4 flex items-center gap-4">
+            <button type="button" onClick={onDuplicate} className="text-sm font-medium text-stone-600 hover:text-stone-900">
+              Duplicar bloco
+            </button>
+            <button type="button" onClick={onRemove} className="text-sm text-red-600">
+              Excluir bloco
+            </button>
+          </div>
         </div>
       ) : null}
     </div>
