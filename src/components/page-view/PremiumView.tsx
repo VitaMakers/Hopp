@@ -53,6 +53,12 @@ function linkTint(buttonColor?: string): React.CSSProperties | undefined {
   return { background: buttonColor, color: textOn(buttonColor), borderColor: buttonColor };
 }
 
+// "Altura da capa": when set, every model's cover/hero uses this exact height
+// instead of its default aspect ratio. 0 = automatic (the model's own size).
+function coverStyle(height: number): React.CSSProperties | undefined {
+  return height ? { height, minHeight: 0, aspectRatio: "auto" } : undefined;
+}
+
 function BlockLink({
   block,
   handle,
@@ -754,7 +760,7 @@ function Store({ doc, handle, plan }: Props) {
       }
     >
       <div className="store-inner">
-        <StoreHero slides={premium.heroSlides} brand={brand} verified={profile.verified} pill={premium.heroPill} pillUrl={premium.heroPillUrl} handle={handle} />
+        <StoreHero slides={premium.heroSlides} brand={brand} verified={profile.verified} pill={premium.heroPill} pillUrl={premium.heroPillUrl} handle={handle} coverHeight={premium.coverHeight} seconds={premium.heroSeconds} />
         <StorePromo premium={premium} brand={brand} handle={handle} />
         {premium.featureTitle || premium.featureImageUrl ? <StoreFeature premium={premium} handle={handle} /> : null}
         {products.length ? (
@@ -792,6 +798,8 @@ function StoreHero({
   pill,
   pillUrl,
   handle,
+  coverHeight,
+  seconds,
 }: {
   slides: HeroSlide[];
   brand: string;
@@ -799,18 +807,20 @@ function StoreHero({
   pill: string;
   pillUrl: string;
   handle?: string;
+  coverHeight: number;
+  seconds: number;
 }) {
   const [index, setIndex] = useState(0);
   const count = slides.length;
   useEffect(() => {
     if (count <= 1) return;
-    const timer = setInterval(() => setIndex((value) => (value + 1) % count), 3600);
+    const timer = setInterval(() => setIndex((value) => (value + 1) % count), Math.max(1, seconds) * 1000);
     return () => clearInterval(timer);
-  }, [count]);
+  }, [count, seconds]);
   if (!count) return null;
   const active = Math.min(index, count - 1);
   return (
-    <section className="store-hero" data-edit="premium:hero">
+    <section className="store-hero" data-edit="premium:hero" style={coverStyle(coverHeight)}>
       <div className="store-hero-track" style={{ transform: `translateX(-${active * 100}%)` }}>
         {slides.map((slide, slideIndex) => (
           <StoreSlide key={slideIndex} slide={slide} brand={brand} verified={verified} pill={pill} pillUrl={pillUrl} handle={handle} />
@@ -1120,7 +1130,7 @@ function Lookbook({ doc, handle, plan }: Props) {
       className="vita-premium premium-lookbook"
       style={{ "--look-bg": theme.background, "--look-text": theme.text, "--look-accent": theme.accent } as React.CSSProperties}
     >
-      <header className="look-hero">
+      <header className="look-hero" style={coverStyle(premium.coverHeight)}>
         {heroImg ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img className="look-hero-img" src={heroImg} alt={headline.join(" ") || brand} />
@@ -1398,7 +1408,7 @@ function Dropz({ doc, handle, plan }: Props) {
           </span>
           {premium.heroPill ? <span className="dropz-chip">{premium.heroPill}</span> : null}
         </header>
-        <section className="dropz-hero">
+        <section className="dropz-hero" style={coverStyle(premium.coverHeight)}>
           {heroImg ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img className="dropz-hero-img" src={heroImg} alt={title || brand} />
@@ -1535,7 +1545,7 @@ function Promo({ doc, handle, plan }: Props) {
               </a>
             ) : null}
           </div>
-          <div className="promo-hero-photo">
+          <div className="promo-hero-photo" style={coverStyle(premium.coverHeight)}>
             {photo ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={photo} alt={brand} />
@@ -1613,7 +1623,7 @@ function Menu({ doc, handle, plan }: Props) {
       className="vita-premium premium-menu"
       style={{ "--menu-bg": theme.background, "--menu-text": theme.text, "--menu-accent": theme.accent } as React.CSSProperties}
     >
-      <header className="menu-hero">
+      <header className="menu-hero" style={coverStyle(premium.coverHeight)}>
         {heroImg ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img className="menu-hero-img" src={heroImg} alt={brand} />
@@ -1969,7 +1979,7 @@ function Bar({ doc, handle, plan }: Props) {
       </div>
 
       {/* Hero */}
-      <header className="bar-hero">
+      <header className="bar-hero" style={coverStyle(premium.coverHeight)}>
         {heroImg ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img className="bar-hero-img" src={heroImg} alt={brand} />
@@ -2136,17 +2146,17 @@ function casaIcon(label: string) {
   return <svg {...c} aria-hidden><path d="M4 3v18M8 3v6a2 2 0 0 1-4 0M18 3c-1.5 0-3 1.8-3 5s1.5 4 3 4m0 0v9" /></svg>;
 }
 
-function CasaHero({ slides, brand, credential, verified }: { slides: PremiumFields["heroSlides"]; brand: string; credential: string; verified: boolean }) {
+function CasaHero({ slides, brand, credential, verified, coverHeight, seconds }: { slides: PremiumFields["heroSlides"]; brand: string; credential: string; verified: boolean; coverHeight: number; seconds: number }) {
   const [index, setIndex] = useState(0);
   const count = slides.length;
   useEffect(() => {
     if (count <= 1) return;
-    const timer = setInterval(() => setIndex((v) => (v + 1) % count), 4000);
+    const timer = setInterval(() => setIndex((v) => (v + 1) % count), Math.max(1, seconds) * 1000);
     return () => clearInterval(timer);
-  }, [count]);
+  }, [count, seconds]);
   const active = count ? Math.min(index, count - 1) : 0;
   return (
-    <header className="casa-hero">
+    <header className="casa-hero" style={coverStyle(coverHeight)}>
       <div className="casa-hero-track" style={{ transform: `translateX(-${active * 100}%)` }}>
         {(count ? slides : [{ imageUrl: "", headline: "" }]).map((slide, i) => {
           const img = imageSrc(slide.imageUrl);
@@ -2194,7 +2204,7 @@ function Casa({ doc, handle, plan }: Props) {
       className="vita-premium premium-casa"
       style={{ "--casa-bg": theme.background, "--casa-text": theme.text, "--casa-accent": theme.accent } as React.CSSProperties}
     >
-      <CasaHero slides={premium.heroSlides} brand={brand} credential={premium.credential} verified={profile.verified} />
+      <CasaHero slides={premium.heroSlides} brand={brand} credential={premium.credential} verified={profile.verified} coverHeight={premium.coverHeight} seconds={premium.heroSeconds} />
       <div className="casa-body">
         {premium.heading ? <h1 className="casa-heading">{premium.heading}</h1> : null}
         {links.length ? (

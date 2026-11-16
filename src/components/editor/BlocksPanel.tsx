@@ -111,15 +111,6 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
     setAdding(false);
   }
 
-  // Move a block one position up or down. Simpler than dragging, and works on
-  // touch — the main way people reorder on the phone.
-  function move(id: string, dir: -1 | 1) {
-    const from = doc.blocks.findIndex((b) => b.id === id);
-    const to = from + dir;
-    if (from < 0 || to < 0 || to >= doc.blocks.length) return;
-    setBlocks(arrayMove(doc.blocks, from, to));
-  }
-
   // Duplicate a block right below the original (a copy with a fresh id), then
   // open it — the fastest way to make a second button/card like one you have.
   function duplicate(id: string) {
@@ -155,7 +146,7 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <SortableContext items={doc.blocks.map((block) => block.id)} strategy={verticalListSortingStrategy}>
-          {doc.blocks.map((block, index) => (
+          {doc.blocks.map((block) => (
             <SortableBlock
               key={block.id}
               block={block}
@@ -165,10 +156,6 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
               onChange={(next) => setBlocks(doc.blocks.map((item) => (item.id === next.id ? next : item)))}
               onRemove={() => remove(block.id)}
               onDuplicate={() => duplicate(block.id)}
-              onMoveUp={() => move(block.id, -1)}
-              onMoveDown={() => move(block.id, 1)}
-              isFirst={index === 0}
-              isLast={index === doc.blocks.length - 1}
               stats={stats}
             />
           ))}
@@ -288,10 +275,6 @@ function SortableBlock({
   onChange,
   onRemove,
   onDuplicate,
-  onMoveUp,
-  onMoveDown,
-  isFirst,
-  isLast,
   stats,
 }: {
   block: Block;
@@ -301,10 +284,6 @@ function SortableBlock({
   onChange: (block: Block) => void;
   onRemove: () => void;
   onDuplicate: () => void;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
-  isFirst: boolean;
-  isLast: boolean;
   stats?: BlockStats;
 }) {
   const blockClicks = stats?.clicks[block.id] ?? 0;
@@ -319,32 +298,13 @@ function SortableBlock({
       className={`scroll-mt-24 rounded-xl bg-white ring-1 transition ${open ? "ring-2 ring-blue-500" : "ring-stone-200"} ${isDragging ? "z-10 shadow-lg" : ""}`}
     >
       <div className="flex items-center gap-2 p-3">
-        <div className="flex flex-col">
-          <button
-            type="button"
-            onClick={onMoveUp}
-            disabled={isFirst}
-            aria-label="Mover para cima"
-            className="px-1 text-sm leading-none text-stone-400 enabled:hover:text-stone-900 disabled:opacity-30"
-          >
-            ▲
-          </button>
-          <button
-            type="button"
-            onClick={onMoveDown}
-            disabled={isLast}
-            aria-label="Mover para baixo"
-            className="px-1 text-sm leading-none text-stone-400 enabled:hover:text-stone-900 disabled:opacity-30"
-          >
-            ▼
-          </button>
-        </div>
         <button
           type="button"
           {...attributes}
           {...listeners}
-          aria-label="Arrastar para reordenar"
-          className="hidden cursor-grab touch-none px-1 text-stone-400 active:cursor-grabbing sm:block"
+          aria-label="Segure e arraste para reordenar"
+          title="Segure e arraste para reordenar"
+          className="cursor-grab touch-none px-1 text-lg leading-none text-stone-400 active:cursor-grabbing"
         >
           ⠿
         </button>
