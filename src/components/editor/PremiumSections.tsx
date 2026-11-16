@@ -76,7 +76,9 @@ export function premiumSectionSummary(id: string, doc: PageDoc): string {
     case "premium:colors":
       return "Fundo, texto e destaque";
     case "premium:hero":
-      return `${p.heroSlides.length} ${p.heroSlides.length === 1 ? "slide" : "slides"}`;
+      return p.heroType === "video"
+        ? `Vídeo · ${p.heroVideos.filter(Boolean).length}`
+        : `${p.heroSlides.length} ${p.heroSlides.length === 1 ? "slide" : "slides"}`;
     case "premium:promo":
       return [p.promoBadge, p.promoDiscount].filter(Boolean).join(" · ") || "Cupom e desconto";
     case "premium:feature":
@@ -197,8 +199,19 @@ function HeroFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Par
   const addSlide = () =>
     setPremium({ heroSlides: [...slides, { imageUrl: "", headline: "", productLabel: "NA TELA", productName: "", priceFrom: "", price: "", url: "" }] });
   const removeSlide = (index: number) => setPremium({ heroSlides: slides.filter((_, i) => i !== index) });
+  const videos = p.heroVideos;
+  const setVideo = (index: number, url: string) => setPremium({ heroVideos: videos.map((v, i) => (i === index ? url : v)) });
+  const addVideo = () => setPremium({ heroVideos: [...videos, ""] });
+  const removeVideo = (index: number) => setPremium({ heroVideos: videos.filter((_, i) => i !== index) });
+  const isVideo = p.heroType === "video";
   return (
     <div className="flex flex-col gap-3">
+      <Choice
+        label="Tipo de capa"
+        value={p.heroType}
+        options={{ image: "Imagem / Carrossel", video: "Vídeo" }}
+        onChange={(heroType) => setPremium({ heroType })}
+      />
       <div className="grid grid-cols-2 gap-3">
         <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
           Altura da capa
@@ -213,7 +226,7 @@ function HeroFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Par
           <span className="text-xs text-stone-500">{p.coverHeight ? `${p.coverHeight}px` : "Automático (padrão)"}</span>
         </label>
         <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
-          Tempo de cada imagem (segundos)
+          {isVideo ? "Tempo de cada vídeo (segundos)" : "Tempo de cada imagem (segundos)"}
           <input
             type="number"
             min={1}
@@ -222,14 +235,41 @@ function HeroFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Par
             onChange={(e) => setPremium({ heroSeconds: Math.min(30, Math.max(1, Number(e.target.value) || 4)) })}
             className="field"
           />
-          <span className="text-xs text-stone-500">Com 2+ imagens, a capa vira um carrossel automático.</span>
+          <span className="text-xs text-stone-500">
+            {isVideo ? "Com 2+ vídeos, a capa alterna entre eles." : "Com 2+ imagens, a capa vira um carrossel automático."}
+          </span>
         </label>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <TextField label="Texto do selo (canto superior)" value={p.heroPill} maxLength={40} onChange={(heroPill) => setPremium({ heroPill })} />
         <TextField label="Link do selo" type="url" value={p.heroPillUrl} maxLength={2000} onChange={(heroPillUrl) => setPremium({ heroPillUrl })} />
       </div>
-      {slides.map((slide, index) => (
+
+      {isVideo ? (
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-medium text-stone-700">Vídeos da capa</p>
+          <p className="-mt-1 text-xs text-stone-500">Cole o link de cada vídeo (.mp4). Com mais de um, eles vão trocando no tempo acima. Os vídeos tocam sem som e em loop.</p>
+          {videos.map((url, index) => (
+            <div key={index} className="flex items-end gap-2 rounded-lg bg-stone-50 p-2.5">
+              <div className="flex-1">
+                <TextField label={`Vídeo ${index + 1} (link .mp4)`} type="url" value={url} placeholder="https://... .mp4" onChange={(v) => setVideo(index, v)} />
+              </div>
+              <button type="button" onClick={() => removeVideo(index)} className="pb-2.5 text-xs text-red-500">
+                Remover
+              </button>
+            </div>
+          ))}
+          {videos.length < 8 ? (
+            <button type="button" onClick={addVideo} className="self-start rounded-lg border border-dashed border-stone-300 px-3 py-1.5 text-sm text-stone-600">
+              + Adicionar vídeo
+            </button>
+          ) : null}
+        </div>
+      ) : (
+        <PositionControls doc={doc} setPremium={setPremium} />
+      )}
+
+      {isVideo ? null : slides.map((slide, index) => (
         <div key={index} className="flex flex-col gap-2 rounded-lg bg-stone-50 p-2.5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-stone-500">Slide {index + 1}</span>
@@ -249,11 +289,32 @@ function HeroFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Par
           <TextField label="Link do produto" type="url" value={slide.url} maxLength={2000} onChange={(url) => setSlide(index, { url })} />
         </div>
       ))}
-      {slides.length < 6 ? (
+      {!isVideo && slides.length < 6 ? (
         <button type="button" onClick={addSlide} className="self-start rounded-lg border border-dashed border-stone-300 px-3 py-1.5 text-sm text-stone-600">
           + Adicionar slide
         </button>
       ) : null}
+    </div>
+  );
+}
+
+// Framing of the cover image (object-position), as two sliders.
+function PositionControls({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Partial<PageDoc["premium"]>) => void }) {
+  const p = doc.premium;
+  return (
+    <div className="rounded-lg bg-stone-50 p-2.5">
+      <p className="mb-1 text-sm font-medium text-stone-700">Posição da imagem</p>
+      <p className="mb-2 text-xs text-stone-500">Ajuste qual parte da foto aparece na capa.</p>
+      <div className="grid grid-cols-2 gap-3">
+        <label className="flex flex-col gap-1 text-xs text-stone-600">
+          Horizontal
+          <input type="range" min={0} max={100} value={p.heroPosX} onChange={(e) => setPremium({ heroPosX: Number(e.target.value) })} />
+        </label>
+        <label className="flex flex-col gap-1 text-xs text-stone-600">
+          Vertical
+          <input type="range" min={0} max={100} value={p.heroPosY} onChange={(e) => setPremium({ heroPosY: Number(e.target.value) })} />
+        </label>
+      </div>
     </div>
   );
 }

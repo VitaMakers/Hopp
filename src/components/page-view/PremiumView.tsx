@@ -59,6 +59,43 @@ function coverStyle(height: number): React.CSSProperties | undefined {
   return height ? { height, minHeight: 0, aspectRatio: "auto" } : undefined;
 }
 
+// Cover video(s): plays muted on a loop and, with 2+ videos, rotates between
+// them on the same timer as the image carousel. Fills its container exactly
+// like the model's cover image (it is given the same CSS class).
+function HeroVideo({ videos, seconds, posX = 50, posY = 50, className }: { videos: string[]; seconds: number; posX?: number; posY?: number; className?: string }) {
+  const clean = videos.map((v) => videoSrc(v)).filter((x): x is string => !!x);
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    if (clean.length <= 1) return;
+    const timer = setInterval(() => setIndex((v) => (v + 1) % clean.length), Math.max(1, seconds) * 1000);
+    return () => clearInterval(timer);
+  }, [clean.length, seconds]);
+  if (!clean.length) return null;
+  const active = Math.min(index, clean.length - 1);
+  return (
+    <video
+      key={clean[active]}
+      src={clean[active]}
+      className={className}
+      style={{ objectPosition: `${posX}% ${posY}%` }}
+      autoPlay
+      muted
+      loop
+      playsInline
+    />
+  );
+}
+
+// True when the cover should play video instead of showing image(s).
+function usesHeroVideo(premium: PremiumFields): boolean {
+  return premium.heroType === "video" && premium.heroVideos.some((v) => !!videoSrc(v));
+}
+
+// object-position for cover images, from the framing sliders.
+function heroImgStyle(premium: PremiumFields, extra?: React.CSSProperties): React.CSSProperties {
+  return { objectPosition: `${premium.heroPosX}% ${premium.heroPosY}%`, ...extra };
+}
+
 function BlockLink({
   block,
   handle,
@@ -760,7 +797,7 @@ function Store({ doc, handle, plan }: Props) {
       }
     >
       <div className="store-inner">
-        <StoreHero slides={premium.heroSlides} brand={brand} verified={profile.verified} pill={premium.heroPill} pillUrl={premium.heroPillUrl} handle={handle} coverHeight={premium.coverHeight} seconds={premium.heroSeconds} />
+        <StoreHero slides={premium.heroSlides} brand={brand} verified={profile.verified} pill={premium.heroPill} pillUrl={premium.heroPillUrl} handle={handle} coverHeight={premium.coverHeight} seconds={premium.heroSeconds} videoOn={usesHeroVideo(premium)} videos={premium.heroVideos} posX={premium.heroPosX} posY={premium.heroPosY} />
         <StorePromo premium={premium} brand={brand} handle={handle} />
         {premium.featureTitle || premium.featureImageUrl ? <StoreFeature premium={premium} handle={handle} /> : null}
         {products.length ? (
@@ -800,6 +837,10 @@ function StoreHero({
   handle,
   coverHeight,
   seconds,
+  videoOn,
+  videos,
+  posX,
+  posY,
 }: {
   slides: HeroSlide[];
   brand: string;
@@ -809,6 +850,10 @@ function StoreHero({
   handle?: string;
   coverHeight: number;
   seconds: number;
+  videoOn: boolean;
+  videos: string[];
+  posX: number;
+  posY: number;
 }) {
   const [index, setIndex] = useState(0);
   const count = slides.length;
@@ -817,6 +862,17 @@ function StoreHero({
     const timer = setInterval(() => setIndex((value) => (value + 1) % count), Math.max(1, seconds) * 1000);
     return () => clearInterval(timer);
   }, [count, seconds]);
+  if (videoOn) {
+    return (
+      <section className="store-hero" data-edit="premium:hero" style={coverStyle(coverHeight)}>
+        <HeroVideo videos={videos} seconds={seconds} posX={posX} posY={posY} className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,.7), rgba(0,0,0,.05))" }} />
+        <div className="absolute inset-x-0 bottom-0 p-5 text-left text-white">
+          <p className="text-2xl font-bold leading-tight">{brand}</p>
+        </div>
+      </section>
+    );
+  }
   if (!count) return null;
   const active = Math.min(index, count - 1);
   return (
@@ -1131,9 +1187,11 @@ function Lookbook({ doc, handle, plan }: Props) {
       style={{ "--look-bg": theme.background, "--look-text": theme.text, "--look-accent": theme.accent } as React.CSSProperties}
     >
       <header className="look-hero" style={coverStyle(premium.coverHeight)}>
-        {heroImg ? (
+        {usesHeroVideo(premium) ? (
+          <HeroVideo videos={premium.heroVideos} seconds={premium.heroSeconds} posX={premium.heroPosX} posY={premium.heroPosY} className="look-hero-img object-cover" />
+        ) : heroImg ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img className="look-hero-img" src={heroImg} alt={headline.join(" ") || brand} />
+          <img className="look-hero-img" src={heroImg} alt={headline.join(" ") || brand} style={heroImgStyle(premium)} />
         ) : (
           <div className="look-hero-img look-hero-placeholder" />
         )}
@@ -1409,9 +1467,11 @@ function Dropz({ doc, handle, plan }: Props) {
           {premium.heroPill ? <span className="dropz-chip">{premium.heroPill}</span> : null}
         </header>
         <section className="dropz-hero" style={coverStyle(premium.coverHeight)}>
-          {heroImg ? (
+          {usesHeroVideo(premium) ? (
+            <HeroVideo videos={premium.heroVideos} seconds={premium.heroSeconds} posX={premium.heroPosX} posY={premium.heroPosY} className="dropz-hero-img object-cover" />
+          ) : heroImg ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img className="dropz-hero-img" src={heroImg} alt={title || brand} />
+            <img className="dropz-hero-img" src={heroImg} alt={title || brand} style={heroImgStyle(premium)} />
           ) : (
             <div className="dropz-hero-img dropz-hero-ph" />
           )}
@@ -1546,9 +1606,11 @@ function Promo({ doc, handle, plan }: Props) {
             ) : null}
           </div>
           <div className="promo-hero-photo" style={coverStyle(premium.coverHeight)}>
-            {photo ? (
+            {usesHeroVideo(premium) ? (
+              <HeroVideo videos={premium.heroVideos} seconds={premium.heroSeconds} posX={premium.heroPosX} posY={premium.heroPosY} className="h-full w-full object-cover" />
+            ) : photo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={photo} alt={brand} />
+              <img src={photo} alt={brand} style={heroImgStyle(premium)} />
             ) : (
               <span className="promo-photo-ph" />
             )}
@@ -1624,9 +1686,11 @@ function Menu({ doc, handle, plan }: Props) {
       style={{ "--menu-bg": theme.background, "--menu-text": theme.text, "--menu-accent": theme.accent } as React.CSSProperties}
     >
       <header className="menu-hero" style={coverStyle(premium.coverHeight)}>
-        {heroImg ? (
+        {usesHeroVideo(premium) ? (
+          <HeroVideo videos={premium.heroVideos} seconds={premium.heroSeconds} posX={premium.heroPosX} posY={premium.heroPosY} className="menu-hero-img object-cover" />
+        ) : heroImg ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img className="menu-hero-img" src={heroImg} alt={brand} />
+          <img className="menu-hero-img" src={heroImg} alt={brand} style={heroImgStyle(premium)} />
         ) : (
           <div className="menu-hero-img menu-hero-ph" />
         )}
@@ -1811,7 +1875,11 @@ function Bistro({ doc, handle, plan }: Props) {
           data-edit="premium:hero"
           style={premium.coverHeight ? ({ aspectRatio: "auto", minHeight: 0, height: premium.coverHeight } as React.CSSProperties) : undefined}
         >
-          <RotatingHeroImages images={heroImages} seconds={premium.heroSeconds} alt={brand} />
+          {usesHeroVideo(premium) ? (
+            <HeroVideo videos={premium.heroVideos} seconds={premium.heroSeconds} posX={premium.heroPosX} posY={premium.heroPosY} className="bistro-hero-img object-cover" />
+          ) : (
+            <RotatingHeroImages images={heroImages} seconds={premium.heroSeconds} alt={brand} />
+          )}
           <div className="bistro-hero-shade" />
           {ribbon ? <span className="bistro-ribbon">{ribbon}</span> : null}
           <div className="bistro-hero-center">
@@ -1980,9 +2048,11 @@ function Bar({ doc, handle, plan }: Props) {
 
       {/* Hero */}
       <header className="bar-hero" style={coverStyle(premium.coverHeight)}>
-        {heroImg ? (
+        {usesHeroVideo(premium) ? (
+          <HeroVideo videos={premium.heroVideos} seconds={premium.heroSeconds} posX={premium.heroPosX} posY={premium.heroPosY} className="bar-hero-img object-cover" />
+        ) : heroImg ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img className="bar-hero-img" src={heroImg} alt={brand} />
+          <img className="bar-hero-img" src={heroImg} alt={brand} style={heroImgStyle(premium)} />
         ) : (
           <div className="bar-hero-img bar-ph" />
         )}
@@ -2146,7 +2216,7 @@ function casaIcon(label: string) {
   return <svg {...c} aria-hidden><path d="M4 3v18M8 3v6a2 2 0 0 1-4 0M18 3c-1.5 0-3 1.8-3 5s1.5 4 3 4m0 0v9" /></svg>;
 }
 
-function CasaHero({ slides, brand, credential, verified, coverHeight, seconds }: { slides: PremiumFields["heroSlides"]; brand: string; credential: string; verified: boolean; coverHeight: number; seconds: number }) {
+function CasaHero({ slides, brand, credential, verified, coverHeight, seconds, videoOn, videos, posX, posY }: { slides: PremiumFields["heroSlides"]; brand: string; credential: string; verified: boolean; coverHeight: number; seconds: number; videoOn: boolean; videos: string[]; posX: number; posY: number }) {
   const [index, setIndex] = useState(0);
   const count = slides.length;
   useEffect(() => {
@@ -2157,23 +2227,30 @@ function CasaHero({ slides, brand, credential, verified, coverHeight, seconds }:
   const active = count ? Math.min(index, count - 1) : 0;
   return (
     <header className="casa-hero" style={coverStyle(coverHeight)}>
-      <div className="casa-hero-track" style={{ transform: `translateX(-${active * 100}%)` }}>
-        {(count ? slides : [{ imageUrl: "", headline: "" }]).map((slide, i) => {
-          const img = imageSrc(slide.imageUrl);
-          return (
-            <div className="casa-slide" key={i}>
-              {img ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={img} alt="" className="casa-slide-img" loading={i === 0 ? "eager" : "lazy"} />
-              ) : (
-                <div className="casa-slide-img casa-ph" />
-              )}
-              <div className="casa-slide-shade" />
-              {"headline" in slide && slide.headline ? <span className="casa-eyebrow">{slide.headline}</span> : null}
-            </div>
-          );
-        })}
-      </div>
+      {videoOn ? (
+        <>
+          <HeroVideo videos={videos} seconds={seconds} posX={posX} posY={posY} className="absolute inset-0 h-full w-full object-cover" />
+          <div className="casa-slide-shade" />
+        </>
+      ) : (
+        <div className="casa-hero-track" style={{ transform: `translateX(-${active * 100}%)` }}>
+          {(count ? slides : [{ imageUrl: "", headline: "" }]).map((slide, i) => {
+            const img = imageSrc(slide.imageUrl);
+            return (
+              <div className="casa-slide" key={i}>
+                {img ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={img} alt="" className="casa-slide-img" loading={i === 0 ? "eager" : "lazy"} />
+                ) : (
+                  <div className="casa-slide-img casa-ph" />
+                )}
+                <div className="casa-slide-shade" />
+                {"headline" in slide && slide.headline ? <span className="casa-eyebrow">{slide.headline}</span> : null}
+              </div>
+            );
+          })}
+        </div>
+      )}
       <div className="casa-logo">
         <span className="casa-logo-name">
           {brand}
@@ -2204,7 +2281,7 @@ function Casa({ doc, handle, plan }: Props) {
       className="vita-premium premium-casa"
       style={{ "--casa-bg": theme.background, "--casa-text": theme.text, "--casa-accent": theme.accent } as React.CSSProperties}
     >
-      <CasaHero slides={premium.heroSlides} brand={brand} credential={premium.credential} verified={profile.verified} coverHeight={premium.coverHeight} seconds={premium.heroSeconds} />
+      <CasaHero slides={premium.heroSlides} brand={brand} credential={premium.credential} verified={profile.verified} coverHeight={premium.coverHeight} seconds={premium.heroSeconds} videoOn={usesHeroVideo(premium)} videos={premium.heroVideos} posX={premium.heroPosX} posY={premium.heroPosY} />
       <div className="casa-body">
         {premium.heading ? <h1 className="casa-heading">{premium.heading}</h1> : null}
         {links.length ? (

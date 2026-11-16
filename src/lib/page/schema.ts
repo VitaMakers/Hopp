@@ -337,6 +337,13 @@ export const premiumFieldsSchema = z.object({
   // image shows when several are added (auto-rotating cover).
   coverHeight: z.number().int().min(0).max(900).default(0),
   heroSeconds: z.number().int().min(1).max(30).default(4),
+  // Cover media type: "image" uses heroSlides (single or auto-rotating
+  // carousel); "video" plays the heroVideos list, rotating between them.
+  heroType: z.enum(["image", "video"]).default("image"),
+  heroVideos: z.array(z.string().max(1000)).max(8).default([]),
+  // Framing of the cover image(s): object-position as percentages.
+  heroPosX: z.number().int().min(0).max(100).default(50),
+  heroPosY: z.number().int().min(0).max(100).default(50),
   // Hide the brand name text on the cover (e.g. when a logo is enough).
   hideName: z.boolean().default(false),
   // Section ids (premium:*) the owner turned off, hidden from the page.
