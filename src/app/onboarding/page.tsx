@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { siteOrigin } from "@/lib/request";
 import { requireUser } from "@/lib/supabase/server";
@@ -15,7 +16,10 @@ export default async function OnboardingPage() {
       <div className="my-10 w-full max-w-xl rounded-2xl bg-white p-8 shadow-sm ring-1 ring-stone-200">
         <h1 className="text-2xl font-bold text-stone-900">Crie a sua página</h1>
         <p className="mt-2 text-sm text-stone-600">
-          Escolha um modelo e o endereço que você vai colocar na bio das redes sociais.
+          Escolha um modelo e o endereço que você vai colocar na bio das redes sociais.{" "}
+          <Link href="/precos" className="font-semibold text-stone-900 underline">
+            Ver planos
+          </Link>
         </p>
         <OnboardingForm host={new URL(await siteOrigin()).host} />
       </div>

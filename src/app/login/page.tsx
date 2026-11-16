@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AuthForm } from "./AuthForm";
 
 export default async function LoginPage({
@@ -18,6 +19,11 @@ export default async function LoginPage({
       <div className="flex w-full flex-col justify-center px-6 py-10 sm:px-12 lg:w-1/2">
         <div className="mx-auto w-full max-w-sm">
           <AuthForm initialMode={initialMode} />
+          <p className="mt-6 text-center text-sm text-stone-500">
+            <Link href="/precos" className="font-semibold text-stone-900 underline">
+              Ver planos e preços
+            </Link>
+          </p>
         </div>
       </div>
 
