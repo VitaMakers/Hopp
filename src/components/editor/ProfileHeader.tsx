@@ -95,6 +95,7 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
           <div className="flex flex-col gap-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">Perfil</p>
             <TextField label="Nome" value={profile.name} maxLength={80} onChange={(name) => setProfile({ name })} />
+            <Toggle label="Mostrar o nome na página" checked={!profile.hideName} onChange={(on) => setProfile({ hideName: !on })} />
             <TextArea label="Bio" value={profile.bio} maxLength={300} onChange={(bio) => setProfile({ bio })} />
             <TextField label="Foto (envie do seu dispositivo ou cole um link)" type="url" value={profile.avatarUrl} placeholder="https://..." onChange={(avatarUrl) => setProfile({ avatarUrl })} />
             <UploadButton label="Enviar foto" onUploaded={(avatarUrl) => setProfile({ avatarUrl })} />
