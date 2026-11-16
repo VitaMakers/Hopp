@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { handleError, normalizeHandle } from "@/lib/handles";
 import { TEMPLATE_COLLECTIONS, TEMPLATE_TABS, collectionModels } from "@/lib/page/templates";
@@ -28,7 +29,7 @@ export function OnboardingForm({ host }: { host: string }) {
     <form action={action} className="mt-6 flex flex-col gap-5">
       <div className="flex flex-col gap-3">
         <div className="flex gap-1 rounded-lg bg-stone-100 p-1">
-          {TEMPLATE_TABS.filter((item) => item.id !== "premium").map((item) => (
+          {TEMPLATE_TABS.map((item) => (
             <button
               key={item.id}
               type="button"
@@ -39,6 +40,15 @@ export function OnboardingForm({ host }: { host: string }) {
             </button>
           ))}
         </div>
+
+        {tab === "premium" ? (
+          <div className="-mt-1 rounded-lg bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200">
+            <span className="font-semibold">Modelos exclusivos do plano Profissional.</span> Você pode montar sua página agora e assinar para publicar com um modelo premium.{" "}
+            <Link href="/precos" className="font-semibold underline">
+              Ver planos →
+            </Link>
+          </div>
+        ) : null}
 
         {current.kind === "scratch" ? (
           <>
