@@ -395,6 +395,8 @@ export const pageDocSchema = z.object({
     // Shown in the Presença/Ecossistema header in place of the name text.
     logo: z.string().max(1000).default(""),
     verified: z.boolean().default(false),
+    // Hide the profile photo/logo on the public page (the circle at the top).
+    hideAvatar: z.boolean().default(false),
     // A WhatsApp number shown as a floating button on the public page.
     floatingWhatsapp: z.string().max(30).default(""),
   }),

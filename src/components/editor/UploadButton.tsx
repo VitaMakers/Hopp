@@ -34,7 +34,10 @@ async function processImage(file: File): Promise<Blob> {
   return blob.size < file.size ? blob : file;
 }
 
-export function UploadButton({ onUploaded, label = "Enviar imagem" }: { onUploaded: (url: string) => void; label?: string }) {
+// Shared image-upload logic: compresses in the browser, uploads to Supabase
+// storage and returns the public URL. Reused by the button and the clickable
+// avatar circle, so both behave exactly the same.
+export function useImageUpload(onUploaded: (url: string) => void) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -76,11 +79,16 @@ export function UploadButton({ onUploaded, label = "Enviar imagem" }: { onUpload
     }
   }
 
+  return { inputRef, busy, error, open: () => inputRef.current?.click(), handle };
+}
+
+export function UploadButton({ onUploaded, label = "Enviar imagem" }: { onUploaded: (url: string) => void; label?: string }) {
+  const { inputRef, busy, error, open, handle } = useImageUpload(onUploaded);
   return (
     <div className="flex flex-col gap-1">
       <button
         type="button"
-        onClick={() => inputRef.current?.click()}
+        onClick={open}
         disabled={busy}
         className="self-start rounded-lg border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-900 disabled:opacity-50"
       >
