@@ -59,6 +59,9 @@ export const linkBlockSchema = z.object({
   accent: optionalColor,
   // Per-button background colour for the "Clássico" layout ("" = default).
   buttonColor: optionalColor,
+  // "Destaque" banner: darken the background image so the text reads well.
+  // On by default; the owner can turn it off to show the image clean.
+  bannerShade: z.boolean().default(true),
 });
 
 export const headingBlockSchema = z.object({

@@ -167,7 +167,7 @@ function PremiumBanner({ block, handle }: { block: LinkBlock; handle?: string })
         // eslint-disable-next-line @next/next/no-img-element
         <img src={thumb} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
       ) : null}
-      <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/5" />
+      {block.bannerShade ? <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/5" /> : null}
       <span className="relative flex flex-col items-start gap-2">
         {block.label ? (
           <span className="rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white" style={{ background: accent }}>

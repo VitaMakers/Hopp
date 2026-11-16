@@ -595,7 +595,7 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
               // eslint-disable-next-line @next/next/no-img-element
               <img src={thumb} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
             ) : null}
-            <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/5" />
+            {block.bannerShade ? <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/5" /> : null}
             <span className="relative flex flex-col items-start gap-2">
               {icon ? (
                 // eslint-disable-next-line @next/next/no-img-element

@@ -187,6 +187,9 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
                 ? "Tamanho recomendado do banner: 1000 × 700 px (paisagem). A imagem preenche o fundo todo."
                 : "Tamanho recomendado da miniatura: 400 × 400 px (quadrada)."}
             </p>
+            {block.display === "banner" ? (
+              <Toggle label="Escurecer a imagem (fade para o texto ficar legível)" checked={block.bannerShade} onChange={(bannerShade) => onChange({ ...block, bannerShade })} />
+            ) : null}
 
             <div className="mt-1 border-t border-stone-100 pt-3">
               <TextField
