@@ -402,6 +402,13 @@ export const pageDocSchema = z.object({
     // Video cover (mp4/webm). When set, the cover/hero/poster layouts play it
     // in place of the cover image; coverUrl (or the avatar) is its poster.
     coverVideo: z.string().max(1000).default(""),
+    // Cover type chooser (simple layouts): "image" uses coverUrl; "carousel"
+    // rotates coverImages; "video" rotates coverVideos. Backward compatible —
+    // existing pages default to "image" and still honour coverVideo.
+    coverType: z.enum(["image", "carousel", "video"]).default("image"),
+    coverImages: z.array(z.string().max(1000)).max(8).default([]),
+    coverVideos: z.array(z.string().max(1000)).max(8).default([]),
+    coverSeconds: z.number().int().min(1).max(30).default(4),
     // Shown in the Presença/Ecossistema header in place of the name text.
     logo: z.string().max(1000).default(""),
     verified: z.boolean().default(false),

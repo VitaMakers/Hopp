@@ -156,15 +156,75 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
 
           <div className="flex flex-col gap-3 border-t border-stone-100 pt-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">Capa</p>
-            <TextField label="Capa (envie do seu dispositivo ou cole um link)" type="url" value={profile.coverUrl} placeholder="https://..." onChange={(coverUrl) => setProfile({ coverUrl })} />
-            <UploadButton label="Enviar capa" onUploaded={(coverUrl) => setProfile({ coverUrl })} />
-            <TextField
-              label="Capa em vídeo (link .mp4, opcional — toca no lugar da imagem)"
-              type="url"
-              value={profile.coverVideo}
-              placeholder="https://... .mp4"
-              onChange={(coverVideo) => setProfile({ coverVideo })}
-            />
+            <p className="-mt-1 text-xs text-stone-500">A capa aparece nos layouts com foto (escolha em Aparência → Layout).</p>
+            <div className="flex gap-2">
+              {([["image", "Imagem"], ["carousel", "Carrossel"], ["video", "Vídeo"]] as const).map(([val, lbl]) => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => setProfile({ coverType: val })}
+                  className={`rounded-lg px-3 py-1.5 text-sm ring-1 ${profile.coverType === val ? "bg-stone-900 text-white ring-stone-900" : "text-stone-600 ring-stone-300"}`}
+                >
+                  {lbl}
+                </button>
+              ))}
+            </div>
+
+            {profile.coverType === "image" ? (
+              <>
+                <TextField label="Imagem da capa (link ou envie)" type="url" value={profile.coverUrl} placeholder="https://..." onChange={(coverUrl) => setProfile({ coverUrl })} />
+                <UploadButton label="Enviar capa" onUploaded={(coverUrl) => setProfile({ coverUrl })} />
+                <p className="-mt-1 text-xs text-stone-500">Tamanho recomendado: 1080 × 1350 px (retrato).</p>
+              </>
+            ) : profile.coverType === "carousel" ? (
+              <>
+                <p className="text-xs text-stone-500">Várias imagens que passam sozinhas. Recomendado: 1080 × 1350 px cada.</p>
+                {profile.coverImages.map((url, i) => (
+                  <div key={i} className="flex items-end gap-2 rounded-lg bg-stone-50 p-2.5">
+                    <div className="flex flex-1 flex-col gap-1">
+                      <TextField label={`Imagem ${i + 1}`} type="url" value={url} placeholder="https://..." onChange={(v) => setProfile({ coverImages: profile.coverImages.map((x, j) => (j === i ? v : x)) })} />
+                      <UploadButton label="Enviar imagem" onUploaded={(v) => setProfile({ coverImages: profile.coverImages.map((x, j) => (j === i ? v : x)) })} />
+                    </div>
+                    <button type="button" onClick={() => setProfile({ coverImages: profile.coverImages.filter((_, j) => j !== i) })} className="pb-2.5 text-xs text-red-500">
+                      Remover
+                    </button>
+                  </div>
+                ))}
+                {profile.coverImages.length < 8 ? (
+                  <button type="button" onClick={() => setProfile({ coverImages: [...profile.coverImages, ""] })} className="self-start rounded-lg border border-dashed border-stone-300 px-3 py-1.5 text-sm text-stone-600">
+                    + Adicionar imagem
+                  </button>
+                ) : null}
+                <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+                  Tempo de cada imagem (segundos)
+                  <input type="number" min={1} max={30} value={profile.coverSeconds} onChange={(e) => setProfile({ coverSeconds: Math.min(30, Math.max(1, Number(e.target.value) || 4)) })} className="field w-24" />
+                </label>
+              </>
+            ) : (
+              <>
+                <p className="text-xs text-stone-500">Vídeos que tocam sem som, em loop. Com 2+, vão trocando. Cole o link .mp4.</p>
+                {profile.coverVideos.map((url, i) => (
+                  <div key={i} className="flex items-end gap-2 rounded-lg bg-stone-50 p-2.5">
+                    <div className="flex-1">
+                      <TextField label={`Vídeo ${i + 1} (.mp4)`} type="url" value={url} placeholder="https://... .mp4" onChange={(v) => setProfile({ coverVideos: profile.coverVideos.map((x, j) => (j === i ? v : x)) })} />
+                    </div>
+                    <button type="button" onClick={() => setProfile({ coverVideos: profile.coverVideos.filter((_, j) => j !== i) })} className="pb-2.5 text-xs text-red-500">
+                      Remover
+                    </button>
+                  </div>
+                ))}
+                {profile.coverVideos.length < 8 ? (
+                  <button type="button" onClick={() => setProfile({ coverVideos: [...profile.coverVideos, ""] })} className="self-start rounded-lg border border-dashed border-stone-300 px-3 py-1.5 text-sm text-stone-600">
+                    + Adicionar vídeo
+                  </button>
+                ) : null}
+                <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+                  Tempo de cada vídeo (segundos)
+                  <input type="number" min={1} max={30} value={profile.coverSeconds} onChange={(e) => setProfile({ coverSeconds: Math.min(30, Math.max(1, Number(e.target.value) || 4)) })} className="field w-24" />
+                </label>
+              </>
+            )}
+
             <TextField label="Logo (opcional — aparece em alguns layouts)" type="url" value={profile.logo} placeholder="https://..." onChange={(logo) => setProfile({ logo })} />
             <UploadButton label="Enviar logo" onUploaded={(logo) => setProfile({ logo })} />
           </div>
