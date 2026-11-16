@@ -409,6 +409,11 @@ export const pageDocSchema = z.object({
     coverImages: z.array(z.string().max(1000)).max(8).default([]),
     coverVideos: z.array(z.string().max(1000)).max(8).default([]),
     coverSeconds: z.number().int().min(1).max(30).default(4),
+    // Cover banner look (classic/card layouts): height in px, rounded bottom
+    // corners, and a fade into the page background to soften the edge.
+    coverHeight: z.number().int().min(120).max(900).default(176),
+    coverRounded: z.boolean().default(true),
+    coverShade: z.boolean().default(false),
     // Shown in the Presença/Ecossistema header in place of the name text.
     logo: z.string().max(1000).default(""),
     verified: z.boolean().default(false),

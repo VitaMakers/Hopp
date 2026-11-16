@@ -21,6 +21,7 @@ function initials(name: string) {
 // cover, logo) so the whole header is 100% editable without leaving the card.
 export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange: (doc: PageDoc) => void; plan: string }) {
   const [editing, setEditing] = useState(false);
+  const [showLinks, setShowLinks] = useState(false);
   const { profile, socials } = doc;
   const avatar = imageSrc(profile.avatarUrl);
   const setProfile = (patch: Partial<PageDoc["profile"]>) => onChange({ ...doc, profile: { ...doc.profile, ...patch } });
@@ -170,6 +171,28 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
               ))}
             </div>
 
+            <div className="flex flex-col gap-2 rounded-lg bg-stone-50 p-2.5">
+              <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+                Tamanho da capa
+                <input type="range" min={120} max={520} step={10} value={profile.coverHeight} onChange={(e) => setProfile({ coverHeight: Number(e.target.value) })} />
+                <span className="text-xs text-stone-500">{profile.coverHeight}px</span>
+              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-medium text-stone-700">Bordas:</span>
+                {([["true", "Arredondadas"], ["false", "Retas"]] as const).map(([v, l]) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setProfile({ coverRounded: v === "true" })}
+                    className={`rounded-lg px-3 py-1 text-sm ring-1 ${String(profile.coverRounded) === v ? "bg-stone-900 text-white ring-stone-900" : "text-stone-600 ring-stone-300"}`}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
+              <Toggle label="Sombra para disfarçar a borda (funde com o fundo)" checked={profile.coverShade} onChange={(coverShade) => setProfile({ coverShade })} />
+            </div>
+
             {profile.coverType === "image" ? (
               <>
                 <TextField label="Imagem da capa (link ou envie)" type="url" value={profile.coverUrl} placeholder="https://..." onChange={(coverUrl) => setProfile({ coverUrl })} />
@@ -178,14 +201,28 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
               </>
             ) : profile.coverType === "carousel" ? (
               <>
-                <p className="text-xs text-stone-500">Várias imagens que passam sozinhas. Recomendado: 1080 × 1350 px cada.</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-stone-500">Passam sozinhas. Recomendado: 1080 × 1350 px.</p>
+                  <label className="flex shrink-0 items-center gap-1 text-xs text-stone-500">
+                    <input type="checkbox" checked={showLinks} onChange={(e) => setShowLinks(e.target.checked)} />
+                    mostrar links
+                  </label>
+                </div>
                 {profile.coverImages.map((url, i) => (
-                  <div key={i} className="flex items-end gap-2 rounded-lg bg-stone-50 p-2.5">
-                    <div className="flex flex-1 flex-col gap-1">
-                      <TextField label={`Imagem ${i + 1}`} type="url" value={url} placeholder="https://..." onChange={(v) => setProfile({ coverImages: profile.coverImages.map((x, j) => (j === i ? v : x)) })} />
-                      <UploadButton label="Enviar imagem" onUploaded={(v) => setProfile({ coverImages: profile.coverImages.map((x, j) => (j === i ? v : x)) })} />
+                  <div key={i} className="flex items-center gap-2 rounded-lg bg-stone-50 p-2">
+                    {imageSrc(url) ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={imageSrc(url) as string} alt="" className="h-11 w-11 shrink-0 rounded object-cover" />
+                    ) : (
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded bg-stone-200 text-xs font-semibold text-stone-500">{i + 1}</span>
+                    )}
+                    <div className="flex min-w-0 flex-1 flex-col gap-1">
+                      {showLinks ? (
+                        <TextField label="" type="url" value={url} placeholder="https://..." onChange={(v) => setProfile({ coverImages: profile.coverImages.map((x, j) => (j === i ? v : x)) })} />
+                      ) : null}
+                      <UploadButton label={url ? "Trocar imagem" : "Enviar imagem"} onUploaded={(v) => setProfile({ coverImages: profile.coverImages.map((x, j) => (j === i ? v : x)) })} />
                     </div>
-                    <button type="button" onClick={() => setProfile({ coverImages: profile.coverImages.filter((_, j) => j !== i) })} className="pb-2.5 text-xs text-red-500">
+                    <button type="button" onClick={() => setProfile({ coverImages: profile.coverImages.filter((_, j) => j !== i) })} className="shrink-0 text-xs text-red-500">
                       Remover
                     </button>
                   </div>
