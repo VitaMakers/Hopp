@@ -179,46 +179,74 @@ function Logo({ doc, className = "mb-3 h-14 w-auto object-contain" }: { doc: Pag
 
 // A cover/hero slot: plays the cover video when there is one, otherwise shows
 // the image. In thumbnails (still) the video is drawn as its poster instead.
+// Rotating cover videos (muted loop), switching on a timer when 2+. One <video>
+// element whose src swaps, so the surrounding layout/sizing never changes.
+function RotatingVideos({ videos, seconds, poster, className, style, alt }: { videos: string[]; seconds: number; poster: string | null; className: string; style?: React.CSSProperties; alt: string }) {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    if (videos.length <= 1) return;
+    const t = setInterval(() => setI((v) => (v + 1) % videos.length), Math.max(1, seconds) * 1000);
+    return () => clearInterval(t);
+  }, [videos.length, seconds]);
+  const active = Math.min(i, videos.length - 1);
+  return (
+    <video key={videos[active]} src={videos[active]} poster={poster ?? undefined} autoPlay muted loop playsInline className={className} style={style} aria-label={alt || undefined} />
+  );
+}
+
+// Rotating cover images, switching on a timer when 2+. One <img> whose src
+// swaps (a clean cut), so it keeps the exact sizing of a single cover image.
+function RotatingImages({ images, seconds, className, style, alt }: { images: string[]; seconds: number; className: string; style?: React.CSSProperties; alt: string }) {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const t = setInterval(() => setI((v) => (v + 1) % images.length), Math.max(1, seconds) * 1000);
+    return () => clearInterval(t);
+  }, [images.length, seconds]);
+  const active = Math.min(i, images.length - 1);
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={images[active]} alt={alt} className={className} style={style} />;
+}
+
+// The cover of a simple-layout header: video(s) take priority, then image(s)
+// (a carousel when 2+), then a fallback image (usually the avatar).
 function CoverMedia({
-  video,
-  img,
+  videos,
+  images,
+  seconds,
+  fallback,
   alt,
   className,
   style,
 }: {
-  video: string | null;
-  img: string | null;
+  videos: string[];
+  images: string[];
+  seconds: number;
+  fallback: string | null;
   alt: string;
   className: string;
   style?: React.CSSProperties;
 }) {
-  if (video) {
-    return (
-      <video
-        src={video}
-        poster={img ?? undefined}
-        autoPlay
-        muted
-        loop
-        playsInline
-        className={className}
-        style={style}
-        aria-label={alt || undefined}
-      />
-    );
-  }
+  if (videos.length) return <RotatingVideos videos={videos} seconds={seconds} poster={images[0] ?? fallback} className={className} style={style} alt={alt} />;
+  if (images.length) return <RotatingImages images={images} seconds={seconds} className={className} style={style} alt={alt} />;
   // eslint-disable-next-line @next/next/no-img-element
-  return img ? <img src={img} alt={alt} className={className} style={style} /> : null;
+  return fallback ? <img src={fallback} alt={alt} className={className} style={style} /> : null;
 }
 
 function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?: boolean }) {
   const { profile, theme } = doc;
-  const video = still ? null : videoSrc(profile.coverVideo);
-  const coverImg = imageSrc(profile.coverUrl);
   const avatarImg = imageSrc(profile.avatarUrl);
-  const cover = theme.layout === "cover" ? coverImg : null;
-  const hero = theme.layout === "hero" ? avatarImg : null;
-  const poster = theme.layout === "poster" ? coverImg ?? avatarImg : null;
+  const coverSeconds = profile.coverSeconds;
+  // Resolve the cover from the type chooser. "video" uses coverVideos; any other
+  // type still honours a legacy single coverVideo. "carousel" uses coverImages;
+  // otherwise the single coverUrl.
+  const coverVideos = (still ? [] : profile.coverType === "video" ? profile.coverVideos : profile.coverVideo ? [profile.coverVideo] : [])
+    .map(videoSrc)
+    .filter((x): x is string => !!x);
+  const coverImages = (profile.coverType === "carousel" ? profile.coverImages : profile.coverUrl ? [profile.coverUrl] : [])
+    .map(imageSrc)
+    .filter((x): x is string => !!x);
+  const hasCover = coverVideos.length > 0 || coverImages.length > 0;
 
   // The page starts straight with its blocks (a title block usually opens it).
   if (theme.layout === "blank") return <div className="pt-10" />;
@@ -259,7 +287,6 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
 
   if (theme.layout === "cutout") {
     // Portrait inside an organic blob over a tinted field.
-    const blob = coverImg ?? avatarImg;
     return (
       <div className="flex flex-col items-center pt-10">
         <Name doc={doc} big />
@@ -267,7 +294,7 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
           className="relative mt-4 h-72 w-64 overflow-hidden"
           style={{ borderRadius: "42% 58% 63% 37% / 41% 44% 56% 59%", background: "color-mix(in srgb, var(--page-accent) 18%, var(--page-bg))" }}
         >
-          <CoverMedia video={video} img={blob} alt={profile.name} className="h-full w-full object-cover" />
+          <CoverMedia videos={coverVideos} images={coverImages} seconds={coverSeconds} fallback={avatarImg} alt={profile.name} className="h-full w-full object-cover" />
         </div>
         <Bio doc={doc} />
       </div>
@@ -276,11 +303,10 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
 
   if (theme.layout === "fullscreen") {
     // Full-bleed photo/video with the name centred over it (Cloud Layers).
-    const media = coverImg ?? avatarImg;
     return (
       <div className="relative -mx-5 w-[calc(100%+2.5rem)]">
         <div className="relative aspect-[3/4] max-h-[640px] w-full">
-          <CoverMedia video={video} img={media} alt={profile.name} className="absolute inset-0 h-full w-full object-cover" />
+          <CoverMedia videos={coverVideos} images={coverImages} seconds={coverSeconds} fallback={avatarImg} alt={profile.name} className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/15 to-[var(--page-bg)]" />
           <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white">
             <Logo doc={doc} className="mb-3 h-12 w-auto object-contain" />
@@ -299,11 +325,10 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
   if (theme.layout === "capacheia") {
     // A clean full-bleed photo/video cover with no text over it; the blocks
     // follow below on the page background.
-    const media = coverImg ?? avatarImg;
     return (
       <div className="-mx-5 w-[calc(100%+2.5rem)]">
         <div className="relative aspect-[3/4] max-h-[560px] w-full">
-          <CoverMedia video={video} img={media} alt={profile.name} className="absolute inset-0 h-full w-full object-cover" />
+          <CoverMedia videos={coverVideos} images={coverImages} seconds={coverSeconds} fallback={avatarImg} alt={profile.name} className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[var(--page-bg)]" />
         </div>
       </div>
@@ -312,11 +337,10 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
 
   if (theme.layout === "portrait") {
     // A large framed portrait at the top, name and bio below (profile-large).
-    const media = coverImg ?? avatarImg;
     return (
       <div className="flex flex-col items-center pt-8">
         <div className="aspect-[3/4] w-full max-w-[320px] overflow-hidden rounded-[32px] ring-1 ring-black/10">
-          <CoverMedia video={video} img={media} alt={profile.name} className="h-full w-full object-cover" />
+          <CoverMedia videos={coverVideos} images={coverImages} seconds={coverSeconds} fallback={avatarImg} alt={profile.name} className="h-full w-full object-cover" />
         </div>
         <div className="mt-5 flex flex-col items-center">
           <Logo doc={doc} className="mb-2 h-10 w-auto object-contain" />
@@ -327,11 +351,11 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
     );
   }
 
-  if (poster || (theme.layout === "poster" && video)) {
+  if (theme.layout === "poster") {
     // Full-width media with the name over its darkened bottom edge.
     return (
       <div className="relative -mx-5 w-[calc(100%+2.5rem)]">
-        <CoverMedia video={video} img={poster} alt={profile.name} className="aspect-[4/5] max-h-[520px] w-full object-cover" />
+        <CoverMedia videos={coverVideos} images={coverImages} seconds={coverSeconds} fallback={avatarImg} alt={profile.name} className="aspect-[4/5] max-h-[520px] w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent from-40% via-black/40 to-[var(--page-bg)]" />
         <div className="absolute inset-x-0 bottom-4 px-6 text-center">
           <div className="uppercase">
@@ -343,12 +367,13 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
     );
   }
 
-  if (hero || (theme.layout === "hero" && video)) {
-    // Big media across the top that fades into the page background.
+  if (theme.layout === "hero") {
+    // Big media across the top that fades into the page background. The hero
+    // layout features the avatar (with a legacy cover video over it, if set).
     return (
       <div className="-mx-5 flex w-[calc(100%+2.5rem)] flex-col items-center">
         <div className="relative w-full">
-          <CoverMedia video={video} img={hero} alt={profile.name} className="aspect-[4/5] max-h-[460px] w-full object-cover" />
+          <CoverMedia videos={coverVideos} images={avatarImg ? [avatarImg] : []} seconds={coverSeconds} fallback={null} alt={profile.name} className="aspect-[4/5] max-h-[460px] w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent from-55% to-[var(--page-bg)]" />
           <div className="absolute inset-x-0 bottom-2 px-5">
             <Name doc={doc} big />
@@ -361,18 +386,20 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
     );
   }
 
-  const bannerVideo = theme.layout === "cover" ? video : null;
+  const showBanner = theme.layout === "cover" && hasCover;
   return (
     <>
-      {cover || bannerVideo ? (
+      {showBanner ? (
         <CoverMedia
-          video={bannerVideo}
-          img={cover}
+          videos={coverVideos}
+          images={coverImages}
+          seconds={coverSeconds}
+          fallback={null}
           alt=""
           className="-mx-5 h-44 w-[calc(100%+2.5rem)] max-w-none object-cover sm:rounded-b-3xl"
         />
       ) : null}
-      <div className={`flex flex-col items-center ${cover || bannerVideo ? "-mt-12" : theme.layout === "card" ? "" : "pt-12"}`}>
+      <div className={`flex flex-col items-center ${showBanner ? "-mt-12" : theme.layout === "card" ? "" : "pt-12"}`}>
         <Avatar doc={doc} size="h-24 w-24" />
         <div className="mt-4 flex flex-col items-center">
           <Logo doc={doc} className="mb-2 h-10 w-auto object-contain" />

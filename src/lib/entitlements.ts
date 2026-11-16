@@ -54,7 +54,7 @@ export function planViolations(doc: PageDoc, plan: string | null | undefined): s
     out.push("modelo Premium (disponível no Profissional)");
   }
   if (!canUseVideo(plan)) {
-    const usesVideo = !!doc.profile.coverVideo || doc.blocks.some((b) => b.type === "videos");
+    const usesVideo = !!doc.profile.coverVideo || doc.profile.coverVideos.some(Boolean) || doc.blocks.some((b) => b.type === "videos");
     if (usesVideo) out.push("vídeo — capa ou grade de vídeos (disponível no Essencial ou Profissional)");
   }
   return out;
