@@ -127,13 +127,13 @@ export function PageView({ doc, handle, plan, footer, still, onEdit }: Props) {
   return (
     <div style={themeVars(theme)} className="min-h-full bg-[var(--page-bg)] text-[var(--page-text)]">
       {theme.layout === "card" ? (
-        <main className="mx-auto w-full max-w-[580px] px-4 py-10">
+        <main className="mx-auto w-full max-w-[420px] px-4 py-10">
           <div className="flex flex-col items-center rounded-[28px] bg-white/90 px-5 pb-8 pt-10 shadow-2xl backdrop-blur">
             {content}
           </div>
         </main>
       ) : (
-        <main className="mx-auto flex w-full max-w-[580px] flex-col items-center px-5 pb-10">{content}</main>
+        <main className="mx-auto flex w-full max-w-[420px] flex-col items-center px-5 pb-10">{content}</main>
       )}
     </div>
   );
