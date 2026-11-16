@@ -138,7 +138,7 @@ export function page(
 ): PageDoc {
   return {
     version: 1,
-    profile: { name, bio: "", avatarUrl: "", coverUrl: "", coverVideo: "", logo: "", verified: false, hideAvatar: false, coverType: "image", coverImages: [], coverVideos: [], coverSeconds: 4, floatingWhatsapp: "", ...parts.profile },
+    profile: { name, bio: "", avatarUrl: "", coverUrl: "", coverVideo: "", logo: "", verified: false, hideAvatar: false, coverType: "image", coverImages: [], coverVideos: [], coverSeconds: 4, coverHeight: 176, coverRounded: true, coverShade: false, floatingWhatsapp: "", ...parts.profile },
     socials: parts.socials ?? [],
     blocks: parts.blocks,
     theme: { ...baseTheme, ...parts.theme },

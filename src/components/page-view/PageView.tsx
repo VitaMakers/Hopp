@@ -392,14 +392,13 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
   return (
     <>
       {showBanner ? (
-        <CoverMedia
-          videos={coverVideos}
-          images={coverImages}
-          seconds={coverSeconds}
-          fallback={null}
-          alt=""
-          className="-mx-5 h-44 w-[calc(100%+2.5rem)] max-w-none object-cover sm:rounded-b-3xl"
-        />
+        <div
+          className={`relative -mx-5 w-[calc(100%+2.5rem)] overflow-hidden ${profile.coverRounded ? "sm:rounded-b-3xl" : ""}`}
+          style={{ height: profile.coverHeight }}
+        >
+          <CoverMedia videos={coverVideos} images={coverImages} seconds={coverSeconds} fallback={null} alt="" className="h-full w-full object-cover" />
+          {profile.coverShade ? <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-b from-transparent to-[var(--page-bg)]" /> : null}
+        </div>
       ) : null}
       <div className={`flex flex-col items-center ${showBanner ? "-mt-12" : theme.layout === "card" ? "" : "pt-12"}`}>
         <Avatar doc={doc} size="h-24 w-24" />
