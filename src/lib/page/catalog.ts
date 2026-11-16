@@ -368,7 +368,7 @@ export const THEME_PRESETS = PRESETS.map(({ name, theme }) => ({ name, theme: { 
 export function defaultPageDoc(name: string): PageDoc {
   return {
     version: 1,
-    profile: { name, bio: "", avatarUrl: "", coverUrl: "", coverVideo: "", logo: "", verified: false, hideAvatar: false, hideName: false, coverType: "image", coverImages: [], coverVideos: [], coverSeconds: 4, coverPosX: 50, coverPosY: 50, coverHeight: 176, coverRounded: true, coverShade: false, coverFit: "contain", floatingWhatsapp: "" },
+    profile: { name, bio: "", avatarUrl: "", coverUrl: "", coverVideo: "", logo: "", verified: false, hideAvatar: false, hideName: false, coverType: "image", coverImages: [], coverVideos: [], coverSeconds: 4, coverPosX: 50, coverPosY: 50, coverHeight: 420, coverRounded: true, coverShade: false, coverFit: "contain", floatingWhatsapp: "" },
     socials: [],
     blocks: [createBlock("link")],
     theme: THEME_PRESETS[0].theme,
