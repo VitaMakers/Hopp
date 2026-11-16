@@ -212,7 +212,7 @@ export function PremiumView({ doc, handle, plan, onEdit }: Props) {
     return (
       <PremiumEditContext.Provider value={onEdit}>
         <div
-          className="vita-page min-h-full cursor-pointer [&_button]:pointer-events-none"
+          className="vita-page vita-premium-editable min-h-full cursor-pointer [&_button]:pointer-events-none"
           onClick={(e) => {
             e.preventDefault();
             // Open the nearest tagged section ("premium:<section>"); otherwise
