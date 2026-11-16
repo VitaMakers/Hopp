@@ -434,6 +434,9 @@ export const pageDocSchema = z.object({
     coverHeight: z.number().int().min(120).max(900).default(176),
     coverRounded: z.boolean().default(true),
     coverShade: z.boolean().default(false),
+    // How the cover image fits: "cover" fills the banner (may crop), "contain"
+    // shows the whole image at its natural height (never cropped).
+    coverFit: z.enum(["cover", "contain"]).default("cover"),
     // Shown in the Presença/Ecossistema header in place of the name text.
     logo: z.string().max(1000).default(""),
     verified: z.boolean().default(false),
