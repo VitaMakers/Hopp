@@ -537,6 +537,11 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
       const href = linkHref(block.url);
       if (!href) return <Placeholder handle={handle} className={btn}>{block.title || "Link sem endereço"}</Placeholder>;
       const thumb = imageSrc(block.imageUrl);
+      // Optional icon shown next to the button text (a logo like iFood/WhatsApp).
+      // Shown whole (object-contain) so it is never cropped. Falls back to the
+      // thumbnail image for the small left slot on classic/card buttons.
+      const icon = imageSrc(block.icon);
+      const leftIcon = icon ?? thumb;
       const accent = block.accent || "var(--page-accent)";
       if (block.display === "banner") {
         return (
@@ -554,6 +559,10 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
             ) : null}
             <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/5" />
             <span className="relative flex flex-col items-start gap-2">
+              {icon ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={icon} alt="" className="h-11 w-11 rounded-xl bg-white/90 object-contain p-1.5" loading="lazy" />
+              ) : null}
               {block.label ? (
                 <span className="rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider" style={{ background: accent }}>
                   {block.label}
@@ -577,9 +586,9 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
             onClick={() => click(href)}
             className={`${softBox} flex w-full items-center gap-3 p-4 text-left transition-transform hover:scale-[1.01] ${block.highlight ? "btn-highlight" : ""}`}
           >
-            {thumb ? (
+            {leftIcon ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={thumb} alt="" className="h-14 w-14 shrink-0 rounded-[calc(var(--box-radius)*0.7)] object-cover" />
+              <img src={leftIcon} alt="" className={`h-14 w-14 shrink-0 rounded-[calc(var(--box-radius)*0.7)] ${icon ? "bg-white object-contain p-1.5" : "object-cover"}`} />
             ) : null}
             <span className="flex min-w-0 flex-1 flex-col">
               {block.label ? (
@@ -601,13 +610,13 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className={`${btn} relative ${thumb ? "px-16" : ""} ${block.highlight ? "btn-highlight" : ""}`}
+          className={`${btn} relative ${leftIcon ? "px-16" : ""} ${block.highlight ? "btn-highlight" : ""}`}
           style={block.buttonColor ? { background: block.buttonColor, color: textOn(block.buttonColor), borderColor: block.buttonColor } : undefined}
           onClick={() => click(href)}
         >
-          {thumb ? (
+          {leftIcon ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={thumb} alt="" className="absolute left-1.5 top-1/2 h-10 w-10 -translate-y-1/2 rounded-[calc(var(--btn-radius)*0.8)] object-cover" />
+            <img src={leftIcon} alt="" className="absolute left-2 top-1/2 h-9 w-9 -translate-y-1/2 rounded-[calc(var(--btn-radius)*0.8)] object-contain" />
           ) : null}
           {block.title || href}
         </a>
