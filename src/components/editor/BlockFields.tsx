@@ -182,6 +182,31 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
               onChange={(imageUrl) => onChange({ ...block, imageUrl })}
             />
             <UploadButton label="Enviar imagem" onUploaded={(imageUrl) => onChange({ ...block, imageUrl })} />
+            <p className="-mt-1 text-xs text-stone-500">
+              {block.display === "banner"
+                ? "Tamanho recomendado do banner: 1000 × 700 px (paisagem). A imagem preenche o fundo todo."
+                : "Tamanho recomendado da miniatura: 400 × 400 px (quadrada)."}
+            </p>
+
+            <div className="mt-1 border-t border-stone-100 pt-3">
+              <TextField
+                label="Ícone (opcional — logo como iFood, WhatsApp…)"
+                type="url"
+                value={block.icon}
+                maxLength={1000}
+                placeholder="https://..."
+                onChange={(icon) => onChange({ ...block, icon })}
+              />
+              <UploadButton label="Enviar ícone" onUploaded={(icon) => onChange({ ...block, icon })} />
+              <p className="mt-1 text-xs text-stone-500">
+                Aparece ao lado do texto e nunca é cortado. Use um PNG com fundo transparente, por volta de 128 × 128 px. Se não enviar, o botão fica sem ícone.
+              </p>
+              {block.icon ? (
+                <button type="button" onClick={() => onChange({ ...block, icon: "" })} className="mt-1 text-xs text-stone-500 underline">
+                  remover ícone
+                </button>
+              ) : null}
+            </div>
           </Fieldset>
         </div>
       );

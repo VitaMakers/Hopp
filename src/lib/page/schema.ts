@@ -47,6 +47,9 @@ export const linkBlockSchema = z.object({
   title: z.string().max(120),
   url: z.string().max(2000),
   imageUrl: z.string().max(1000).default(""),
+  // Optional icon/logo shown next to the button text (e.g. iFood, WhatsApp).
+  // Shown whole, never cropped. Empty = no icon.
+  icon: z.string().max(1000).default(""),
   highlight: z.boolean().default(false),
   // Banner: image behind the text. Card: label, title, subtitle and an arrow.
   display: z.enum(LINK_DISPLAYS).default("button"),
