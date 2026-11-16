@@ -18,7 +18,7 @@ export const PLAN_FEATURES: PlanFeature[] = [
   { label: "Modelos premium exclusivos", free: false, essencial: false, profissional: true },
   { label: "Métricas completas (cliques, origem, tempo na página)", free: "Só visitas", essencial: true, profissional: true },
   { label: "Vídeo de capa e grade de vídeos", free: false, essencial: true, profissional: true },
-  { label: "Links curtos próprios", free: "—", essencial: "3", profissional: "7" },
+  { label: "Links curtos próprios", free: "—", essencial: "3", profissional: "Ilimitados" },
   { label: "Selo verificado azul", free: false, essencial: false, profissional: true },
   { label: "Sem a marca Virtú.bio no rodapé", free: false, essencial: false, profissional: true },
 ];

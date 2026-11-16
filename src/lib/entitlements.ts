@@ -5,10 +5,12 @@ import { normalizePlan } from "@/lib/plans";
 // locks) and by the publish action (to enforce). No "server-only": the editor
 // imports it too.
 
-// How many short links each plan may keep.
+// How many short links each plan may keep. Profissional unlocks everything, so
+// it has no limit (Infinity); callers show "ilimitado" when the limit is not
+// finite.
 export function shortLinkLimit(plan: string | null | undefined): number {
   const p = normalizePlan(plan);
-  return p === "profissional" ? 7 : p === "essencial" ? 3 : 0;
+  return p === "profissional" ? Infinity : p === "essencial" ? 3 : 0;
 }
 
 // The brand signature in the footer shows on every plan except Profissional.
