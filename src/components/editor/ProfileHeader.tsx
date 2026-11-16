@@ -8,7 +8,7 @@ import { imageSrc } from "@/lib/page/links";
 import { SOCIAL_PLATFORMS, type PageDoc, type SocialPlatform } from "@/lib/page/schema";
 import { SocialIcon } from "@/components/page-view/SocialIcon";
 import { TextArea, TextField, Toggle } from "./fields";
-import { UploadButton } from "./UploadButton";
+import { UploadButton, useImageUpload } from "./UploadButton";
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -24,20 +24,41 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
   const { profile, socials } = doc;
   const avatar = imageSrc(profile.avatarUrl);
   const setProfile = (patch: Partial<PageDoc["profile"]>) => onChange({ ...doc, profile: { ...doc.profile, ...patch } });
+  const avatarUpload = useImageUpload((avatarUrl) => setProfile({ avatarUrl }));
   const used = new Set(socials.map((s) => s.platform));
   const available = SOCIAL_PLATFORMS.filter((p) => !used.has(p));
 
   return (
     <div className="w-full rounded-2xl bg-white p-4 ring-1 ring-stone-200">
       <div className="flex items-start gap-3">
-        {avatar ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatar} alt="" className="h-16 w-16 shrink-0 rounded-full object-cover" />
-        ) : (
-          <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-stone-900 text-lg font-semibold text-white">
-            {initials(profile.name)}
-          </span>
-        )}
+        <div className="flex shrink-0 flex-col items-center gap-1">
+          <button
+            type="button"
+            onClick={avatarUpload.open}
+            disabled={avatarUpload.busy}
+            aria-label="Enviar foto ou logo"
+            title="Clique para enviar a foto/logo"
+            className="group relative h-16 w-16 overflow-hidden rounded-full ring-1 ring-stone-200"
+          >
+            {avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatar} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span className="flex h-full w-full items-center justify-center bg-stone-900 text-lg font-semibold text-white">
+                {initials(profile.name)}
+              </span>
+            )}
+            <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-[10px] font-semibold text-white opacity-0 transition group-hover:opacity-100">
+              {avatarUpload.busy ? "..." : "📷 Trocar"}
+            </span>
+          </button>
+          <label className="flex items-center gap-1 text-[11px] text-stone-500" title="Mostrar a foto/logo na página">
+            <input type="checkbox" checked={!profile.hideAvatar} onChange={(e) => setProfile({ hideAvatar: !e.target.checked })} />
+            Mostrar
+          </label>
+          <input ref={avatarUpload.inputRef} type="file" accept="image/*" className="sr-only" onChange={avatarUpload.handle} />
+          {avatarUpload.error ? <p className="max-w-[88px] text-center text-[10px] leading-tight text-red-600">{avatarUpload.error}</p> : null}
+        </div>
         <div className="min-w-0 flex-1">
           <p className="truncate font-bold text-stone-900">{profile.name || "Seu nome"}</p>
           <p className="mt-0.5 line-clamp-2 text-sm text-stone-500">

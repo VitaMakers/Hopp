@@ -141,6 +141,7 @@ export function PageView({ doc, handle, plan, footer, still, onEdit }: Props) {
 
 function Avatar({ doc, size }: { doc: PageDoc; size: string }) {
   const { profile, theme } = doc;
+  if (profile.hideAvatar) return null;
   const src = imageSrc(profile.avatarUrl);
   const shape = AVATAR_RADII[theme.avatarShape];
   if (src) {
