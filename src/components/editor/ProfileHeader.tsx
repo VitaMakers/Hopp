@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { canUseVerified } from "@/lib/entitlements";
 import { SOCIAL_LABELS } from "@/lib/page/catalog";
 import { imageSrc } from "@/lib/page/links";
@@ -173,12 +173,20 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
             </div>
 
             <div className="flex flex-col gap-2 rounded-lg bg-stone-50 p-2.5">
-              <p className="text-xs text-stone-500">Use o tamanho para definir a altura da capa e o Enquadramento (abaixo) para escolher qual parte da imagem aparece.</p>
-              <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
-                Tamanho da capa (altura)
-                <input type="range" min={160} max={720} step={10} value={profile.coverHeight} onChange={(e) => setProfile({ coverHeight: Number(e.target.value) })} />
-                <span className="text-xs text-stone-500">{profile.coverHeight}px de altura</span>
-              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-medium text-stone-700">Formato:</span>
+                {([["horizontal", "Horizontal"], ["vertical", "Vertical"], ["full", "Tela cheia"]] as const).map(([v, l]) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setProfile({ coverFormat: v })}
+                    className={`rounded-lg px-3 py-1 text-sm ring-1 ${profile.coverFormat === v ? "bg-stone-900 text-white ring-stone-900" : "text-stone-600 ring-stone-300"}`}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
+              <p className="-mt-1 text-xs text-stone-500">O formato vale igual no celular e no computador. Arraste a imagem (abaixo) para escolher a parte que aparece.</p>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium text-stone-700">Bordas:</span>
                 {([["true", "Arredondadas"], ["false", "Retas"]] as const).map(([v, l]) => (
@@ -199,10 +207,9 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
               <>
                 <TextField label="Imagem da capa (link ou envie)" type="url" value={profile.coverUrl} placeholder="https://..." onChange={(coverUrl) => setProfile({ coverUrl })} />
                 <UploadButton label="Enviar capa" onUploaded={(coverUrl) => setProfile({ coverUrl })} />
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-stone-500">Enquadramento:</span>
-                  <FocalGrid x={profile.coverPosX} y={profile.coverPosY} onChange={(x, y) => setProfile({ coverPosX: x, coverPosY: y })} />
-                </div>
+                {imageSrc(profile.coverUrl) ? (
+                  <CoverPositioner url={profile.coverUrl} format={profile.coverFormat} x={profile.coverPosX} y={profile.coverPosY} onChange={(x, y) => setProfile({ coverPosX: x, coverPosY: y })} />
+                ) : null}
                 <p className="-mt-1 text-xs text-stone-500">Tamanho recomendado: 1080 × 1350 px (retrato).</p>
               </>
             ) : profile.coverType === "carousel" ? (
@@ -215,23 +222,22 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
                   </label>
                 </div>
                 {profile.coverImages.map((img, i) => (
-                  <div key={i} className="flex items-center gap-2 rounded-lg bg-stone-50 p-2">
-                    {imageSrc(img.url) ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={imageSrc(img.url) as string} alt="" className="h-11 w-11 shrink-0 rounded object-cover" style={{ objectPosition: `${img.x}% ${img.y}%` }} />
-                    ) : (
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded bg-stone-200 text-xs font-semibold text-stone-500">{i + 1}</span>
-                    )}
-                    <FocalGrid x={img.x} y={img.y} onChange={(x, y) => setProfile({ coverImages: profile.coverImages.map((it, j) => (j === i ? { ...it, x, y } : it)) })} />
-                    <div className="flex min-w-0 flex-1 flex-col gap-1">
-                      {showLinks ? (
-                        <TextField label="" type="url" value={img.url} placeholder="https://..." onChange={(v) => setProfile({ coverImages: profile.coverImages.map((it, j) => (j === i ? { ...it, url: v } : it)) })} />
-                      ) : null}
-                      <UploadButton label={img.url ? "Trocar imagem" : "Enviar imagem"} onUploaded={(v) => setProfile({ coverImages: profile.coverImages.map((it, j) => (j === i ? { ...it, url: v } : it)) })} />
+                  <div key={i} className="flex flex-col gap-2 rounded-lg bg-stone-50 p-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-stone-500">Imagem {i + 1}</span>
+                      <div className="ml-auto flex items-center gap-2">
+                        <UploadButton label={img.url ? "Trocar" : "Enviar"} onUploaded={(v) => setProfile({ coverImages: profile.coverImages.map((it, j) => (j === i ? { ...it, url: v } : it)) })} />
+                        <button type="button" onClick={() => setProfile({ coverImages: profile.coverImages.filter((_, j) => j !== i) })} className="shrink-0 text-xs text-red-500">
+                          Remover
+                        </button>
+                      </div>
                     </div>
-                    <button type="button" onClick={() => setProfile({ coverImages: profile.coverImages.filter((_, j) => j !== i) })} className="shrink-0 text-xs text-red-500">
-                      Remover
-                    </button>
+                    {imageSrc(img.url) ? (
+                      <CoverPositioner url={img.url} format={profile.coverFormat} x={img.x} y={img.y} onChange={(x, y) => setProfile({ coverImages: profile.coverImages.map((it, j) => (j === i ? { ...it, x, y } : it)) })} />
+                    ) : null}
+                    {showLinks ? (
+                      <TextField label="" type="url" value={img.url} placeholder="https://..." onChange={(v) => setProfile({ coverImages: profile.coverImages.map((it, j) => (j === i ? { ...it, url: v } : it)) })} />
+                    ) : null}
                   </div>
                 ))}
                 {profile.coverImages.length < 8 ? (
@@ -284,24 +290,50 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
 
 // A compact 3×3 picker for the focal point of a cover image (object-position).
 // The middle dot centres it; corners/edges pull the framing that way.
-function FocalGrid({ x, y, onChange }: { x: number; y: number; onChange: (x: number, y: number) => void }) {
-  const pts = [0, 50, 100];
+const POS_ASPECT: Record<string, string> = { horizontal: "16 / 9", vertical: "4 / 5", full: "2 / 3" };
+
+// Shows the cover at the chosen format and lets the owner DRAG the image to
+// choose which part shows (sets object-position). No buttons — just drag.
+function CoverPositioner({ url, format, x, y, onChange }: { url: string; format: string; x: number; y: number; onChange: (x: number, y: number) => void }) {
+  const boxRef = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ px: number; py: number; x: number; y: number } | null>(null);
+  const src = imageSrc(url);
+  if (!src) return null;
+  const clamp = (v: number) => Math.max(0, Math.min(100, Math.round(v)));
+  const down = (e: React.PointerEvent) => {
+    drag.current = { px: e.clientX, py: e.clientY, x, y };
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      /* capture not supported — move events still fire while inside the box */
+    }
+  };
+  const move = (e: React.PointerEvent) => {
+    if (!drag.current || !boxRef.current) return;
+    const r = boxRef.current.getBoundingClientRect();
+    const dx = ((e.clientX - drag.current.px) / r.width) * 100;
+    const dy = ((e.clientY - drag.current.py) / r.height) * 100;
+    // Drag the image down → reveal its top → object-position Y decreases.
+    onChange(clamp(drag.current.x - dx), clamp(drag.current.y - dy));
+  };
+  const up = () => {
+    drag.current = null;
+  };
   return (
-    <div className="grid shrink-0 grid-cols-3 gap-0.5 rounded bg-white p-1 ring-1 ring-stone-200" title="Enquadramento da imagem (clique para centralizar/ajustar)">
-      {pts.flatMap((py) =>
-        pts.map((px) => {
-          const on = x === px && y === py;
-          return (
-            <button
-              key={`${px}-${py}`}
-              type="button"
-              onClick={() => onChange(px, py)}
-              aria-label={`Enquadrar em ${px}% ${py}%`}
-              className={`h-3.5 w-3.5 rounded-sm ${on ? "bg-stone-900" : "bg-stone-200 hover:bg-stone-400"}`}
-            />
-          );
-        }),
-      )}
+    <div
+      ref={boxRef}
+      onPointerDown={down}
+      onPointerMove={move}
+      onPointerUp={up}
+      onPointerCancel={up}
+      className="relative w-full max-w-[280px] cursor-grab touch-none select-none overflow-hidden rounded-xl ring-1 ring-stone-300 active:cursor-grabbing"
+      style={{ aspectRatio: POS_ASPECT[format] ?? "4 / 5" }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt="" draggable={false} className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ objectPosition: `${x}% ${y}%` }} />
+      <span className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 rounded bg-black/55 px-2 py-0.5 text-[10px] font-medium text-white">
+        arraste para posicionar
+      </span>
     </div>
   );
 }
