@@ -173,9 +173,9 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
             </div>
 
             <div className="flex flex-col gap-2 rounded-lg bg-stone-50 p-2.5">
-              <p className="text-xs text-stone-500">A imagem aparece sempre inteira (sem cortar). Use o tamanho abaixo para deixá-la maior ou menor.</p>
+              <p className="text-xs text-stone-500">Use o tamanho para definir a altura da capa e o Enquadramento (abaixo) para escolher qual parte da imagem aparece.</p>
               <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
-                Tamanho da capa
+                Tamanho da capa (altura)
                 <input type="range" min={160} max={720} step={10} value={profile.coverHeight} onChange={(e) => setProfile({ coverHeight: Number(e.target.value) })} />
                 <span className="text-xs text-stone-500">{profile.coverHeight}px de altura</span>
               </label>
