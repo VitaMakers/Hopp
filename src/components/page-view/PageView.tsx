@@ -399,29 +399,29 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
   // Show the cover (image/carousel/video) at the top whenever one is set — on
   // the classic and card layouts too, so adding a cover appears right away.
   const showBanner = hasCover;
-  const coverRadius = profile.coverRounded ? "rounded-[1.5rem]" : "";
+  // Full-width cover band. Its height is the "Tamanho da capa" slider; the image
+  // fills the band and the "Enquadramento" (focal point) chooses what shows.
+  // Corners round (all sizes) only when "Arredondadas" is chosen.
+  const coverRadius = profile.coverRounded ? "rounded-[1.4rem]" : "";
   return (
     <>
       {showBanner ? (
-        // The cover shows the whole image (never cropped), centred, at a size the
-        // owner controls via "Tamanho da capa" (max height). Rounded corners work
-        // on phone and computer.
-        <div className="mt-3 flex w-full justify-center">
-          <div className="relative inline-block max-w-full">
-            <CoverMedia
-              videos={coverVideos}
-              images={coverImages}
-              seconds={coverSeconds}
-              fallback={null}
-              alt=""
-              className={`block h-auto w-auto max-w-full object-contain ${coverRadius}`}
-              style={{ maxHeight: profile.coverHeight }}
-            />
-            {profile.coverShade ? <div className={`pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-b from-transparent to-[var(--page-bg)] ${profile.coverRounded ? "rounded-b-[1.5rem]" : ""}`} /> : null}
-          </div>
+        <div
+          className={`relative -mx-5 w-[calc(100%+2.5rem)] overflow-hidden ${coverRadius}`}
+          style={{ height: profile.coverHeight }}
+        >
+          <CoverMedia
+            videos={coverVideos}
+            images={coverImages}
+            seconds={coverSeconds}
+            fallback={null}
+            alt=""
+            className="h-full w-full object-cover"
+          />
+          {profile.coverShade ? <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-b from-transparent to-[var(--page-bg)]" /> : null}
         </div>
       ) : null}
-      <div className={`flex flex-col items-center ${showBanner ? "pt-5" : theme.layout === "card" ? "" : "pt-12"}`}>
+      <div className={`flex flex-col items-center ${showBanner ? "pt-4" : theme.layout === "card" ? "" : "pt-12"}`}>
         <Avatar doc={doc} size="h-24 w-24" />
         <div className="mt-4 flex flex-col items-center">
           <Logo doc={doc} className="mb-2 h-10 w-auto object-contain" />
