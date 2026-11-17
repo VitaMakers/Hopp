@@ -112,7 +112,7 @@ export function PageView({ doc, handle, plan, footer, still, onEdit }: Props) {
     <>
       <Header doc={doc} handle={handle} still={still} />
       {theme.layout === "band" ? null : <Socials doc={doc} handle={handle} />}
-      <div className="mt-7 flex w-full flex-col gap-3.5">
+      <div className={`${headerHasContent(doc) ? "mt-7" : "mt-4"} flex w-full flex-col gap-3.5`}>
         {blocks.map((block) => (
           <EditWrap key={block.id} onEdit={onEdit} target={block.id}>
             <BlockView block={block} doc={doc} handle={handle} />
@@ -399,38 +399,53 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
   // Show the cover (image/carousel/video) at the top whenever one is set — on
   // the classic and card layouts too, so adding a cover appears right away.
   const showBanner = hasCover;
-  // Full-width cover band. Its height is the "Tamanho da capa" slider; the image
-  // fills the band and the "Enquadramento" (focal point) chooses what shows.
-  // Corners round (all sizes) only when "Arredondadas" is chosen.
+  // Full-width cover band shaped by a format preset (aspect ratio, so it looks
+  // the same on phone and computer). The image fills it; the owner drags it to
+  // choose what shows. Corners round only when "Arredondadas" is chosen.
   const coverRadius = profile.coverRounded ? "rounded-[1.4rem]" : "";
+  const coverAspect = COVER_ASPECT[profile.coverFormat] ?? COVER_ASPECT.vertical;
+  const hasHeader = headerHasContent(doc);
   return (
     <>
       {showBanner ? (
-        <div
-          className={`relative -mx-5 w-[calc(100%+2.5rem)] overflow-hidden ${coverRadius}`}
-          style={{ height: profile.coverHeight }}
-        >
+        <div className={`relative -mx-5 w-[calc(100%+2.5rem)] overflow-hidden ${coverAspect} ${coverRadius}`}>
           <CoverMedia
             videos={coverVideos}
             images={coverImages}
             seconds={coverSeconds}
             fallback={null}
             alt=""
-            className="h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover"
           />
           {profile.coverShade ? <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-b from-transparent to-[var(--page-bg)]" /> : null}
         </div>
       ) : null}
-      <div className={`flex flex-col items-center ${showBanner ? "pt-4" : theme.layout === "card" ? "" : "pt-12"}`}>
-        <Avatar doc={doc} size="h-24 w-24" />
-        <div className="mt-4 flex flex-col items-center">
-          <Logo doc={doc} className="mb-2 h-10 w-auto object-contain" />
-          <Name doc={doc} />
+      {hasHeader ? (
+        <div className={`flex flex-col items-center ${showBanner ? "pt-4" : theme.layout === "card" ? "" : "pt-12"}`}>
+          <Avatar doc={doc} size="h-24 w-24" />
+          <div className="mt-4 flex flex-col items-center">
+            <Logo doc={doc} className="mb-2 h-10 w-auto object-contain" />
+            <Name doc={doc} />
+          </div>
+          <Bio doc={doc} />
         </div>
-        <Bio doc={doc} />
-      </div>
+      ) : null}
     </>
   );
+}
+
+// The aspect ratio for each cover format preset.
+const COVER_ASPECT: Record<string, string> = {
+  horizontal: "aspect-[16/9]",
+  vertical: "aspect-[4/5]",
+  full: "aspect-[2/3]",
+};
+
+// True when the header (avatar, name, bio or logo) has anything to show. When
+// empty, the header block is skipped so the cover sits right above the blocks.
+function headerHasContent(doc: PageDoc): boolean {
+  const p = doc.profile;
+  return !p.hideAvatar || (!p.hideName && !!p.name) || !!p.bio || !!imageSrc(p.logo);
 }
 
 function Socials({ doc, handle }: { doc: PageDoc; handle?: string }) {
