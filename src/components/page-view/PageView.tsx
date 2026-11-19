@@ -10,6 +10,7 @@ import { SocialIcon } from "./SocialIcon";
 import { VerifiedCheck } from "./VerifiedCheck";
 import { startVisit, track, trackDuration } from "./track";
 import { AVATAR_RADII, buttonClass, themeVars } from "./theme";
+import { canUseVerified } from "@/lib/entitlements";
 
 type Props = {
   doc: PageDoc;
@@ -51,9 +52,15 @@ function EditWrap({ onEdit, target, children }: { onEdit?: (t: string) => void; 
 
 // Clients' pages keep their original look, independent of Virtú's own UI tokens.
 export function PageView(props: Props) {
+  // The verified badge is a paid perk: a page whose plan was cancelled stops
+  // showing it right away, without waiting for a republish.
+  const doc =
+    props.plan !== undefined && props.doc.profile.verified && !canUseVerified(props.plan)
+      ? { ...props.doc, profile: { ...props.doc.profile, verified: false } }
+      : props.doc;
   return (
     <div className="vita-original contents">
-      <PageViewInner {...props} />
+      <PageViewInner {...props} doc={doc} />
     </div>
   );
 }

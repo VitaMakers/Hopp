@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
   title: `Planos e preços — ${APP_NAME}`,
-  description: "Compare os planos Grátis, Essencial e Profissional e veja os benefícios dos modelos exclusivos e das métricas.",
+  description: "Compare o plano Grátis e o Essencial, com modelos premium, vídeo, métricas completas e sem a marca Virtú.bio.",
 };
 
 // Public pricing page. Logged-in visitors get a direct "subscribe" button that
@@ -39,7 +39,9 @@ export default async function PrecosPage() {
 
   // Where each plan's button goes.
   function cta(plan: Plan): { href: string; label: string; disabled?: boolean } {
-    if (loggedIn && currentPlan === plan) return { href: "#", label: "Seu plano atual", disabled: true };
+    // Any paid plan (including legacy Profissional) already has everything.
+    const samePlan = currentPlan === plan || (plan !== "free" && currentPlan !== "free");
+    if (loggedIn && samePlan) return { href: "#", label: "Seu plano atual", disabled: true };
     if (plan === "free") {
       return loggedIn
         ? { href: "/dashboard", label: "Ir para o painel" }
@@ -68,14 +70,14 @@ export default async function PrecosPage() {
           </Link>
           <h1 className="mt-3 text-3xl font-bold text-stone-900 sm:text-4xl">Escolha o seu plano</h1>
           <p className="mx-auto mt-3 max-w-xl text-stone-600">
-            Comece grátis e evolua quando quiser. O <strong>Profissional</strong> libera os modelos exclusivos, o selo verificado, as métricas completas e tira a marca Virtú.bio da sua página.
+            Comece grátis, sem cartão. O <strong>Essencial</strong> libera tudo: modelos premium, vídeo, métricas completas, selo verificado e sua página sem a marca Virtú.bio.
           </p>
         </header>
 
         {/* Plan cards */}
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
+        <div className="mx-auto mt-10 grid max-w-3xl gap-5 md:grid-cols-2">
           {PLAN_ORDER.map((plan) => {
-            const featured = plan === "profissional";
+            const featured = plan === "essencial";
             const c = cta(plan);
             return (
               <div
@@ -84,7 +86,7 @@ export default async function PrecosPage() {
               >
                 {featured ? (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-stone-900 px-3 py-1 text-[11px] font-semibold text-white">
-                    Mais completo
+                    Tudo liberado
                   </span>
                 ) : null}
                 <h2 className="text-lg font-bold text-stone-900">{PLAN_LABEL[plan]}</h2>
@@ -118,6 +120,7 @@ export default async function PrecosPage() {
                 ) : (
                   <Link
                     href={c.href}
+                    prefetch={false}
                     className={`mt-6 rounded-lg py-2.5 text-center text-sm font-semibold transition ${
                       featured ? "bg-stone-900 text-white hover:bg-stone-700" : "bg-white text-stone-900 ring-1 ring-stone-300 hover:ring-stone-900"
                     }`}
@@ -131,10 +134,10 @@ export default async function PrecosPage() {
         </div>
 
         {/* Full comparison */}
-        <section className="mt-12 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-200">
+        <section className="mx-auto mt-12 max-w-3xl overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-200">
           <h2 className="border-b border-stone-100 px-5 py-4 text-lg font-bold text-stone-900">Comparar os planos</h2>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[520px] text-left">
+            <table className="w-full min-w-[420px] text-left">
               <thead>
                 <tr className="border-b border-stone-100 text-sm">
                   <th className="px-5 py-3 font-medium text-stone-500">Recurso</th>
@@ -149,9 +152,11 @@ export default async function PrecosPage() {
                 {PLAN_FEATURES.map((f) => (
                   <tr key={f.label} className="border-b border-stone-50 last:border-0">
                     <td className="px-5 py-3 text-sm text-stone-700">{f.label}</td>
-                    <td className="px-3 py-3 text-center">{cell(f.free)}</td>
-                    <td className="px-3 py-3 text-center">{cell(f.essencial)}</td>
-                    <td className="px-3 py-3 text-center">{cell(f.profissional)}</td>
+                    {PLAN_ORDER.map((plan) => (
+                      <td key={plan} className="px-3 py-3 text-center">
+                        {cell(f[plan])}
+                      </td>
+                    ))}
                   </tr>
                 ))}
               </tbody>

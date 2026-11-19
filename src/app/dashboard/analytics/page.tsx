@@ -793,7 +793,7 @@ function FreeAnalytics({ visits }: { visits: number }) {
       </div>
       <div className="rounded-xl bg-stone-900 p-5 text-center text-white">
         <p className="font-semibold">Quer ver cliques, visitantes, origem do tráfego e mais?</p>
-        <p className="mt-1 text-sm text-stone-300">As estatísticas completas estão nos planos Essencial e Profissional.</p>
+        <p className="mt-1 text-sm text-stone-300">As estatísticas completas estão no plano Essencial.</p>
         <Link href="/dashboard/plans" className="mt-4 inline-block rounded-lg bg-white px-4 py-2 text-sm font-semibold text-stone-900">
           Ver planos
         </Link>

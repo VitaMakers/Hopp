@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cancelSubscriptionNow } from "@/lib/payments/billing";
 import { createAdminClient, createClient, requireUser } from "@/lib/supabase/server";
 
 export type PasswordState = { error?: string; ok?: boolean };
@@ -27,7 +28,26 @@ export async function deleteAccount(_prev: DeleteState, form: FormData): Promise
   if (String(form.get("confirm") ?? "").trim().toUpperCase() !== "EXCLUIR") {
     return { error: 'Digite EXCLUIR (em maiúsculas) para confirmar.' };
   }
-  const { error } = await createAdminClient().auth.admin.deleteUser(user.id);
+  const admin = createAdminClient();
+
+  // Stop billing for every client of this account before anything is deleted;
+  // if Stripe refuses, keep the account so the subscriptions can still be
+  // cancelled instead of charging a deleted account forever.
+  const { data: paid } = await admin
+    .from("profiles")
+    .select("stripe_subscription_id")
+    .eq("account_id", user.id)
+    .not("stripe_subscription_id", "is", null);
+  try {
+    for (const row of paid ?? []) {
+      if (row.stripe_subscription_id) await cancelSubscriptionNow(row.stripe_subscription_id);
+    }
+  } catch (error) {
+    console.error("cancel subscriptions on account delete failed", error);
+    return { error: "Não conseguimos cancelar as assinaturas no Stripe, então a conta não foi excluída. Tente de novo em instantes." };
+  }
+
+  const { error } = await admin.auth.admin.deleteUser(user.id);
   if (error) return { error: "Não foi possível excluir a conta. Tente de novo." };
   await supabase.auth.signOut();
   redirect("/");

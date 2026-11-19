@@ -43,7 +43,7 @@ export function OnboardingForm({ host }: { host: string }) {
 
         {tab === "premium" ? (
           <div className="-mt-1 rounded-lg bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200">
-            <span className="font-semibold">Modelos exclusivos do plano Profissional.</span> Você pode montar sua página agora e assinar para publicar com um modelo premium.{" "}
+            <span className="font-semibold">Modelos exclusivos do plano Essencial.</span> Você pode montar sua página agora e assinar para publicar com um modelo premium.{" "}
             <Link href="/precos" className="font-semibold underline">
               Ver planos
             </Link>

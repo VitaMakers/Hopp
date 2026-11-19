@@ -63,7 +63,7 @@ export function collectionModels(collection: TemplateCollection): PageTemplate[]
 
 export const TEMPLATE_TABS: TemplateTab[] = [
   { id: "essencial", label: "Modelos Essenciais", kind: "models", plan: "Essencial", note: "Modelos do plano Essencial. Novos modelos em breve." },
-  { id: "premium", label: "Modelos Premium", kind: "models", plan: "Profissional", note: "Modelos do plano Profissional." },
+  { id: "premium", label: "Modelos Premium", kind: "models", plan: "Essencial", note: "Modelos do plano Essencial." },
   { id: "criar", label: "Criar Meu Modelo", kind: "scratch", note: "Comece com uma página em branco e monte do seu jeito — a prévia aparece ao lado enquanto você edita." },
 ];
 
@@ -162,7 +162,7 @@ export const TEMPLATES: PageTemplate[] = [
     swatch: { background: "#000000", accent: "#2563eb", text: "#ffffff" },
     build: (name) =>
       page(name, {
-        profile: { bio: "", floatingWhatsapp: "(11) 99999-0000" },
+        profile: { bio: "", floatingWhatsapp: "" },
         theme: { premium: "store", background: "#000000", text: "#ffffff", accent: "#2563eb", font: "sans" },
         premium: {
           heroPill: "Black Antecipada",
@@ -257,7 +257,7 @@ export const TEMPLATES: PageTemplate[] = [
     swatch: { background: "#0b0b0b", accent: "#be123c", text: "#ffffff" },
     build: (name) =>
       page(name, {
-        profile: { bio: "", floatingWhatsapp: "(11) 99999-0000" },
+        profile: { bio: "", floatingWhatsapp: "" },
         theme: { premium: "lookbook", background: "#0b0b0b", text: "#ffffff", accent: "#be123c", font: "sans" },
         premium: {
           heroPill: "Ver drop",
@@ -311,7 +311,7 @@ export const TEMPLATES: PageTemplate[] = [
     swatch: { background: "#0c0c0c", accent: "#f43f5e", text: "#ffffff" },
     build: (name) =>
       page(name, {
-        profile: { bio: "Ofertas selecionadas, por tempo limitado.", floatingWhatsapp: "(11) 99999-0000" },
+        profile: { bio: "Ofertas selecionadas, por tempo limitado.", floatingWhatsapp: "" },
         theme: { premium: "mosaic", background: "#0c0c0c", text: "#ffffff", accent: "#f43f5e", font: "sans" },
         premium: {
           heroPill: "Ver tudo",
@@ -350,7 +350,7 @@ export const TEMPLATES: PageTemplate[] = [
     swatch: { background: "#0a0a0a", accent: "#d4af37", text: "#ffffff" },
     build: (name) =>
       page(name, {
-        profile: { bio: "", floatingWhatsapp: "(11) 99999-0000" },
+        profile: { bio: "", floatingWhatsapp: "" },
         theme: { premium: "dropz", background: "#0a0a0a", text: "#ffffff", accent: "#d4af37", font: "sans" },
         premium: {
           heroPill: "Frete grátis",
@@ -401,7 +401,7 @@ export const TEMPLATES: PageTemplate[] = [
         profile: {
           bio: "As melhores ofertas do ano em um só lugar. Descontos imperdíveis por tempo limitado — aproveite antes que acabe.",
           coverUrl: unsplash("1483985988355-763728e1935b", 1200),
-          floatingWhatsapp: "(11) 99999-0000",
+          floatingWhatsapp: "",
         },
         socials: [
           { platform: "instagram", url: "https://www.instagram.com/" },
@@ -445,7 +445,7 @@ export const TEMPLATES: PageTemplate[] = [
         profile: {
           bio: "Cozinha de verdade, do jeito que você ama. Reserve sua mesa ou peça no delivery.",
           coverUrl: unsplash("1504674900247-0877df9cc836", 1300),
-          floatingWhatsapp: "(11) 99999-0000",
+          floatingWhatsapp: "",
         },
         socials: [
           { platform: "instagram", url: "https://www.instagram.com/" },
@@ -485,7 +485,7 @@ export const TEMPLATES: PageTemplate[] = [
     swatch: { background: "#5c1a1f", accent: "#c99a46", text: "#f4ede1" },
     build: (name) =>
       page(name, {
-        profile: { bio: "", coverUrl: unsplash("1558030006-450675393462", 1300), floatingWhatsapp: "(11) 99999-0000" },
+        profile: { bio: "", coverUrl: unsplash("1558030006-450675393462", 1300), floatingWhatsapp: "" },
         socials: [
           { platform: "instagram", url: "https://www.instagram.com/" },
           { platform: "whatsapp", url: "https://wa.me/5511999990000" },
@@ -529,7 +529,7 @@ export const TEMPLATES: PageTemplate[] = [
     swatch: { background: "#161311", accent: "#e0702c", text: "#f5f1ec" },
     build: (name) =>
       page(name, {
-        profile: { bio: "", coverUrl: unsplash("1414235077428-338989a2e8c0", 1300), floatingWhatsapp: "(11) 99999-0000" },
+        profile: { bio: "", coverUrl: unsplash("1414235077428-338989a2e8c0", 1300), floatingWhatsapp: "" },
         socials: [
           { platform: "instagram", url: "https://www.instagram.com/" },
           { platform: "whatsapp", url: "https://wa.me/5511999990000" },
@@ -575,7 +575,7 @@ export const TEMPLATES: PageTemplate[] = [
     swatch: { background: "#f4f1ea", accent: "#7a1f2b", text: "#2a2320" },
     build: (name) =>
       page(name, {
-        profile: { bio: "", floatingWhatsapp: "(11) 99999-0000" },
+        profile: { bio: "", floatingWhatsapp: "" },
         socials: [
           { platform: "instagram", url: "https://www.instagram.com/" },
           { platform: "whatsapp", url: "https://wa.me/5511999990000" },
@@ -706,7 +706,7 @@ export const TEMPLATES: PageTemplate[] = [
       page(name, {
         profile: {
           bio: "Escolha o próximo passo para desenvolver sua marca, ampliar seu conhecimento e transformar suas ideias em projetos.",
-          floatingWhatsapp: "(11) 99999-0000",
+          floatingWhatsapp: "",
         },
         theme: { premium: "catalog", background: "#111d1f", text: "#e7e9e8", accent: "#e6ff35", font: "tech" },
         premium: { heading: "Conheça\nos meus\nprodutos", contactLabel: "Fale comigo" },
@@ -752,7 +752,7 @@ export const TEMPLATES: PageTemplate[] = [
           bio: "",
           coverUrl: unsplash("1560250097-0b93528c311a", 1200),
           logo: "/assets/logo-exemplo.svg",
-          floatingWhatsapp: "(11) 99999-0000",
+          floatingWhatsapp: "",
         },
         theme: { premium: "experience", background: "#0a0a0f", text: "#f5f5f5", accent: "#a78bfa", font: "sans" },
         premium: {

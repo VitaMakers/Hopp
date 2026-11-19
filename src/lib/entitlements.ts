@@ -5,41 +5,47 @@ import { normalizePlan } from "@/lib/plans";
 // locks) and by the publish action (to enforce). No "server-only": the editor
 // imports it too.
 
-// How many short links each plan may keep. Profissional unlocks everything, so
-// it has no limit (Infinity); callers show "ilimitado" when the limit is not
-// finite.
+// One paid plan is sold today: Essencial (R$ 9,90) with everything unlocked.
+// Profissional is no longer offered, but existing Profissional subscribers keep
+// every feature. So "paid" (any plan but Grátis) is what unlocks features.
+export function isPaid(plan: string | null | undefined): boolean {
+  return normalizePlan(plan) !== "free";
+}
+
+// How many short links each plan may keep: unlimited on the paid plan, none on
+// Grátis. Callers show "ilimitado" when the limit is not finite.
 export function shortLinkLimit(plan: string | null | undefined): number {
-  const p = normalizePlan(plan);
-  return p === "profissional" ? Infinity : p === "essencial" ? 3 : 0;
+  return isPaid(plan) ? Infinity : 0;
 }
 
-// The brand signature in the footer shows on every plan except Profissional.
+// The Virtú.bio signature in the footer shows only on Grátis.
 export function showsBadge(plan: string | null | undefined): boolean {
-  return normalizePlan(plan) !== "profissional";
+  return !isPaid(plan);
 }
 
-// Premium designs (Autoridade, Presença, etc.) are Profissional only.
+// Premium designs (Autoridade, Presença, etc.) are on the paid plan.
 export function canUsePremium(plan: string | null | undefined): boolean {
-  return normalizePlan(plan) === "profissional";
+  return isPaid(plan);
 }
 
-// Cover video and the video grid block are available on paid plans.
+// Cover video and the video grid block are on the paid plan.
 export function canUseVideo(plan: string | null | undefined): boolean {
-  return normalizePlan(plan) !== "free";
+  return isPaid(plan);
 }
 
-// Free sees only the visit count; paid plans get the full dashboard.
+// Grátis sees only the visit count; the paid plan gets the full dashboard.
 export function hasFullAnalytics(plan: string | null | undefined): boolean {
-  return normalizePlan(plan) !== "free";
+  return isPaid(plan);
 }
 
-// The blue verified badge is a Profissional-only perk.
+// The blue verified badge is on the paid plan.
 export function canUseVerified(plan: string | null | undefined): boolean {
-  return normalizePlan(plan) === "profissional";
+  return isPaid(plan);
 }
 
 // Plan ranking, so "has at least this plan" checks are simple comparisons.
-const PLAN_RANK: Record<string, number> = { free: 0, essencial: 1, profissional: 2 };
+// Essencial and Profissional unlock the same things.
+const PLAN_RANK: Record<string, number> = { free: 0, essencial: 1, profissional: 1 };
 
 // True when the user's plan is at least the required tier.
 export function planAllows(userPlan: string | null | undefined, requiredPlan: string | null | undefined): boolean {
@@ -51,11 +57,16 @@ export function planAllows(userPlan: string | null | undefined, requiredPlan: st
 export function planViolations(doc: PageDoc, plan: string | null | undefined): string[] {
   const out: string[] = [];
   if (!canUsePremium(plan) && doc.theme.premium) {
-    out.push("modelo Premium (disponível no Profissional)");
+    out.push("modelo Premium (disponível no plano Essencial)");
   }
   if (!canUseVideo(plan)) {
-    const usesVideo = !!doc.profile.coverVideo || doc.profile.coverVideos.some(Boolean) || doc.blocks.some((b) => b.type === "videos");
-    if (usesVideo) out.push("vídeo — capa ou grade de vídeos (disponível no Essencial ou Profissional)");
+    // Only videos that actually show count: a list left behind after switching
+    // the cover to an image doesn't block publishing.
+    const usesVideo =
+      !!doc.profile.coverVideo ||
+      (doc.profile.coverType === "video" && doc.profile.coverVideos.some(Boolean)) ||
+      doc.blocks.some((b) => b.type === "videos");
+    if (usesVideo) out.push("vídeo de capa ou grade de vídeos (disponível no plano Essencial)");
   }
   return out;
 }

@@ -1,58 +1,34 @@
-import { APP_NAME } from "@/lib/env";
-import { PLAN_LABEL, PLAN_PRICE_BRL, PLANS, normalizePlan, type Plan } from "@/lib/plans";
+import { PLAN_FEATURES, PLAN_LABEL, PLAN_ORDER, PLAN_PITCH, PLAN_PRICE_BRL } from "@/lib/plan-features";
+import { normalizePlan } from "@/lib/plans";
 import { getOwner } from "../context";
 import { CancelSubscriptionButton } from "../clientes/CancelSubscriptionButton";
 
-// What each tier includes, shown on the pricing cards.
-const FEATURES: Record<Plan, string[]> = {
-  free: [
-    "Página publicada no ar",
-    "Modelos essenciais (básicos)",
-    "Estatísticas básicas",
-    "1 link curto",
-    `Selo “Feito com ${APP_NAME}”`,
-  ],
-  essencial: [
-    "Tudo do Grátis",
-    `Sem o selo “Feito com ${APP_NAME}”`,
-    "Todos os modelos essenciais",
-    "Estatísticas completas",
-    "Links curtos ilimitados",
-  ],
-  profissional: [
-    "Tudo do Essencial",
-    "Modelos Premium",
-    "Capa em vídeo e grade de vídeos",
-    "Vender com pagamento (Stripe)",
-    "Prioridade no suporte",
-  ],
-};
-
-const TAGLINE: Record<Plan, string> = {
-  free: "Para começar e publicar sua página.",
-  essencial: "Sua marca sem o selo, com tudo o que precisa.",
-  profissional: "Para quem leva a presença digital a sério.",
-};
-
-// The tier highlighted as the recommended choice.
-const RECOMMENDED: Plan = "essencial";
-
+// Built from the same list as the public pricing page (src/lib/plan-features),
+// which mirrors what src/lib/entitlements enforces, so what is sold here is
+// exactly what the client gets.
 export default async function PlansPage() {
   const { profile } = await getOwner();
   const current = normalizePlan(profile.plan);
+  const paidNow = current !== "free";
   const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold">Planos</h1>
-        <p className="text-sm text-stone-500">Escolha o plano ideal para a sua página. Você pode mudar quando quiser.</p>
+        <p className="text-sm text-stone-500">Comece grátis, sem cartão. O Essencial libera tudo e você pode cancelar quando quiser.</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {PLANS.map((plan) => {
-          const isCurrent = plan === current;
-          const recommended = plan === RECOMMENDED;
+      {current === "profissional" ? (
+        <p className="rounded-xl bg-stone-100 p-3 text-sm text-stone-600 ring-1 ring-stone-200">
+          Você está no plano Profissional, que não é mais vendido. Ele continua funcionando normalmente, com todos os recursos liberados.
+        </p>
+      ) : null}
+
+      <div className="grid gap-4 md:grid-cols-2">
+        {PLAN_ORDER.map((plan) => {
+          const isCurrent = plan === "free" ? !paidNow : paidNow;
+          const recommended = plan === "essencial";
           const price = PLAN_PRICE_BRL[plan];
           return (
             <section
@@ -61,7 +37,7 @@ export default async function PlansPage() {
             >
               {recommended ? (
                 <span className="absolute -top-2.5 left-5 rounded-full bg-stone-900 px-2.5 py-0.5 text-[11px] font-semibold text-white">
-                  Mais popular
+                  Tudo liberado
                 </span>
               ) : null}
 
@@ -71,7 +47,7 @@ export default async function PlansPage() {
                   <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">Plano atual</span>
                 ) : null}
               </div>
-              <p className="mt-1 text-sm text-stone-500">{TAGLINE[plan]}</p>
+              <p className="mt-1 text-sm text-stone-500">{PLAN_PITCH[plan]}</p>
 
               <p className="mt-4">
                 <span className="text-3xl font-bold tabular-nums">{price ? brl(price) : "Grátis"}</span>
@@ -79,14 +55,26 @@ export default async function PlansPage() {
               </p>
 
               <ul className="mt-4 flex flex-1 flex-col gap-2 text-sm">
-                {FEATURES[plan].map((feature) => (
-                  <li key={feature} className="flex items-start gap-2">
-                    <svg viewBox="0 0 20 20" className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true">
-                      <path fill="currentColor" d="M8.2 13.3 4.9 10l-1.1 1.1 4.4 4.4 8-8-1.1-1.1z" />
-                    </svg>
-                    <span>{feature}</span>
-                  </li>
-                ))}
+                {PLAN_FEATURES.map((f) => {
+                  const value = f[plan];
+                  return (
+                    <li key={f.label} className={`flex items-start gap-2 ${value ? "" : "text-stone-400"}`}>
+                      <span className={`mt-0.5 w-4 shrink-0 text-center ${value ? "text-emerald-600" : ""}`} aria-hidden="true">
+                        {value ? "✓" : "–"}
+                      </span>
+                      <span>
+                        {typeof value === "string" ? (
+                          <>
+                            {f.short ?? f.label}: <span className="text-stone-500">{value.toLowerCase()}</span>
+                          </>
+                        ) : (
+                          f.label
+                        )}
+                        {value ? null : <span className="sr-only"> (não incluído)</span>}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
 
               <div className="mt-5">
@@ -96,13 +84,13 @@ export default async function PlansPage() {
                   </button>
                 ) : price ? (
                   <a
-                    href={`/dashboard/clientes/${profile.id}/assinar?plan=${plan}`}
-                    className={`block w-full rounded-lg py-2.5 text-center text-sm font-semibold transition ${recommended ? "bg-stone-900 text-white hover:bg-stone-800" : "bg-stone-100 text-stone-800 hover:bg-stone-200"}`}
+                    href={`/dashboard/clientes/${profile.id}/assinar?plan=essencial`}
+                    className="block w-full rounded-lg bg-stone-900 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-stone-800"
                   >
                     Assinar {PLAN_LABEL[plan]}
                   </a>
                 ) : (
-                  // Current plan is paid; this is the free card → cancel to downgrade.
+                  // The current plan is paid; this is the free card: cancel to go back.
                   <div className="flex h-[42px] items-center justify-center rounded-lg bg-stone-50 ring-1 ring-stone-200">
                     <CancelSubscriptionButton clientId={profile.id} />
                   </div>
@@ -114,7 +102,7 @@ export default async function PlansPage() {
       </div>
 
       <p className="text-center text-xs text-stone-400">
-        Pagamento seguro via Stripe. Ao assinar, você vai para o checkout e pode cancelar quando quiser.
+        Pagamento seguro via Stripe. Ao cancelar, o plano continua até o fim do período já pago.
       </p>
     </div>
   );

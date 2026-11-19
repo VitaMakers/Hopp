@@ -5,9 +5,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { handleError, normalizeHandle } from "@/lib/handles";
 import { defaultPageDoc } from "@/lib/page/catalog";
-import { cancelSubscription } from "@/lib/payments/billing";
+import { cancelSubscriptionAtPeriodEnd, cancelSubscriptionNow } from "@/lib/payments/billing";
 import { TEMPLATES } from "@/lib/page/templates";
-import { FREE_CLIENTS } from "@/lib/plans";
 import { createAdminClient, requireUser } from "@/lib/supabase/server";
 import { CLIENT_COOKIE, getOwner } from "../context";
 
@@ -34,14 +33,10 @@ export async function addClient(_: AddClientState, form: FormData): Promise<AddC
   const invalid = handleError(handle);
   if (invalid) return { error: invalid };
 
-  // Beyond the free allowance, the new client is a paid slot and goes through
-  // Stripe Checkout right after being created.
-  const { count } = await supabase
-    .from("profiles")
-    .select("id", { count: "exact", head: true })
-    .eq("account_id", user.id);
-  const paidSlot = (count ?? 0) >= FREE_CLIENTS;
-  const plan = String(form.get("plan") ?? "essencial") === "profissional" ? "profissional" : "essencial";
+  // Every client can start on Grátis (no card). Choosing the paid plan sends
+  // the agency to Stripe Checkout right after; if they give up, the client just
+  // stays on Grátis with the free features.
+  const wantsPaid = String(form.get("plan") ?? "free") === "essencial";
 
   // A new client is a new profile owned by this account (no login of its own).
   // The billing trigger forces plan 'free' on insert; paid activation happens
@@ -59,10 +54,14 @@ export async function addClient(_: AddClientState, form: FormData): Promise<AddC
   const template = TEMPLATES.find((item) => item.id === templateId);
   const doc = template ? template.build(name) : defaultPageDoc(name);
   const { error: pageError } = await supabase.from("pages").insert({ owner_id: profile.id, draft: doc });
-  if (pageError) return { error: "Não foi possível criar a página do cliente." };
+  if (pageError) {
+    // Don't leave a client without a page (it would also block the handle).
+    await supabase.from("profiles").delete().eq("id", profile.id).eq("account_id", user.id);
+    return { error: "Não foi possível criar a página do cliente. Tente de novo." };
+  }
 
   (await cookies()).set(CLIENT_COOKIE, profile.id, COOKIE_OPTS);
-  if (paidSlot) redirect(`/dashboard/clientes/${profile.id}/assinar?plan=${plan}`);
+  if (wantsPaid) redirect(`/dashboard/clientes/${profile.id}/assinar?plan=essencial`);
   redirect("/dashboard");
 }
 
@@ -96,9 +95,10 @@ export async function deleteClient(
   const { data } = await admin.from("profiles").select("stripe_subscription_id").eq("id", clientId).maybeSingle();
   if (data?.stripe_subscription_id) {
     try {
-      await cancelSubscription(data.stripe_subscription_id);
+      await cancelSubscriptionNow(data.stripe_subscription_id);
     } catch (error) {
       console.error("cancel subscription on delete failed", error);
+      return { error: "Não conseguimos cancelar a assinatura deste cliente no Stripe, então nada foi excluído. Tente de novo em instantes." };
     }
   }
 
@@ -117,19 +117,25 @@ export async function deleteClient(
   redirect("/dashboard/clientes?excluido=1");
 }
 
-// Cancels a client's subscription (if any) and drops it back to the free plan.
+// Cancels a client's subscription at the end of the period already paid. The
+// client keeps its plan until then; Stripe's "subscription deleted" webhook
+// drops it to Grátis. If Stripe refuses, nothing changes and the owner is told.
 export async function cancelClientSubscription(clientId: string) {
   const { clients } = await getOwner();
-  if (!clients.find((c) => c.id === clientId)) return;
+  if (!clients.find((c) => c.id === clientId)) redirect("/dashboard/clientes");
   const admin = createAdminClient();
   const { data } = await admin.from("profiles").select("stripe_subscription_id").eq("id", clientId).maybeSingle();
   if (data?.stripe_subscription_id) {
     try {
-      await cancelSubscription(data.stripe_subscription_id);
+      await cancelSubscriptionAtPeriodEnd(data.stripe_subscription_id);
     } catch (error) {
       console.error("cancel subscription failed", error);
+      redirect("/dashboard/clientes?erro=cancelamento");
     }
+  } else {
+    // No subscription on file (e.g. a plan set by hand): just go back to Grátis.
+    await admin.from("profiles").update({ plan: "free" }).eq("id", clientId);
   }
-  await admin.from("profiles").update({ plan: "free", stripe_subscription_id: null }).eq("id", clientId);
   revalidatePath("/dashboard/clientes");
+  redirect("/dashboard/clientes?cancelado=agendado");
 }

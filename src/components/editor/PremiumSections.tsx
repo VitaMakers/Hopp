@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { imageSrc } from "@/lib/page/links";
 import type { PageDoc, Theme } from "@/lib/page/schema";
-import { TextArea, TextField, Toggle } from "./fields";
+import { ListField, TextArea, TextField, Toggle } from "./fields";
 import { UploadButton } from "./UploadButton";
+import { applyPatch, type DocChange, type Patch } from "./types";
 
 // Premium designs keep their content in doc.premium / doc.theme / doc.profile
 // (not in blocks). This module exposes that same editing — unchanged — as a
@@ -50,10 +51,13 @@ export function getPremiumSections(design: Design): PremiumSection[] {
       return [COLORS, { id: "premium:text", label: "Título e contato" }];
     case "experience":
       return [COLORS, { id: "premium:text", label: "Logo, frases e abas" }];
+    case "casa":
+      // Casa draws only the cover and its texts (including the opening hours).
+      return [COLORS, { id: "premium:hero", label: "Capa / topo" }, { id: "premium:text", label: "Textos do restaurante" }];
     case "bistro":
     case "bar":
-    case "casa":
       // Ordered to match the restaurant layout top-to-bottom in the preview.
+      // These designs have no size card, so it isn't offered.
       return [
         COLORS,
         { id: "premium:hero", label: "Capa / topo" },
@@ -61,13 +65,17 @@ export function getPremiumSections(design: Design): PremiumSection[] {
         { id: "premium:text", label: design === "bar" ? "Textos do bar" : "Textos do restaurante" },
         { id: "premium:nav", label: "Atalhos / rodapé" },
         { id: "premium:promo", label: "Cartão de oferta" },
-        { id: "premium:size", label: "Cartão de tamanho" },
       ];
     default:
       // store, lookbook, mosaic, dropz, promo, menu
       return [COLORS, ...STORE_SECTIONS];
   }
 }
+
+// Parts each design can actually hide (it checks premium.hiddenParts).
+const HIDEABLE: Record<string, string[]> = {
+  bistro: ["premium:hero", "premium:feature", "premium:text", "premium:nav"],
+};
 
 // A short line shown under the card title while it is collapsed.
 export function premiumSectionSummary(id: string, doc: PageDoc): string {
@@ -158,7 +166,7 @@ function ColorInputs({ doc, setTheme }: { doc: PageDoc; setTheme: (patch: Partia
   );
 }
 
-function CoverPosition({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Partial<PageDoc["premium"]>) => void }) {
+function CoverPosition({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Patch<PageDoc["premium"]>) => void }) {
   const coverSrc = imageSrc(doc.profile.coverUrl);
   const coverPos = `${doc.premium.coverX}% ${doc.premium.coverY}%`;
   return (
@@ -191,11 +199,11 @@ function CoverPosition({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: 
   );
 }
 
-function HeroFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Partial<PageDoc["premium"]>) => void }) {
+function HeroFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Patch<PageDoc["premium"]>) => void }) {
   const p = doc.premium;
   const slides = p.heroSlides;
   const setSlide = (index: number, patch: Partial<(typeof slides)[number]>) =>
-    setPremium({ heroSlides: slides.map((slide, i) => (i === index ? { ...slide, ...patch } : slide)) });
+    setPremium((cur) => ({ heroSlides: cur.heroSlides.map((slide, i) => (i === index ? { ...slide, ...patch } : slide)) }));
   const addSlide = () =>
     setPremium({ heroSlides: [...slides, { imageUrl: "", headline: "", productLabel: "NA TELA", productName: "", priceFrom: "", price: "", url: "" }] });
   const removeSlide = (index: number) => setPremium({ heroSlides: slides.filter((_, i) => i !== index) });
@@ -299,7 +307,7 @@ function HeroFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Par
 }
 
 // Framing of the cover image (object-position), as two sliders.
-function PositionControls({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Partial<PageDoc["premium"]>) => void }) {
+function PositionControls({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Patch<PageDoc["premium"]>) => void }) {
   const p = doc.premium;
   return (
     <div className="rounded-lg bg-stone-50 p-2.5">
@@ -320,13 +328,7 @@ function PositionControls({ doc, setPremium }: { doc: PageDoc; setPremium: (patc
 }
 
 // Comma-separated list <-> string[] helper.
-const toList = (value: string) =>
-  value
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
-
-function PromoFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Partial<PageDoc["premium"]>) => void }) {
+function PromoFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Patch<PageDoc["premium"]>) => void }) {
   const p = doc.premium;
   return (
     <div className="flex flex-col gap-3">
@@ -338,12 +340,12 @@ function PromoFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Pa
       </div>
       <TextField label="Observação" value={p.promoNote} maxLength={80} onChange={(promoNote) => setPremium({ promoNote })} />
       <TextField label="Link do botão (usado só se não houver cupom)" type="url" value={p.promoUrl} maxLength={2000} onChange={(promoUrl) => setPremium({ promoUrl })} />
-      <TextField label="Vantagens (separe por vírgula)" value={p.benefits.join(", ")} onChange={(value) => setPremium({ benefits: toList(value).slice(0, 4) })} />
+      <ListField label="Vantagens (separe por vírgula, até 4)" value={p.benefits} max={4} itemMax={30} onChange={(benefits) => setPremium({ benefits })} />
     </div>
   );
 }
 
-function FeatureFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Partial<PageDoc["premium"]>) => void }) {
+function FeatureFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Patch<PageDoc["premium"]>) => void }) {
   const p = doc.premium;
   return (
     <div className="flex flex-col gap-3">
@@ -354,19 +356,19 @@ function FeatureFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: 
       <TextField label="Imagem (link)" type="url" value={p.featureImageUrl} placeholder="https://..." onChange={(featureImageUrl) => setPremium({ featureImageUrl })} />
       <UploadButton label="Enviar imagem" onUploaded={(featureImageUrl) => setPremium({ featureImageUrl })} />
       <TextField label="Link" type="url" value={p.featureUrl} maxLength={2000} onChange={(featureUrl) => setPremium({ featureUrl })} />
-      <TextField label="Etiquetas (separe por vírgula)" value={p.featureTags.join(", ")} onChange={(value) => setPremium({ featureTags: toList(value).slice(0, 5) })} />
-      <TextField label="Cores em destaque (hex, separe por vírgula)" value={p.featureColors.join(", ")} onChange={(value) => setPremium({ featureColors: toList(value).slice(0, 8) })} />
+      <ListField label="Etiquetas (separe por vírgula, até 5)" value={p.featureTags} max={5} itemMax={20} onChange={(featureTags) => setPremium({ featureTags })} />
+      <ListField label="Cores em destaque (hex, separe por vírgula)" value={p.featureColors} max={8} itemMax={20} onChange={(featureColors) => setPremium({ featureColors })} />
     </div>
   );
 }
 
-function SizeFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Partial<PageDoc["premium"]>) => void }) {
+function SizeFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Patch<PageDoc["premium"]>) => void }) {
   const p = doc.premium;
   return (
     <div className="flex flex-col gap-3">
       <TextField label="Título" value={p.sizeTitle} maxLength={60} onChange={(sizeTitle) => setPremium({ sizeTitle })} />
       <div className="grid grid-cols-2 gap-3">
-        <TextField label="Tamanhos (separe por vírgula)" value={p.sizes.join(", ")} onChange={(value) => setPremium({ sizes: toList(value).slice(0, 10) })} />
+        <ListField label="Tamanhos (separe por vírgula)" value={p.sizes} max={10} itemMax={6} onChange={(sizes) => setPremium({ sizes })} />
         <TextField label="Tamanho em destaque" value={p.sizeActive} maxLength={6} onChange={(sizeActive) => setPremium({ sizeActive })} />
       </div>
       <TextField label="Imagem (link, opcional)" type="url" value={p.sizeImageUrl} placeholder="https://..." onChange={(sizeImageUrl) => setPremium({ sizeImageUrl })} />
@@ -375,7 +377,7 @@ function SizeFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Par
   );
 }
 
-function NavFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Partial<PageDoc["premium"]>) => void }) {
+function NavFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Patch<PageDoc["premium"]>) => void }) {
   const nav = doc.premium.navLinks;
   const setNav = (index: number, patch: Partial<(typeof nav)[number]>) =>
     setPremium({ navLinks: nav.map((item, i) => (i === index ? { ...item, ...patch } : item)) });
@@ -403,10 +405,10 @@ function NavFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Part
   );
 }
 
-function TextSection({ doc, onChange, setPremium }: { doc: PageDoc; onChange: (doc: PageDoc) => void; setPremium: (patch: Partial<PageDoc["premium"]>) => void }) {
+function TextSection({ doc, onChange, setPremium }: { doc: PageDoc; onChange: DocChange; setPremium: (patch: Patch<PageDoc["premium"]>) => void }) {
   const design = doc.theme.premium as Design;
   const p = doc.premium;
-  const setLogo = (logo: string) => onChange({ ...doc, profile: { ...doc.profile, logo } });
+  const setLogo = (logo: string) => onChange((d) => ({ ...d, profile: { ...d.profile, logo } }));
   if (design === "authority") {
     return <TextField label="Nome no rodapé (opcional)" value={p.footer} maxLength={80} onChange={(footer) => setPremium({ footer })} />;
   }
@@ -497,10 +499,10 @@ function TextSection({ doc, onChange, setPremium }: { doc: PageDoc; onChange: (d
 
 // Renders the editing controls for one premium section. Reuses exactly the
 // fields that used to live in the Aparência tab, so behavior is unchanged.
-export function PremiumSectionBody({ id, doc, onChange }: { id: string; doc: PageDoc; onChange: (doc: PageDoc) => void }) {
+export function PremiumSectionBody({ id, doc, onChange }: { id: string; doc: PageDoc; onChange: DocChange }) {
   const design = doc.theme.premium as Design;
-  const setTheme = (patch: Partial<Theme>) => onChange({ ...doc, theme: { ...doc.theme, ...patch } });
-  const setPremium = (patch: Partial<PageDoc["premium"]>) => onChange({ ...doc, premium: { ...doc.premium, ...patch } });
+  const setTheme = (patch: Patch<Theme>) => onChange((d) => ({ ...d, theme: applyPatch(d.theme, patch) }));
+  const setPremium = (patch: Patch<PageDoc["premium"]>) => onChange((d) => ({ ...d, premium: applyPatch(d.premium, patch) }));
 
   switch (id) {
     case "premium:colors":
@@ -574,16 +576,18 @@ function PremiumSectionCard({
   open: boolean;
   onToggleOpen: () => void;
   doc: PageDoc;
-  onChange: (doc: PageDoc) => void;
+  onChange: DocChange;
 }) {
   const parts = doc.premium.hiddenParts;
   const hidden = parts.includes(id);
-  // Colors are global; everything else can be turned off.
-  const canHide = id !== "premium:colors";
+  // Only offer "Visível" where the design really hides that part; elsewhere the
+  // checkbox would do nothing. (Today only Bistrô supports hiding parts.)
+  const canHide = (HIDEABLE[doc.theme.premium] ?? []).includes(id);
   const toggleVisible = () =>
-    onChange({
-      ...doc,
-      premium: { ...doc.premium, hiddenParts: hidden ? parts.filter((x) => x !== id) : [...parts, id] },
+    onChange((d) => {
+      const current = d.premium.hiddenParts;
+      const isHidden = current.includes(id);
+      return { ...d, premium: { ...d.premium, hiddenParts: isHidden ? current.filter((x) => x !== id) : [...current, id] } };
     });
 
   return (
@@ -626,7 +630,7 @@ export function PremiumSectionsEditor({
   onActive,
 }: {
   doc: PageDoc;
-  onChange: (doc: PageDoc) => void;
+  onChange: DocChange;
   focus?: { id: string; n: number } | null;
   onActive?: (id: string | null) => void;
 }) {

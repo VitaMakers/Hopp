@@ -9,6 +9,7 @@ import { SOCIAL_PLATFORMS, type PageDoc, type SocialPlatform } from "@/lib/page/
 import { SocialIcon } from "@/components/page-view/SocialIcon";
 import { TextArea, TextField, Toggle } from "./fields";
 import { UploadButton, useImageUpload } from "./UploadButton";
+import { applyPatch, type DocChange, type Patch } from "./types";
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -19,12 +20,15 @@ function initials(name: string) {
 // The editable header card at the top of the Página view: shows the profile
 // summary and, on "Editar", opens every field in place (photo, bio, socials,
 // cover, logo) so the whole header is 100% editable without leaving the card.
-export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange: (doc: PageDoc) => void; plan: string }) {
+export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange: DocChange; plan: string }) {
   const [editing, setEditing] = useState(false);
   const [showLinks, setShowLinks] = useState(false);
   const { profile, socials } = doc;
   const avatar = imageSrc(profile.avatarUrl);
-  const setProfile = (patch: Partial<PageDoc["profile"]>) => onChange({ ...doc, profile: { ...doc.profile, ...patch } });
+  // Premium designs draw their own cover: only the cover photo applies there.
+  const isPremium = !!doc.theme.premium;
+  // Always applied to the latest profile (see DocChange).
+  const setProfile = (patch: Patch<PageDoc["profile"]>) => onChange((d) => ({ ...d, profile: applyPatch(d.profile, patch) }));
   const avatarUpload = useImageUpload((avatarUrl) => setProfile({ avatarUrl }));
   const used = new Set(socials.map((s) => s.platform));
   const available = SOCIAL_PLATFORMS.filter((p) => !used.has(p));
@@ -113,7 +117,7 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
               <p className="flex items-center gap-1.5 rounded-lg bg-stone-50 px-3 py-2 text-xs text-stone-500 ring-1 ring-stone-200">
                 🔒 Selo de verificado — disponível no{" "}
                 <Link href="/dashboard/plans" className="font-semibold text-stone-700 underline">
-                  plano Profissional
+                  plano Essencial
                 </Link>
                 .
               </p>
@@ -158,7 +162,12 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
 
           <div className="flex flex-col gap-3 border-t border-stone-100 pt-4">
             <p className="text-xs font-semibold text-stone-500">Capa</p>
-            <p className="-mt-1 text-xs text-stone-500">A capa aparece nos layouts com foto (escolha em Aparência → Layout).</p>
+            <p className="-mt-1 text-xs text-stone-500">
+              {isPremium
+                ? "Neste modelo, a foto de capa entra no topo. O enquadramento e as fotos que trocam sozinhas ficam em Partes do modelo, logo abaixo."
+                : "A capa aparece nos layouts com foto (escolha em Personalizar → Layout, mais abaixo)."}
+            </p>
+            {isPremium ? null : (
             <div className="flex gap-2">
               {([["image", "Imagem"], ["carousel", "Carrossel"], ["video", "Vídeo"]] as const).map(([val, lbl]) => (
                 <button
@@ -171,7 +180,9 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
                 </button>
               ))}
             </div>
+            )}
 
+            {isPremium ? null : (
             <div className="flex flex-col gap-2 rounded-lg bg-stone-50 p-2.5">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium text-stone-700">Formato:</span>
@@ -202,12 +213,13 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
               </div>
               <Toggle label="Sombra para disfarçar a borda (funde com o fundo)" checked={profile.coverShade} onChange={(coverShade) => setProfile({ coverShade })} />
             </div>
+            )}
 
-            {profile.coverType === "image" ? (
+            {isPremium || profile.coverType === "image" ? (
               <>
                 <TextField label="Imagem da capa (link ou envie)" type="url" value={profile.coverUrl} placeholder="https://..." onChange={(coverUrl) => setProfile({ coverUrl })} />
                 <UploadButton label="Enviar capa" onUploaded={(coverUrl) => setProfile({ coverUrl })} />
-                {imageSrc(profile.coverUrl) ? (
+                {!isPremium && imageSrc(profile.coverUrl) ? (
                   <CoverPositioner url={profile.coverUrl} format={profile.coverFormat} x={profile.coverPosX} y={profile.coverPosY} onChange={(x, y) => setProfile({ coverPosX: x, coverPosY: y })} />
                 ) : null}
                 <p className="-mt-1 text-xs text-stone-500">Tamanho recomendado: 1080 × 1350 px (retrato).</p>
@@ -226,7 +238,7 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-semibold text-stone-500">Imagem {i + 1}</span>
                       <div className="ml-auto flex items-center gap-2">
-                        <UploadButton label={img.url ? "Trocar" : "Enviar"} onUploaded={(v) => setProfile({ coverImages: profile.coverImages.map((it, j) => (j === i ? { ...it, url: v } : it)) })} />
+                        <UploadButton label={img.url ? "Trocar" : "Enviar"} onUploaded={(v) => setProfile((p) => ({ coverImages: p.coverImages.map((it, j) => (j === i ? { ...it, url: v } : it)) }))} />
                         <button type="button" onClick={() => setProfile({ coverImages: profile.coverImages.filter((_, j) => j !== i) })} className="shrink-0 text-xs text-red-500">
                           Remover
                         </button>

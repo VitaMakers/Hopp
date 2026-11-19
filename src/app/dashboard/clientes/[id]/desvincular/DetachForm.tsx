@@ -7,17 +7,6 @@ export function DetachForm({ clientId }: { clientId: string }) {
   const action = detachClient.bind(null, clientId);
   const [state, formAction, pending] = useActionState<DetachState, FormData>(action, {});
   const [confirmed, setConfirmed] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  async function copy(text: string) {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setCopied(false);
-    }
-  }
 
   if (state.ok) {
     return (
@@ -25,17 +14,15 @@ export function DetachForm({ clientId }: { clientId: string }) {
         <p className="rounded-xl bg-emerald-50 p-4 text-sm text-emerald-800 ring-1 ring-emerald-200">
           Pronto! O cliente agora pertence à conta de <strong>{state.email}</strong>. Você não gerencia mais essa página.
         </p>
-        {state.link ? (
-          <div className="rounded-xl bg-stone-50 p-4 ring-1 ring-stone-200">
-            <p className="text-sm font-medium text-stone-700">Envie este link de acesso para o cliente:</p>
-            <p className="mt-1 text-xs text-stone-500">Ele usa o link para entrar e definir a senha dele. Mande por WhatsApp, e-mail, etc.</p>
-            <div className="mt-3 flex items-center gap-2">
-              <input readOnly value={state.link} className="field flex-1 text-xs" onFocus={(e) => e.target.select()} />
-              <button type="button" onClick={() => copy(state.link!)} className="btn-primary whitespace-nowrap text-sm">
-                {copied ? "Copiado!" : "Copiar"}
-              </button>
-            </div>
-          </div>
+        <p className="rounded-xl bg-stone-50 p-4 text-sm text-stone-700 ring-1 ring-stone-200">
+          {state.mode === "invited"
+            ? "Enviamos um convite para esse e-mail. O cliente abre o e-mail, clica no link e cria a senha dele. Peça para ele olhar também a caixa de spam."
+            : "Esse e-mail já tem uma conta na Virtú.bio. O cliente entra com a senha dele e a página já aparece no painel. Se ele não lembrar a senha, é só usar “Esqueci minha senha”."}
+        </p>
+        {state.billing ? (
+          <p className="text-xs text-stone-500">
+            A assinatura que você pagava para este cliente foi cancelada e termina no fim do período já pago. Depois disso, o cliente pode assinar pela conta dele.
+          </p>
         ) : null}
       </div>
     );
@@ -51,13 +38,13 @@ export function DetachForm({ clientId }: { clientId: string }) {
 
       <label className="flex items-start gap-2 text-sm text-stone-700">
         <input type="checkbox" required checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} className="mt-0.5" />
-        <span>Entendo que, ao desvincular, deixo de gerenciar este cliente e o acesso passa para o e-mail acima.</span>
+        <span>Entendo que, ao desvincular, deixo de gerenciar este cliente, o acesso passa para o e-mail acima e a assinatura que eu pago para ele é cancelada no fim do período.</span>
       </label>
 
       {state.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
 
       <button type="submit" disabled={pending || !confirmed} className="btn-primary">
-        {pending ? "Transferindo..." : "Desvincular e gerar acesso"}
+        {pending ? "Transferindo..." : "Desvincular e enviar convite"}
       </button>
     </form>
   );

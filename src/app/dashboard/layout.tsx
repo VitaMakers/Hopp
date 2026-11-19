@@ -25,7 +25,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 href={`/${profile.handle}`}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-lg px-3 py-1.5 text-sm font-medium text-stone-600 ring-1 ring-stone-200 hover:ring-stone-400"
+                className="block max-w-[34vw] truncate rounded-lg px-3 py-1.5 text-sm font-medium text-stone-600 ring-1 ring-stone-200 hover:ring-stone-400 sm:max-w-[240px]"
               >
                 /{profile.handle}
               </a>

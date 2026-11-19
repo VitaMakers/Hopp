@@ -24,11 +24,12 @@ import type { Block, BlockType, PageDoc } from "@/lib/page/schema";
 import { BlockFields } from "./BlockFields";
 import { ProfileHeader } from "./ProfileHeader";
 import { ThemePanel } from "./ThemePanel";
+import type { BlockChange, DocChange } from "./types";
 
 type BlockStats = { views: number; clicks: Record<string, number> };
 type PanelProps = {
   doc: PageDoc;
-  onChange: (doc: PageDoc) => void;
+  onChange: DocChange;
   focus?: { id: string; n: number } | null;
   stats?: BlockStats;
   plan?: string;
@@ -73,7 +74,9 @@ const fmtN = (n: number) => new Intl.NumberFormat("pt-BR", { notation: "compact"
 
 export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }: PanelProps) {
   const [openId, setOpenId] = useState<string | null>(null);
-  const [adding, setAdding] = useState(false);
+  // Where the picker was opened from: the top button adds at the top, the
+  // bottom one ("Adicionar outro bloco") adds at the end, next to where you are.
+  const [adding, setAdding] = useState<false | "top" | "end">(false);
 
   // Tell the editor which block is open, so the preview highlights it in green.
   useEffect(() => {
@@ -106,7 +109,7 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
 
   function add(type: BlockType) {
     const block = createBlock(type);
-    setBlocks([block, ...doc.blocks]);
+    setBlocks(adding === "end" ? [...doc.blocks, block] : [block, ...doc.blocks]);
     setOpenId(block.id);
     setAdding(false);
   }
@@ -133,7 +136,7 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
     <div className="flex flex-col gap-3">
       <ProfileHeader doc={doc} onChange={onChange} plan={plan} />
       <p className="mt-1 text-xs font-semibold text-stone-500">Blocos</p>
-      <button type="button" onClick={() => setAdding(true)} className="btn-primary self-start">
+      <button type="button" onClick={() => setAdding("top")} className="btn-primary self-start">
         + Adicionar bloco
       </button>
       {adding ? <BlockPicker onPick={add} onClose={() => setAdding(false)} /> : null}
@@ -153,7 +156,14 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
               premium={doc.theme.premium}
               open={openId === block.id}
               onToggleOpen={() => setOpenId(openId === block.id ? null : block.id)}
-              onChange={(next) => setBlocks(doc.blocks.map((item) => (item.id === next.id ? next : item)))}
+              onChange={(next) =>
+                // Applied to the latest blocks, so an upload finishing late
+                // doesn't undo edits made meanwhile.
+                onChange((d) => ({
+                  ...d,
+                  blocks: d.blocks.map((item) => (item.id === block.id ? (typeof next === "function" ? next(item) : next) : item)),
+                }))
+              }
               onRemove={() => remove(block.id)}
               onDuplicate={() => duplicate(block.id)}
               stats={stats}
@@ -165,7 +175,7 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
       {doc.blocks.length > 0 ? (
         <button
           type="button"
-          onClick={() => setAdding(true)}
+          onClick={() => setAdding("end")}
           className="self-start rounded-lg px-3 py-2 text-sm font-semibold text-stone-600 ring-1 ring-stone-300 transition hover:ring-stone-900"
         >
           + Adicionar outro bloco
@@ -281,7 +291,7 @@ function SortableBlock({
   premium: PageDoc["theme"]["premium"];
   open: boolean;
   onToggleOpen: () => void;
-  onChange: (block: Block) => void;
+  onChange: BlockChange;
   onRemove: () => void;
   onDuplicate: () => void;
   stats?: BlockStats;
@@ -316,9 +326,9 @@ function SortableBlock({
             {blockSummary(block)}
           </span>
           {stats ? (
+            // Clicks are per block; page views are the whole page's (30 days).
             <span className="mt-0.5 block text-xs text-stone-400">
-              {fmtN(stats.views)} {stats.views === 1 ? "visualização" : "visualizações"}
-              {blockClicks > 0 ? `, ${fmtN(blockClicks)} ${blockClicks === 1 ? "clique" : "cliques"}` : ""}
+              {fmtN(blockClicks)} {blockClicks === 1 ? "clique" : "cliques"} em 30 dias
             </span>
           ) : null}
         </button>

@@ -1,4 +1,5 @@
-import { deleteContact } from "../actions";
+import { deleteContact, deleteFormResponse } from "../actions";
+import { ConfirmDeleteButton } from "./ConfirmDeleteButton";
 import { getOwner } from "../context";
 
 // Rendered on the server, which runs in UTC; show the creator's local time.
@@ -12,6 +13,18 @@ export default async function ContactsPage() {
     .eq("owner_id", profile.id)
     .order("created_at", { ascending: false })
     .limit(500);
+
+  // Answers sent through form blocks on the page itself (forms with their own
+  // link are listed under Formulários).
+  const { data: responses } = await supabase
+    .from("form_responses")
+    .select("id, answers, created_at")
+    .eq("owner_id", profile.id)
+    .is("form_id", null)
+    .order("created_at", { ascending: false })
+    .limit(300);
+  const answersOf = (value: unknown) =>
+    Array.isArray(value) ? (value as { label?: string; value?: string }[]).filter((a) => a && (a.value ?? "").trim()) : [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -43,11 +56,7 @@ export default async function ContactsPage() {
                 <td className="p-3">{contact.phone ?? "—"}</td>
                 <td className="p-3 text-stone-600">{new Date(contact.created_at).toLocaleString("pt-BR", { timeZone: TIME_ZONE })}</td>
                 <td className="p-3 text-right">
-                  <form action={deleteContact.bind(null, contact.id)}>
-                    <button type="submit" className="text-red-600">
-                      Excluir
-                    </button>
-                  </form>
+                  <ConfirmDeleteButton action={deleteContact.bind(null, contact.id)} message="Excluir este contato?" />
                 </td>
               </tr>
             ))}
@@ -61,6 +70,37 @@ export default async function ContactsPage() {
           </tbody>
         </table>
       </div>
+
+      <section className="flex flex-col gap-3">
+        <div>
+          <h2 className="text-lg font-bold">Respostas dos formulários da página</h2>
+          <p className="text-sm text-stone-600">O que as pessoas enviaram pelos blocos de formulário da sua página.</p>
+        </div>
+        {responses?.length ? (
+          <ul className="flex flex-col gap-3">
+            {responses.map((r) => (
+              <li key={r.id} className="rounded-xl bg-white p-4 text-sm ring-1 ring-stone-200">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-xs text-stone-500">{new Date(r.created_at).toLocaleString("pt-BR", { timeZone: TIME_ZONE })}</p>
+                  <ConfirmDeleteButton action={deleteFormResponse.bind(null, r.id)} message="Excluir esta resposta?" />
+                </div>
+                <dl className="mt-2 grid gap-x-4 gap-y-1 sm:grid-cols-[minmax(0,180px)_1fr]">
+                  {answersOf(r.answers).map((a, i) => (
+                    <div key={i} className="contents">
+                      <dt className="text-stone-500">{a.label || "Campo"}</dt>
+                      <dd className="break-words text-stone-900">{a.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="rounded-xl bg-white p-6 text-center text-sm text-stone-500 ring-1 ring-stone-200">
+            Nenhuma resposta ainda. Quando alguém enviar um formulário da sua página, aparece aqui.
+          </p>
+        )}
+      </section>
     </div>
   );
 }

@@ -34,7 +34,7 @@ export default async function LinksPage() {
       {limit === 0 ? (
         <div className="rounded-xl bg-stone-900 p-5 text-center text-white">
           <p className="font-semibold">Links curtos não estão no plano Grátis.</p>
-          <p className="mt-1 text-sm text-stone-300">Tenha 3 no Essencial e ilimitados no Profissional.</p>
+          <p className="mt-1 text-sm text-stone-300">Ilimitados no plano Essencial.</p>
           <Link href="/dashboard/plans" className="mt-4 inline-block rounded-lg bg-white px-4 py-2 text-sm font-semibold text-stone-900">
             Ver planos
           </Link>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { accountMonthlyBRL, formatBRL, FREE_CLIENTS, normalizePlan, PLAN_LABEL, PLAN_PRICE_BRL } from "@/lib/plans";
+import { accountMonthlyBRL, formatBRL, normalizePlan, PLAN_LABEL, PLAN_PRICE_BRL } from "@/lib/plans";
 import { getOwner } from "../context";
 import { selectClient } from "./actions";
 import { CancelSubscriptionButton } from "./CancelSubscriptionButton";
@@ -19,10 +19,10 @@ function initials(name: string) {
 export default async function ClientsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ assinado?: string; cancelado?: string; excluido?: string; erro?: string }>;
+  searchParams: Promise<{ assinado?: string; cancelado?: string; excluido?: string; erro?: string; "ja-assinado"?: string }>;
 }) {
   const { supabase, clients, profile, accountId } = await getOwner();
-  const { assinado, cancelado, excluido, erro } = await searchParams;
+  const { assinado, cancelado, excluido, erro, "ja-assinado": jaAssinado } = await searchParams;
   const ids = clients.map((c) => c.id);
 
   // Last 30 days of activity, counted per client in one query.
@@ -49,9 +49,18 @@ export default async function ClientsPage({
           Assinatura confirmada! O cliente é ativado em instantes, assim que o Stripe avisa o sistema.
         </p>
       ) : null}
-      {cancelado ? (
+      {cancelado === "agendado" ? (
         <p className="rounded-xl bg-stone-100 p-3 text-sm text-stone-600 ring-1 ring-stone-200">
-          Pagamento cancelado. O cliente foi criado, mas segue sem assinatura — você pode assinar quando quiser.
+          Assinatura cancelada. O cliente continua com tudo liberado até o fim do período já pago e depois volta para o plano Grátis.
+        </p>
+      ) : cancelado ? (
+        <p className="rounded-xl bg-stone-100 p-3 text-sm text-stone-600 ring-1 ring-stone-200">
+          Pagamento não concluído. O cliente foi criado no plano Grátis e já pode ser editado. Você pode assinar quando quiser.
+        </p>
+      ) : null}
+      {jaAssinado ? (
+        <p className="rounded-xl bg-stone-100 p-3 text-sm text-stone-600 ring-1 ring-stone-200">
+          Este cliente já tem uma assinatura ativa. Nenhuma cobrança nova foi criada.
         </p>
       ) : null}
       {excluido ? (
@@ -61,7 +70,9 @@ export default async function ClientsPage({
       ) : null}
       {erro ? (
         <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700 ring-1 ring-red-200">
-          Não foi possível iniciar a cobrança. Confira a configuração do Stripe e tente de novo.
+          {erro === "cancelamento"
+            ? "Não conseguimos cancelar a assinatura no Stripe. Nada foi alterado; tente de novo em instantes."
+            : "Não foi possível iniciar a cobrança. Confira a configuração do Stripe e tente de novo."}
         </p>
       ) : null}
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -82,8 +93,8 @@ export default async function ClientsPage({
           <p className="text-lg font-semibold">{clients.length}</p>
         </div>
         <div>
-          <p className="text-stone-500">Grátis incluídos</p>
-          <p className="text-lg font-semibold">{FREE_CLIENTS}</p>
+          <p className="text-stone-500">Com assinatura</p>
+          <p className="text-lg font-semibold">{clients.filter((c) => normalizePlan(c.plan) !== "free").length}</p>
         </div>
         <div>
           <p className="text-stone-500">Mensalidade estimada</p>
@@ -92,11 +103,11 @@ export default async function ClientsPage({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {clients.map((client, i) => {
+        {clients.map((client) => {
           const selected = client.id === profile.id;
           const plan = normalizePlan(client.plan);
-          // A free client past the free allowance still needs a subscription.
-          const needsPlan = plan === "free" && i >= FREE_CLIENTS;
+          // Clients on Grátis stay online with the free features; offer the upgrade.
+          const needsPlan = plan === "free";
           return (
             <div
               key={client.id}
@@ -147,15 +158,10 @@ export default async function ClientsPage({
 
               {needsPlan ? (
                 <div className="rounded-xl bg-amber-50 p-3 text-xs ring-1 ring-amber-200">
-                  <p className="font-medium text-amber-900">Cliente sem assinatura — ative para manter no ar:</p>
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    <a href={`/dashboard/clientes/${client.id}/assinar?plan=essencial`} className="rounded-lg bg-white py-1.5 text-center font-medium ring-1 ring-amber-300 hover:ring-amber-500">
-                      Essencial<br />{formatBRL(PLAN_PRICE_BRL.essencial)}
-                    </a>
-                    <a href={`/dashboard/clientes/${client.id}/assinar?plan=profissional`} className="rounded-lg bg-white py-1.5 text-center font-medium ring-1 ring-amber-300 hover:ring-amber-500">
-                      Profissional<br />{formatBRL(PLAN_PRICE_BRL.profissional)}
-                    </a>
-                  </div>
+                  <p className="font-medium text-amber-900">No plano Grátis. Libere modelos premium, vídeo, métricas completas e tire a marca Virtú.bio:</p>
+                  <a href={`/dashboard/clientes/${client.id}/assinar?plan=essencial`} className="mt-2 block rounded-lg bg-white py-1.5 text-center font-medium ring-1 ring-amber-300 hover:ring-amber-500">
+                    Assinar Essencial por {formatBRL(PLAN_PRICE_BRL.essencial)}/mês
+                  </a>
                 </div>
               ) : null}
 
