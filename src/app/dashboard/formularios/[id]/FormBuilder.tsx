@@ -151,11 +151,11 @@ export function FormBuilder({ id, code, initialConfig }: { id: string; code: str
       <div className="grid gap-4 lg:grid-cols-[210px_minmax(0,1fr)_320px]">
         {/* Left palette */}
         <aside className="lg:sticky lg:top-20 lg:self-start">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-500">Adicionar perguntas</p>
+          <p className="mb-2 text-xs font-semibold text-stone-500">Adicionar perguntas</p>
           <div className="flex flex-col gap-3">
             {BASICO.map((g) => (
               <div key={g.group} className="flex flex-col gap-1">
-                <p className="px-1 text-[10px] font-semibold uppercase tracking-wide text-stone-400">{g.group}</p>
+                <p className="px-1 text-[11px] font-semibold text-stone-500">{g.group}</p>
                 {g.items.map((p) => (
                   <button
                     key={p.type}

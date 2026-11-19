@@ -263,7 +263,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
 
       {insights.length ? (
         <section className="rounded-xl bg-stone-900 p-5 text-white">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-300">O que pede atenção</h2>
+          <h2 className="mb-3 text-sm font-semibold text-stone-300">O que pede atenção</h2>
           <ul className="flex flex-col gap-2 text-sm">
             {insights.map((text, i) => (
               <li key={i} className="flex items-start gap-2.5">
@@ -287,7 +287,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-200 text-left text-xs uppercase tracking-wide text-stone-400">
+                <tr className="border-b border-stone-200 text-left text-xs text-stone-400">
                   <th className="pb-2 font-medium">Bloco</th>
                   <th className="pb-2 text-right font-medium">Cliques</th>
                   <th className="hidden pb-2 pl-3 font-medium sm:table-cell">Participação</th>
@@ -388,7 +388,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-stone-200 text-left text-xs uppercase tracking-wide text-stone-400">
+              <tr className="border-b border-stone-200 text-left text-xs text-stone-400">
                 <th className="pb-2 font-medium">Link</th>
                 <th className="pb-2 text-right font-medium">Esta semana</th>
                 <th className="pb-2 pl-3 text-right font-medium">Este mês</th>
@@ -421,7 +421,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
             <WorldMap countries={countries} />
             <div className="grid gap-6 md:grid-cols-2">
             <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Países</p>
+              <p className="mb-2 text-xs font-semibold text-stone-500">Países</p>
               <ul className="flex flex-col gap-2.5 text-sm">
                 {countries.map(([cc, count]) => (
                   <li key={cc} className="flex items-center gap-3">
@@ -437,7 +437,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
               </ul>
             </div>
             <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Cidades</p>
+              <p className="mb-2 text-xs font-semibold text-stone-500">Cidades</p>
               {cities.length === 0 ? (
                 <p className="text-sm text-stone-500">Sem cidade identificada.</p>
               ) : (
@@ -482,7 +482,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
               </ul>
               {browsers.length ? (
                 <div className="mt-4 border-t border-stone-100 pt-3">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Navegadores</p>
+                  <p className="mb-2 text-xs font-semibold text-stone-500">Navegadores</p>
                   <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-stone-600">
                     {browsers.map(([name, count]) => (
                       <li key={name} className="tabular-nums">
@@ -510,7 +510,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
             <div className="flex flex-col gap-4">
               {campaignSources.length ? (
                 <div>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Origem (utm_source)</p>
+                  <p className="mb-2 text-xs font-semibold text-stone-500">Origem (utm_source)</p>
                   <ul className="flex flex-col gap-1.5 text-sm">
                     {campaignSources.map(([name, count]) => (
                       <li key={name} className="flex justify-between gap-3">
@@ -523,7 +523,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
               ) : null}
               {campaigns.length ? (
                 <div>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Campanha (utm_campaign)</p>
+                  <p className="mb-2 text-xs font-semibold text-stone-500">Campanha (utm_campaign)</p>
                   <ul className="flex flex-col gap-1.5 text-sm">
                     {campaigns.map(([name, count]) => (
                       <li key={name} className="flex justify-between gap-3">
@@ -793,7 +793,7 @@ function FreeAnalytics({ visits }: { visits: number }) {
       </div>
       <div className="rounded-xl bg-stone-900 p-5 text-center text-white">
         <p className="font-semibold">Quer ver cliques, visitantes, origem do tráfego e mais?</p>
-        <p className="mt-1 text-sm text-stone-300">As estatísticas completas estão nos planos Essencial e Profissional.</p>
+        <p className="mt-1 text-sm text-stone-300">As estatísticas completas estão no plano Essencial.</p>
         <Link href="/dashboard/plans" className="mt-4 inline-block rounded-lg bg-white px-4 py-2 text-sm font-semibold text-stone-900">
           Ver planos
         </Link>

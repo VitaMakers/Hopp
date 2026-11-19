@@ -8,7 +8,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const admin = isAdmin(user.email);
   return (
     <div className="flex min-h-screen bg-stone-50 text-stone-900">
-      <Sidebar isAdmin={admin} />
+      {/* The sidebar keeps its exact original look. */}
+      <div className="vita-original contents">
+        <Sidebar isAdmin={admin} />
+      </div>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/90 backdrop-blur">
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-2.5">
@@ -22,7 +25,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 href={`/${profile.handle}`}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-lg px-3 py-1.5 text-sm font-medium text-stone-600 ring-1 ring-stone-200 hover:ring-stone-400"
+                className="block max-w-[34vw] truncate rounded-lg px-3 py-1.5 text-sm font-medium text-stone-600 ring-1 ring-stone-200 hover:ring-stone-400 sm:max-w-[240px]"
               >
                 /{profile.handle}
               </a>

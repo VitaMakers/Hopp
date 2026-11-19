@@ -9,7 +9,7 @@ import { PageView } from "./PageView";
 const PHONE = 390;
 
 export function ModelThumb({ doc, width = 176, height = 320 }: { doc: PageDoc; width?: number; height?: number }) {
-  const hasVideo = !!doc.profile.coverVideo.trim();
+  const hasVideo = !!doc.profile.coverVideo.trim() || (doc.profile.coverType === "video" && doc.profile.coverVideos.some(Boolean));
   return (
     <div
       className="pointer-events-none relative overflow-hidden rounded-[18px] bg-black ring-1 ring-black/10"

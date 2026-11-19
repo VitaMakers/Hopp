@@ -2,6 +2,7 @@
 
 import type { PageDoc } from "@/lib/page/schema";
 import { Card, TextArea, TextField } from "./fields";
+import type { DocChange } from "./types";
 
 export function SeoPanel({
   doc,
@@ -9,7 +10,7 @@ export function SeoPanel({
   handle,
 }: {
   doc: PageDoc;
-  onChange: (doc: PageDoc) => void;
+  onChange: DocChange;
   handle: string;
 }) {
   const setSeo = (patch: Partial<PageDoc["seo"]>) => onChange({ ...doc, seo: { ...doc.seo, ...patch } });

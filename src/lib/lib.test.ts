@@ -101,7 +101,7 @@ describe("templates", () => {
       else expect(doc.theme.premium, template.id).toBe("");
       expect(new Set(doc.blocks.map((block) => block.id)).size).toBe(doc.blocks.length);
       // A video cover must point at a bundled asset or an http(s) URL.
-      if (doc.profile.coverVideo) expect(videoSrc(doc.profile.coverVideo), template.id).not.toBeNull();
+      for (const v of [doc.profile.coverVideo, ...doc.profile.coverVideos].filter(Boolean)) expect(videoSrc(v), template.id).not.toBeNull();
     }
   });
 

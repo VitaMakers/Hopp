@@ -8,6 +8,9 @@ import "@fontsource/oswald/latin-500.css";
 import "@fontsource/oswald/latin-700.css";
 import "@fontsource/space-mono/latin-400.css";
 import "@fontsource/space-mono/latin-700.css";
+// Virtú's own UI (site + dashboard): Instrument Sans for text, Bricolage Grotesque for titles.
+import "@fontsource-variable/instrument-sans";
+import "@fontsource-variable/bricolage-grotesque";
 import "./globals.css";
 import "./premium.css";
 

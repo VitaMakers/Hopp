@@ -26,7 +26,7 @@ export default async function LinksPage() {
           Links rastreáveis para divulgar em qualquer lugar. Os cliques aparecem em Estatísticas.
           {limit > 0 ? (
             <span className="ml-1 font-medium text-stone-700">
-              {Number.isFinite(limit) ? `Usados ${used} de ${limit}.` : `${used} criado${used === 1 ? "" : "s"} · ilimitados no seu plano.`}
+              {Number.isFinite(limit) ? `Usados ${used} de ${limit}.` : `${used} criado${used === 1 ? "" : "s"}, ilimitados no seu plano.`}
             </span>
           ) : null}
         </p>
@@ -34,7 +34,7 @@ export default async function LinksPage() {
       {limit === 0 ? (
         <div className="rounded-xl bg-stone-900 p-5 text-center text-white">
           <p className="font-semibold">Links curtos não estão no plano Grátis.</p>
-          <p className="mt-1 text-sm text-stone-300">Tenha 3 no Essencial e ilimitados no Profissional.</p>
+          <p className="mt-1 text-sm text-stone-300">Ilimitados no plano Essencial.</p>
           <Link href="/dashboard/plans" className="mt-4 inline-block rounded-lg bg-white px-4 py-2 text-sm font-semibold text-stone-900">
             Ver planos
           </Link>

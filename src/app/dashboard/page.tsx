@@ -1,4 +1,5 @@
 import { defaultPageDoc } from "@/lib/page/catalog";
+import { normalizeLegacyCover } from "@/lib/page/migrate";
 import { pageDocSchema } from "@/lib/page/schema";
 import { Editor } from "@/components/editor/Editor";
 import { getOwner } from "./context";
@@ -11,7 +12,20 @@ export default async function EditorPage() {
     .eq("owner_id", profile.id)
     .maybeSingle();
   const parsed = pageDocSchema.safeParse(page?.draft);
-  const doc = parsed.success ? parsed.data : defaultPageDoc(profile.display_name || profile.handle);
+  // A saved page that can't be read must never be replaced by a blank one (the
+  // autosave would overwrite the owner's content). Show a notice instead.
+  if (!parsed.success && page?.draft) {
+    console.error("draft failed validation", profile.id, parsed.error.issues.slice(0, 3));
+    return (
+      <div className="rounded-2xl bg-white p-6 ring-1 ring-stone-200">
+        <h1 className="text-xl font-bold">Não conseguimos abrir esta página agora</h1>
+        <p className="mt-2 text-sm text-stone-600">
+          O conteúdo está guardado e nada foi apagado. Recarregue em alguns instantes; se continuar, fale com o suporte informando o endereço /{profile.handle}.
+        </p>
+      </div>
+    );
+  }
+  const doc = normalizeLegacyCover(parsed.success ? parsed.data : defaultPageDoc(profile.display_name || profile.handle));
   // Onboarding writes the profile and the page separately; if the second
   // write failed, create the page now so saving and publishing have a row.
   if (!page) await supabase.from("pages").insert({ owner_id: profile.id, draft: doc });
@@ -33,6 +47,8 @@ export default async function EditorPage() {
 
   return (
     <Editor
+      key={profile.id}
+      clientId={profile.id}
       initialDoc={doc}
       handle={profile.handle}
       plan={profile.plan}

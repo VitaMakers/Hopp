@@ -415,10 +415,16 @@ function Spotlight({ doc, handle, plan }: Props) {
   );
 }
 
+// The page's cover video: the legacy single field, or the first video of the
+// "Vídeo" cover type.
+function profileVideo(profile: PageDoc["profile"]): string {
+  return profile.coverVideo || (profile.coverType === "video" ? (profile.coverVideos.find(Boolean) ?? "") : "");
+}
+
 function Ecosystem({ doc, handle, plan }: Props) {
   const { profile, theme, premium } = doc;
   const cover = imageSrc(profile.coverUrl);
-  const coverVideo = videoSrc(profile.coverVideo);
+  const coverVideo = videoSrc(profileVideo(profile));
   const logo = imageSrc(profile.logo);
   const stats = visible(doc, "stats")[0]?.items.slice(0, 3) ?? [];
   return (
@@ -531,7 +537,7 @@ function Experience({ doc, handle }: Props) {
   const { profile, theme, premium } = doc;
   const [mode, setMode] = useState<"a" | "b">("a");
   const cover = imageSrc(profile.coverUrl);
-  const coverVideo = videoSrc(profile.coverVideo);
+  const coverVideo = videoSrc(profileVideo(profile));
   const logo = imageSrc(profile.logo);
   const stats = visible(doc, "stats")[0]?.items.slice(0, 3) ?? [];
 
@@ -807,7 +813,7 @@ function Store({ doc, handle, plan }: Props) {
             ))}
           </section>
         ) : null}
-        {whatsapp && (premium.sizes.length > 0 || premium.sizeTitle) ? <StoreSize premium={premium} whatsapp={whatsapp} handle={handle} /> : null}
+        {premium.sizes.length > 0 || premium.sizeTitle ? <StoreSize premium={premium} whatsapp={whatsapp} handle={handle} /> : null}
         <footer className="store-footer" data-edit="premium:nav">
           <span className="store-footer-brand">{brand}</span>
           {premium.navLinks.length ? (
@@ -1134,7 +1140,9 @@ function StoreProduct({ block, handle }: { block: ProductBlock; handle?: string 
   );
 }
 
-function StoreSize({ premium, whatsapp, handle }: { premium: PremiumFields; whatsapp: string; handle?: string }) {
+// The sizes show on their own; the WhatsApp button only when the page has a
+// real number to ask about it.
+function StoreSize({ premium, whatsapp, handle }: { premium: PremiumFields; whatsapp: string | null; handle?: string }) {
   const image = imageSrc(premium.sizeImageUrl);
   return (
     <section className="store-size" data-edit="premium:size">
@@ -1154,16 +1162,18 @@ function StoreSize({ premium, whatsapp, handle }: { premium: PremiumFields; what
           </div>
         ) : null}
       </div>
-      <a
-        className="store-size-wa"
-        href={whatsapp}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Falar no WhatsApp"
-        onClick={() => track(handle, { kind: "social_click", target: "whatsapp" })}
-      >
-        <SocialIcon platform="whatsapp" />
-      </a>
+      {whatsapp ? (
+        <a
+          className="store-size-wa"
+          href={whatsapp}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Falar no WhatsApp"
+          onClick={() => track(handle, { kind: "social_click", target: "whatsapp" })}
+        >
+          <SocialIcon platform="whatsapp" />
+        </a>
+      ) : null}
     </section>
   );
 }

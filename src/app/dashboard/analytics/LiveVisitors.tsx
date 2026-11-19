@@ -43,7 +43,7 @@ export function LiveVisitors({ initial }: { initial: number }) {
             "Nenhum visitante agora"
           )}
         </p>
-        <p className="text-xs text-stone-500">Nos últimos 5 minutos · atualiza sozinho</p>
+        <p className="text-xs text-stone-500">Nos últimos 5 minutos, atualiza sozinho</p>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { APP_NAME } from "@/lib/env";
+import { formatBRL, PLAN_PRICE_BRL } from "@/lib/plans";
 import { TEMPLATES } from "@/lib/page/templates";
 import { PageView } from "@/components/page-view/PageView";
 import type { PageDoc } from "@/lib/page/schema";
@@ -82,31 +83,29 @@ export default function Home() {
       {/* Hero */}
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 pb-10 pt-12 md:grid-cols-2 md:pb-16 md:pt-20">
         <div className="text-center md:text-left">
-          <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3.5 py-1.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-100">
-            <span className="h-1.5 w-1.5 rounded-full bg-blue-600" /> Seu link na bio, do seu jeito
+          <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3.5 py-1.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-100"> Seu link na bio, do seu jeito
           </span>
           <h1 className="mt-5 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
             Uma página.<br />
-            <span className="text-blue-600">Todas as suas</span> possibilidades.
+            Todas as suas possibilidades.
           </h1>
           <p className="mx-auto mt-5 max-w-md text-base text-stone-500 sm:text-lg md:mx-0">
             Monte em minutos uma página com tudo o que você faz e acompanhe quem clica em quê.
           </p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row md:justify-start">
             <Link href="/login?criar" className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-base font-semibold text-white transition hover:bg-blue-700 sm:w-auto">
-              Criar minha página grátis <span aria-hidden>→</span>
+              Criar minha página grátis
             </Link>
             <a href="#planos" className="inline-flex w-full items-center justify-center rounded-xl border border-stone-200 px-6 py-3.5 text-base font-semibold text-stone-700 transition hover:bg-stone-50 sm:w-auto">
               Ver planos
             </a>
           </div>
-          <p className="mt-4 text-xs text-stone-400">Grátis para começar · sem cartão de crédito</p>
+          <p className="mt-4 text-xs text-stone-400">Grátis para começar, sem cartão de crédito.</p>
         </div>
 
         {/* iPhone with a real premium model running (and slowly scrolling) inside */}
         <div className="flex justify-center">
           <div className="relative">
-            <div className="absolute -inset-6 -z-10 rounded-[60px] bg-gradient-to-tr from-blue-100 via-white to-stone-100 blur-2xl" />
             <div className="relative rounded-[48px] bg-stone-900 p-2.5 shadow-2xl ring-1 ring-black/10">
               <div className="relative h-[560px] w-[270px] overflow-hidden rounded-[40px] bg-black">
                 {hero ? (
@@ -139,7 +138,7 @@ export default function Home() {
       <section id="modelos" className="px-5 py-14">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-            Escolha o seu <span className="text-blue-600">link</span>.
+            Escolha o seu link.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base text-stone-500 sm:text-lg">
             Atualize com suas informações e mude como as pessoas olham a sua empresa.
@@ -193,7 +192,7 @@ export default function Home() {
 
         <div className="mt-8 text-center">
           <Link href="/login" className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-base font-semibold text-white transition hover:bg-blue-700">
-            Começar com um modelo <span aria-hidden>→</span>
+            Começar com um modelo
           </Link>
         </div>
       </section>
@@ -202,17 +201,16 @@ export default function Home() {
       <section id="planos" className="mx-auto max-w-6xl px-5 py-14">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Planos simples</h2>
-          <p className="mt-3 text-base text-stone-500">Comece grátis e evolua quando quiser.</p>
+          <p className="mt-3 text-base text-stone-500">Comece grátis, sem cartão. Quando quiser, libere tudo.</p>
         </div>
-        <div className="mx-auto mt-10 grid max-w-4xl gap-4 md:grid-cols-3">
+        <div className="mx-auto mt-10 grid max-w-3xl gap-4 md:grid-cols-2">
           {[
-            { name: "Grátis", price: "R$ 0", tag: "Para começar", feats: ["Página no ar", "Modelos essenciais", "Estatísticas básicas"], highlight: false },
-            { name: "Essencial", price: "R$ 9,90", tag: "Sem o selo", feats: ["Tudo do Grátis", "Sem o selo Virtú.bio", "Estatísticas completas"], highlight: true },
-            { name: "Profissional", price: "R$ 29,90", tag: "Mais recursos", feats: ["Tudo do Essencial", "Modelos Premium", "Vender com Stripe"], highlight: false },
+            { name: "Grátis", price: "R$ 0", tag: "Para começar", feats: ["Página no ar", "Modelos essenciais", "Contagem de visitas"], highlight: false },
+            { name: "Essencial", price: formatBRL(PLAN_PRICE_BRL.essencial), tag: "Tudo liberado", feats: ["Modelos premium exclusivos", "Vídeo de capa e métricas completas", "Links curtos ilimitados", "Selo verificado, sem a marca Virtú.bio"], highlight: true },
           ].map((p) => (
             <div key={p.name} className={`relative flex flex-col rounded-2xl p-6 ${p.highlight ? "bg-stone-900 text-white ring-2 ring-stone-900" : "bg-white ring-1 ring-stone-200"}`}>
-              {p.highlight ? <span className="absolute -top-2.5 left-6 rounded-full bg-blue-600 px-2.5 py-0.5 text-[11px] font-semibold text-white">Mais popular</span> : null}
-              <span className={`text-xs font-semibold uppercase tracking-wide ${p.highlight ? "text-stone-300" : "text-stone-400"}`}>{p.tag}</span>
+              {p.highlight ? <span className="absolute -top-2.5 left-6 rounded-full bg-blue-600 px-2.5 py-0.5 text-[11px] font-semibold text-white">Preço de lançamento</span> : null}
+              <span className={`text-xs font-semibold ${p.highlight ? "text-stone-300" : "text-stone-400"}`}>{p.tag}</span>
               <h3 className="mt-1 text-lg font-bold">{p.name}</h3>
               <p className="mt-2"><span className="text-3xl font-extrabold">{p.price}</span>{p.price !== "R$ 0" ? <span className={p.highlight ? "text-stone-300" : "text-stone-400"}>/mês</span> : null}</p>
               <ul className={`mt-4 flex flex-1 flex-col gap-2 text-sm ${p.highlight ? "text-stone-200" : "text-stone-600"}`}>
@@ -220,7 +218,7 @@ export default function Home() {
                   <li key={f} className="flex items-start gap-2"><span className="text-blue-500">✓</span> {f}</li>
                 ))}
               </ul>
-              <Link href={p.price === "R$ 0" ? "/login?criar" : "/login"} className={`mt-6 rounded-lg py-2.5 text-center text-sm font-semibold ${p.highlight ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-stone-100 text-stone-800 hover:bg-stone-200"}`}>
+              <Link href={p.price === "R$ 0" ? "/login?criar" : "/precos"} className={`mt-6 rounded-lg py-2.5 text-center text-sm font-semibold ${p.highlight ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-stone-100 text-stone-800 hover:bg-stone-200"}`}>
                 {p.price === "R$ 0" ? "Criar grátis" : "Assinar"}
               </Link>
             </div>
@@ -234,7 +232,7 @@ export default function Home() {
           <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Sua página no ar hoje.</h2>
           <p className="mx-auto mt-3 max-w-md text-stone-300">Leva minutos. Escolha um modelo, personalize e compartilhe.</p>
           <Link href="/login?criar" className="mt-7 inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-7 py-3.5 text-base font-semibold text-white transition hover:bg-blue-700">
-            Criar minha página grátis <span aria-hidden>→</span>
+            Criar minha página grátis
           </Link>
         </div>
       </section>

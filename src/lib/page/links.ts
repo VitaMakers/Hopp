@@ -19,6 +19,9 @@ export function socialHref({ platform, url }: SocialLink): string | null {
 export function linkHref(url: string): string | null {
   const value = url.trim();
   if (/^(mailto|tel):/i.test(value)) return value;
+  // "www.loja.com.br" or "wa.me/55..." typed without https:// still works.
+  // A bare "https://" (the empty default) or text without a dot stays invalid.
+  if (!value.includes("://") && /^[^\s/]+\.[^\s]+/.test(value)) return safeHttpUrl(`https://${value}`);
   return safeHttpUrl(value);
 }
 

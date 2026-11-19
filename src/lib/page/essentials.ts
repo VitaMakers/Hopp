@@ -467,13 +467,19 @@ function toTemplate(c: Cat, k: number): PageTemplate {
     description: c.bio,
     swatch: { background: p.bg, accent: p.accent, text: p.text },
     build: (name) => {
-      const profile: Partial<PageDoc["profile"]> = { bio: c.bio, floatingWhatsapp: c.wa ?? "", logo: piece.logo ?? "" };
+      // No sample WhatsApp number: a fake number must never go live by accident.
+      const profile: Partial<PageDoc["profile"]> = { bio: c.bio, floatingWhatsapp: "", logo: piece.logo ?? "" };
       if (piece.layout === "hero") profile.avatarUrl = photo;
       else if (piece.layout === "poster" || piece.layout === "cover" || piece.layout === "fullscreen" || piece.layout === "portrait" || piece.layout === "capacheia") {
         profile.coverUrl = photo;
         profile.avatarUrl = pic(`${photoSeed}-a`, 240, 240);
       } else profile.avatarUrl = pic(photoSeed, 240, 240);
-      if (piece.video) profile.coverVideo = `/assets/cover-${piece.video}.mp4`;
+      // Video covers use the cover type chooser, so the owner can switch the
+      // cover to an image later and the video really goes away.
+      if (piece.video) {
+        profile.coverType = "video";
+        profile.coverVideos = [`/assets/cover-${piece.video}.mp4`];
+      }
       return page(name, {
         profile,
         socials: c.socials.map(([platform, url]) => ({ platform, url })),

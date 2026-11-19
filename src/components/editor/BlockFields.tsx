@@ -60,7 +60,7 @@ function LinkLayoutPicker({ value, onChange }: { value: "button" | "banner" | "c
 function Fieldset({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-stone-200 p-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">{title}</p>
+      <p className="text-xs font-semibold text-stone-500">{title}</p>
       {children}
     </div>
   );
@@ -85,8 +85,9 @@ function Options<T extends string>({ label, value, options, onChange }: { label:
     </div>
   );
 }
-import { TextArea, TextField, Toggle } from "./fields";
+import { ListField, TextArea, TextField, Toggle } from "./fields";
 import { UploadButton } from "./UploadButton";
+import type { BlockChange } from "./types";
 
 // datetime-local works in local time without seconds or zone; the document
 // stores an ISO instant.
@@ -99,7 +100,7 @@ function toLocalInput(iso: string): string {
 
 // Premium designs read the label, subtitle and button text of every link,
 // whatever its display; the regular theme only uses them on banners and cards.
-export function BlockFields({ block, premium = "", onChange }: { block: Block; premium?: string; onChange: (block: Block) => void }) {
+export function BlockFields({ block, premium = "", onChange }: { block: Block; premium?: string; onChange: BlockChange }) {
   const body = blockBody({ block, premium, onChange });
   // The "experience" design has a two-audience toggle; each block picks where it shows.
   if (premium === "experience") {
@@ -118,7 +119,7 @@ export function BlockFields({ block, premium = "", onChange }: { block: Block; p
   return body;
 }
 
-function blockBody({ block, premium, onChange }: { block: Block; premium: string; onChange: (block: Block) => void }) {
+function blockBody({ block, premium, onChange }: { block: Block; premium: string; onChange: BlockChange }) {
   switch (block.type) {
     case "link":
       return (
@@ -181,7 +182,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
               placeholder="https://..."
               onChange={(imageUrl) => onChange({ ...block, imageUrl })}
             />
-            <UploadButton label="Enviar imagem" onUploaded={(imageUrl) => onChange({ ...block, imageUrl })} />
+            <UploadButton label="Enviar imagem" onUploaded={(imageUrl) => onChange((b) => ({ ...b, imageUrl }) as Block)} />
             <p className="-mt-1 text-xs text-stone-500">
               {block.display === "banner"
                 ? "Tamanho recomendado do banner: 1000 × 700 px (paisagem). A imagem preenche o fundo todo."
@@ -200,7 +201,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
                 placeholder="https://..."
                 onChange={(icon) => onChange({ ...block, icon })}
               />
-              <UploadButton label="Enviar ícone" onUploaded={(icon) => onChange({ ...block, icon })} />
+              <UploadButton label="Enviar ícone" onUploaded={(icon) => onChange((b) => ({ ...b, icon }) as Block)} />
               <p className="mt-1 text-xs text-stone-500">
                 Aparece ao lado do texto e nunca é cortado. Use um PNG com fundo transparente, por volta de 128 × 128 px. Se não enviar, o botão fica sem ícone.
               </p>
@@ -366,7 +367,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
             placeholder="https://..."
             onChange={(logoUrl) => onChange({ ...block, logoUrl })}
           />
-          <UploadButton label="Enviar logo" onUploaded={(logoUrl) => onChange({ ...block, logoUrl })} />
+          <UploadButton label="Enviar logo" onUploaded={(logoUrl) => onChange((b) => ({ ...b, logoUrl }) as Block)} />
           <TextField label="Título" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
           <TextArea label="Texto de introdução" value={block.intro} maxLength={500} onChange={(intro) => onChange({ ...block, intro })} />
           <TextField
@@ -384,7 +385,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
             maxLength={300}
             onChange={(thankYouMessage) => onChange({ ...block, thankYouMessage })}
           />
-          <p className="pt-1 text-xs font-semibold uppercase tracking-wide text-stone-500">Campos do formulário</p>
+          <p className="pt-1 text-xs font-semibold text-stone-500">Campos do formulário</p>
           {block.fields.map((field, index) => {
             const setField = (patch: Partial<typeof field>) =>
               onChange({ ...block, fields: block.fields.map((f, i) => (i === index ? { ...f, ...patch } : f)) });
@@ -412,13 +413,15 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
                   onChange={(type) => setField({ type })}
                 />
                 {field.type === "select" || field.type === "radio" || field.type === "checkbox" ? (
-                  <TextArea
+                  <ListField
                     label="Opções (uma por linha)"
-                    value={field.options.join("\n")}
-                    maxLength={800}
-                    onChange={(value) =>
-                      setField({ options: value.split("\n").map((o) => o.trim()).filter(Boolean).slice(0, 20) })
-                    }
+                    value={field.options}
+                    separator={"\n"}
+                    multiline
+                    max={20}
+                    itemMax={120}
+                    maxLength={2600}
+                    onChange={(options) => setField({ options })}
                   />
                 ) : (
                   <TextField
@@ -465,7 +468,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
       return (
         <div className="flex flex-col gap-3">
           <TextField label="Imagem (link)" type="url" value={block.imageUrl} maxLength={1000} placeholder="https://..." onChange={(imageUrl) => onChange({ ...block, imageUrl })} />
-          <UploadButton label="Enviar imagem" onUploaded={(imageUrl) => onChange({ ...block, imageUrl })} />
+          <UploadButton label="Enviar imagem" onUploaded={(imageUrl) => onChange((b) => ({ ...b, imageUrl }) as Block)} />
           <TextField label="Descrição da imagem" value={block.alt} maxLength={200} onChange={(alt) => onChange({ ...block, alt })} />
           <TextField label="Abrir este link ao clicar (opcional)" type="url" value={block.url} maxLength={2000} placeholder="https://..." onChange={(url) => onChange({ ...block, url })} />
         </div>
@@ -479,7 +482,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
             <TextField label="Preço" value={block.price} maxLength={40} placeholder="R$ 49,90" onChange={(price) => onChange({ ...block, price })} />
             <TextArea label="Descrição" value={block.description} maxLength={500} onChange={(description) => onChange({ ...block, description })} />
             <TextField label="Foto (link da imagem)" type="url" value={block.imageUrl} maxLength={1000} placeholder="https://..." onChange={(imageUrl) => onChange({ ...block, imageUrl })} />
-            <UploadButton label="Enviar foto" onUploaded={(imageUrl) => onChange({ ...block, imageUrl })} />
+            <UploadButton label="Enviar foto" onUploaded={(imageUrl) => onChange((b) => ({ ...b, imageUrl }) as Block)} />
             <TextField label="Texto do botão" value={block.buttonText} maxLength={40} onChange={(buttonText) => onChange({ ...block, buttonText })} />
           </Fieldset>
           <Fieldset title="Pagamento">
@@ -542,7 +545,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
               rel="noopener noreferrer"
               className="mt-2 inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 font-semibold text-white hover:bg-blue-700"
             >
-              Criar minha agenda no Google →
+              Criar minha agenda no Google
             </a>
           </div>
           <TextField label="Título" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
@@ -620,7 +623,16 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
             return (
               <div key={index} className="flex flex-col gap-2 rounded-lg bg-stone-50 p-3">
                 <TextField label={`Foto ${index + 1} (link)`} type="url" value={item.imageUrl} maxLength={1000} placeholder="https://..." onChange={(imageUrl) => setItem({ imageUrl })} />
-                <UploadButton label="Enviar foto" onUploaded={(imageUrl) => setItem({ imageUrl })} />
+                <UploadButton
+                  label="Enviar foto"
+                  onUploaded={(imageUrl) =>
+                    onChange((b) => {
+                      if (!("items" in b)) return b;
+                      const items = (b.items as Array<Record<string, unknown>>).map((it, i) => (i === index ? { ...it, imageUrl } : it));
+                      return { ...b, items } as Block;
+                    })
+                  }
+                />
                 <TextField label="Abrir este link ao clicar (opcional)" type="url" value={item.url} maxLength={2000} placeholder="https://..." onChange={(url) => setItem({ url })} />
                 <button
                   type="button"

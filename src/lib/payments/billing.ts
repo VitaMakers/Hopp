@@ -46,10 +46,42 @@ export function constructWebhookEvent(payload: string, signature: string): Strip
   return client().webhooks.constructEvent(payload, signature, stripeWebhookSecret());
 }
 
-// Cancels a client's subscription immediately. The webhook then confirms the
-// downgrade to free.
-export async function cancelSubscription(subscriptionId: string): Promise<void> {
-  await client().subscriptions.cancel(subscriptionId);
+// True when Stripe says the subscription doesn't exist (already gone), which
+// callers can treat as "already cancelled".
+function isMissing(error: unknown): boolean {
+  return (error as { code?: string } | null)?.code === "resource_missing";
+}
+
+// Ends a subscription right away (the client or the account is being deleted).
+// Throws if Stripe refuses, so callers never delete while billing continues.
+export async function cancelSubscriptionNow(subscriptionId: string): Promise<void> {
+  try {
+    await client().subscriptions.cancel(subscriptionId);
+  } catch (error) {
+    if (!isMissing(error)) throw error;
+  }
+}
+
+// The owner cancels the plan: it stays active until the end of the period
+// already paid, then Stripe ends it and the webhook drops the client to free.
+export async function cancelSubscriptionAtPeriodEnd(subscriptionId: string): Promise<void> {
+  try {
+    await client().subscriptions.update(subscriptionId, { cancel_at_period_end: true });
+  } catch (error) {
+    if (!isMissing(error)) throw error;
+  }
+}
+
+// Whether a subscription is still billing (active, trialing or retrying a
+// failed payment). Used to refuse a second checkout for the same client.
+export async function subscriptionIsLive(subscriptionId: string): Promise<boolean> {
+  try {
+    const sub = await client().subscriptions.retrieve(subscriptionId);
+    return ["active", "trialing", "past_due"].includes(sub.status);
+  } catch (error) {
+    if (isMissing(error)) return false;
+    throw error;
+  }
 }
 
 // One-time product sale: a direct charge on the creator's connected account, so

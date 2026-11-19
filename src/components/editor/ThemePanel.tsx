@@ -4,8 +4,9 @@ import { THEME_PRESETS } from "@/lib/page/catalog";
 import type { PageDoc, Theme } from "@/lib/page/schema";
 import { Card, TextField, Toggle } from "./fields";
 import { PremiumSectionsEditor } from "./PremiumSections";
+import { applyPatch, type DocChange, type Patch } from "./types";
 
-type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void; focus?: { id: string; n: number } | null; onActive?: (id: string | null) => void };
+type PanelProps = { doc: PageDoc; onChange: DocChange; focus?: { id: string; n: number } | null; onActive?: (id: string | null) => void };
 
 const LAYOUT_LABELS: Record<Theme["layout"], string> = {
   classic: "Clássico",
@@ -92,7 +93,7 @@ const PREMIUM_NAMES: Record<Exclude<Theme["premium"], "">, string> = {
 };
 
 export function ThemePanel({ doc, onChange, focus, onActive }: PanelProps) {
-  const setTheme = (patch: Partial<Theme>) => onChange({ ...doc, theme: { ...doc.theme, ...patch } });
+  const setTheme = (patch: Patch<Theme>) => onChange((d) => ({ ...d, theme: applyPatch(d.theme, patch) }));
   if (doc.theme.premium) {
     const design = doc.theme.premium as Exclude<Theme["premium"], "">;
     return (

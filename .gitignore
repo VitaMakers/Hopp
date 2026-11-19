@@ -48,3 +48,8 @@ next-env.d.ts
 # e2e output
 /e2e/shots/*.png
 /e2e/last-run.json
+
+# Skill-manager install artifacts (session tooling, not app code)
+/.agents/
+/.claude/skills/
+/skills-lock.json

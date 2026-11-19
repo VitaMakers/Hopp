@@ -3,14 +3,16 @@
 import Link from "next/link";
 import { useState } from "react";
 import { defaultPageDoc } from "@/lib/page/catalog";
-import { canUsePremium, planAllows } from "@/lib/entitlements";
+import { canUsePremium, planAllows, planViolations } from "@/lib/entitlements";
+import { applyTemplateKeepingProfile } from "@/lib/page/migrate";
 import type { PageDoc } from "@/lib/page/schema";
 import { TEMPLATES, TEMPLATE_COLLECTIONS, TEMPLATE_TABS, collectionModels, type TemplateCollection } from "@/lib/page/templates";
 import { ModelThumb } from "@/components/page-view/ModelThumb";
 import { PageView } from "@/components/page-view/PageView";
 import { Card } from "./fields";
+import type { DocChange } from "./types";
 
-type PanelProps = { doc: PageDoc; onChange: (doc: PageDoc) => void; plan: string; onGoToBlocks?: () => void };
+type PanelProps = { doc: PageDoc; onChange: DocChange; plan: string; onGoToBlocks?: () => void };
 
 export function TemplatesPanel({ doc, onChange, plan, onGoToBlocks }: PanelProps) {
   const [tab, setTab] = useState("essencial");
@@ -20,17 +22,20 @@ export function TemplatesPanel({ doc, onChange, plan, onGoToBlocks }: PanelProps
   const collections = TEMPLATE_COLLECTIONS.filter((c) => c.tab === tab);
   const open = collections.find((c) => c.id === openCollection) ?? null;
 
-  // A model's required plan comes from its collection: the premium tab defaults
-  // to Profissional, the Vitrine collection is marked Essencial, and the
-  // essencial tab is free for everyone.
-  const PLAN_LABEL: Record<string, string> = { free: "Grátis", essencial: "Essencial", profissional: "Profissional" };
-  const collectionRequires = (c: TemplateCollection) => c.requiresPlan ?? (c.tab === "premium" ? "profissional" : "free");
+  // A model's required plan comes from its collection: the premium tab needs
+  // the paid plan (Essencial), and the essencial tab is free for everyone.
+  const PLAN_LABEL: Record<string, string> = { free: "Grátis", essencial: "Essencial", profissional: "Essencial" };
+  const collectionRequires = (c: TemplateCollection) => c.requiresPlan ?? (c.tab === "premium" ? "essencial" : "free");
   const openRequires = open ? collectionRequires(open) : "free";
   const openAllowed = planAllows(plan, openRequires);
 
   const premiumTab = tab === "premium";
   const canPremium = canUsePremium(plan);
   const previewTemplate = previewId ? TEMPLATES.find((t) => t.id === previewId) : null;
+  // Some free models use a video cover; on Grátis they'd apply but could never
+  // be published, so they're locked like any paid feature.
+  const previewNeedsPaid = previewTemplate ? planViolations(previewTemplate.build(""), plan).length > 0 : false;
+  const previewAllowed = openAllowed && !previewNeedsPaid;
 
   function selectTab(id: string) {
     setTab(id);
@@ -41,13 +46,13 @@ export function TemplatesPanel({ doc, onChange, plan, onGoToBlocks }: PanelProps
   // Apply the previewed model (only reachable when the plan allows it).
   function applyModel(id: string) {
     const template = TEMPLATES.find((item) => item.id === id);
-    if (!template || !openAllowed) return;
-    if (!window.confirm(`Usar o modelo "${template.name}"? Os blocos e o visual da sua página serão trocados pelos do modelo (o rascunho só vai ao ar quando você publicar).`)) return;
+    if (!template || !openAllowed || planViolations(template.build(""), plan).length) return;
+    if (!window.confirm(`Usar o modelo "${template.name}"? Os blocos e o visual da sua página serão trocados pelos do modelo. Seu nome, bio, foto, capa, redes sociais e WhatsApp continuam. Nada vai ao ar até você publicar.`)) return;
     // Keep the name the person already set instead of overwriting it with the
     // placeholder used in previews.
     const current = doc.profile.name?.trim();
     const keepName = current && current !== "Adicione seu nome" ? current : "";
-    onChange({ ...template.build(keepName), seo: doc.seo });
+    onChange(applyTemplateKeepingProfile(doc, template.build(keepName)));
     setPreviewId(null);
   }
 
@@ -124,7 +129,7 @@ export function TemplatesPanel({ doc, onChange, plan, onGoToBlocks }: PanelProps
                     {openAllowed ? (
                       <span className="text-emerald-600">✓</span>
                     ) : (
-                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">{PLAN_LABEL[openRequires]}</span>
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">{PLAN_LABEL[openRequires]}</span>
                     )}
                   </span>
                 </button>
@@ -183,13 +188,13 @@ export function TemplatesPanel({ doc, onChange, plan, onGoToBlocks }: PanelProps
               </div>
             </div>
             <div className="border-t border-stone-200 p-4">
-              {openAllowed ? (
+              {previewAllowed ? (
                 <button type="button" onClick={() => applyModel(previewTemplate.id)} className="btn-primary w-full">
                   Usar este modelo
                 </button>
               ) : (
                 <div className="flex items-center justify-between gap-3 rounded-lg bg-stone-900 px-3 py-2.5 text-sm text-white">
-                  <span>🔒 Modelo do plano {PLAN_LABEL[openRequires]}</span>
+                  <span>{openAllowed ? "🔒 Este modelo usa vídeo, do plano Essencial" : `🔒 Modelo do plano ${PLAN_LABEL[openRequires]}`}</span>
                   <Link href="/dashboard/plans" className="shrink-0 rounded-md bg-white px-2.5 py-1 text-xs font-semibold text-stone-900">
                     Ver planos
                   </Link>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { publish, saveDraft } from "@/app/dashboard/actions";
 import { PageView } from "@/components/page-view/PageView";
 import { APP_NAME, APP_TAGLINE } from "@/lib/env";
@@ -26,12 +26,15 @@ type Status = "saved" | "dirty" | "saving" | "error";
 export type BlockStats = { views: number; clicks: Record<string, number> };
 
 export function Editor({
+  clientId,
   initialDoc,
   handle,
   plan,
   publishedAt: initialPublishedAt,
   stats,
 }: {
+  // The client (profile) this editor is editing; every save names it.
+  clientId: string;
   initialDoc: PageDoc;
   handle: string;
   plan: string;
@@ -118,26 +121,69 @@ export function Editor({
     }
   }
 
-  // Autosave the draft a moment after the last change.
+  // Autosave the draft a moment after the last change. pendingDoc holds edits
+  // not yet sent; saveSeq makes sure only the newest save sets the status.
+  const pendingDoc = useRef<PageDoc | null>(null);
+  const saveSeq = useRef(0);
+
+  const flush = useCallback(async () => {
+    const next = pendingDoc.current;
+    if (!next) return;
+    pendingDoc.current = null;
+    const seq = ++saveSeq.current;
+    setStatus("saving");
+    const result = await saveDraft(clientId, next);
+    // A newer save started, or newer edits are waiting: let those decide.
+    if (seq !== saveSeq.current || pendingDoc.current) return;
+    setStatus(result.ok ? "saved" : "error");
+    if (result.ok) {
+      // Clear an earlier save error once saving works again.
+      setMessage((m) => (m && m.startsWith("Não foi possível salvar") ? null : m));
+    } else {
+      setMessage(result.error);
+    }
+  }, [clientId]);
+
   useEffect(() => {
     if (firstRender.current) {
       firstRender.current = false;
       return;
     }
+    pendingDoc.current = doc;
     setStatus("dirty");
-    const timer = setTimeout(async () => {
-      setStatus("saving");
-      const result = await saveDraft(doc);
-      setStatus(result.ok ? "saved" : "error");
-      if (!result.ok) setMessage(result.error);
-    }, 1200);
+    const timer = setTimeout(() => void flush(), 1200);
     return () => clearTimeout(timer);
-  }, [doc]);
+  }, [doc, flush]);
+
+  // Leaving the editor (another dashboard page, closing the tab) must not drop
+  // the last edits: save them on the way out, and warn before closing the tab
+  // while something is still unsaved.
+  useEffect(() => {
+    const onHide = () => {
+      if (pendingDoc.current) void flush();
+    };
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (pendingDoc.current) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("pagehide", onHide);
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => {
+      window.removeEventListener("pagehide", onHide);
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      if (pendingDoc.current) void flush();
+    };
+  }, [flush]);
 
   function onPublish() {
     setMessage(null);
     startPublish(async () => {
-      const result = await publish(doc);
+      // Publishing also saves the draft, so nothing is pending afterwards.
+      pendingDoc.current = null;
+      saveSeq.current += 1;
+      const result = await publish(clientId, doc);
       if (result.ok) {
         setStatus("saved");
         setPublishedAt(result.publishedAt ?? new Date().toISOString());
@@ -205,7 +251,7 @@ export function Editor({
 
       <aside className="lg:sticky lg:top-20 lg:self-start">
         <p className="mb-2 text-center text-xs text-stone-500">
-          Prévia · <span className="text-stone-400">toque em qualquer parte para editar</span>
+          Prévia <span className="text-stone-400">(toque em qualquer parte para editar)</span>
         </p>
         <div ref={previewRef} className="mx-auto h-[680px] w-full max-w-[360px] overflow-y-auto rounded-[2.2rem] border-[10px] border-stone-900 bg-white shadow-xl">
           <PageView
