@@ -593,7 +593,7 @@ function PremiumSectionCard({
     >
       <div className="flex items-center gap-2 p-3">
         <button type="button" onClick={onToggleOpen} className="min-w-0 flex-1 text-left">
-          <span className="block text-xs uppercase tracking-wide text-stone-400">Parte do modelo</span>
+          <span className="block text-xs text-stone-400">Parte do modelo</span>
           <span className={`block truncate font-medium ${hidden ? "text-stone-400 line-through" : ""}`}>{label}</span>
           {summary ? <span className="block truncate text-xs text-stone-500">{summary}</span> : null}
         </button>
@@ -654,7 +654,7 @@ export function PremiumSectionsEditor({
       {/* Scroll target used when a premium area is clicked in the preview. */}
       <div id="blk-premium:__group" className="scroll-mt-24" />
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">Partes do modelo</p>
+        <p className="text-xs font-semibold text-stone-500">Partes do modelo</p>
         <button
           type="button"
           onClick={() => onChange({ ...doc, theme: { ...doc.theme, premium: "" } })}

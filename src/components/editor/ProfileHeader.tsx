@@ -93,7 +93,7 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
       ) : (
         <div className="mt-4 flex flex-col gap-4 border-t border-stone-100 pt-4">
           <div className="flex flex-col gap-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">Perfil</p>
+            <p className="text-xs font-semibold text-stone-500">Perfil</p>
             <TextField label="Nome" value={profile.name} maxLength={80} onChange={(name) => setProfile({ name })} />
             <Toggle label="Mostrar o nome na página" checked={!profile.hideName} onChange={(on) => setProfile({ hideName: !on })} />
             <TextArea label="Bio" value={profile.bio} maxLength={300} onChange={(bio) => setProfile({ bio })} />
@@ -121,7 +121,7 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
           </div>
 
           <div className="flex flex-col gap-3 border-t border-stone-100 pt-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">Redes sociais</p>
+            <p className="text-xs font-semibold text-stone-500">Redes sociais</p>
             {socials.map((social, index) => (
               <div key={social.platform} className="flex items-end gap-2">
                 <div className="flex-1">
@@ -157,7 +157,7 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
           </div>
 
           <div className="flex flex-col gap-3 border-t border-stone-100 pt-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">Capa</p>
+            <p className="text-xs font-semibold text-stone-500">Capa</p>
             <p className="-mt-1 text-xs text-stone-500">A capa aparece nos layouts com foto (escolha em Aparência → Layout).</p>
             <div className="flex gap-2">
               {([["image", "Imagem"], ["carousel", "Carrossel"], ["video", "Vídeo"]] as const).map(([val, lbl]) => (

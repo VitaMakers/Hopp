@@ -13,5 +13,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function PublicFormPage({ params }: Params) {
   const form = await getFormByCode((await params).code);
   if (!form) notFound();
-  return <FormView config={form.config} code={(await params).code} />;
+  return (
+    <div className="vita-original contents">
+      <FormView config={form.config} code={(await params).code} />
+    </div>
+  );
 }

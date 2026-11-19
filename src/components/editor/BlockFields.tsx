@@ -60,7 +60,7 @@ function LinkLayoutPicker({ value, onChange }: { value: "button" | "banner" | "c
 function Fieldset({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-stone-200 p-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">{title}</p>
+      <p className="text-xs font-semibold text-stone-500">{title}</p>
       {children}
     </div>
   );
@@ -384,7 +384,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
             maxLength={300}
             onChange={(thankYouMessage) => onChange({ ...block, thankYouMessage })}
           />
-          <p className="pt-1 text-xs font-semibold uppercase tracking-wide text-stone-500">Campos do formulário</p>
+          <p className="pt-1 text-xs font-semibold text-stone-500">Campos do formulário</p>
           {block.fields.map((field, index) => {
             const setField = (patch: Partial<typeof field>) =>
               onChange({ ...block, fields: block.fields.map((f, i) => (i === index ? { ...f, ...patch } : f)) });
@@ -542,7 +542,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
               rel="noopener noreferrer"
               className="mt-2 inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 font-semibold text-white hover:bg-blue-700"
             >
-              Criar minha agenda no Google →
+              Criar minha agenda no Google
             </a>
           </div>
           <TextField label="Título" value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />

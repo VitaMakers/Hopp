@@ -8,7 +8,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const admin = isAdmin(user.email);
   return (
     <div className="flex min-h-screen bg-stone-50 text-stone-900">
-      <Sidebar isAdmin={admin} />
+      {/* The sidebar keeps its exact original look. */}
+      <div className="vita-original contents">
+        <Sidebar isAdmin={admin} />
+      </div>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/90 backdrop-blur">
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-2.5">

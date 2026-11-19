@@ -133,7 +133,7 @@ export default async function AdminPage() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-200 text-left text-xs uppercase tracking-wide text-stone-400">
+                <tr className="border-b border-stone-200 text-left text-xs text-stone-400">
                   <th className="pb-2 font-medium">Cliente</th>
                   <th className="pb-2 font-medium">Plano</th>
                   <th className="pb-2 text-right font-medium">Desde</th>

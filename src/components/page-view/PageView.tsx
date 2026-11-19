@@ -49,7 +49,16 @@ function EditWrap({ onEdit, target, children }: { onEdit?: (t: string) => void; 
   );
 }
 
-export function PageView({ doc, handle, plan, footer, still, onEdit }: Props) {
+// Clients' pages keep their original look, independent of Virtú's own UI tokens.
+export function PageView(props: Props) {
+  return (
+    <div className="vita-original contents">
+      <PageViewInner {...props} />
+    </div>
+  );
+}
+
+function PageViewInner({ doc, handle, plan, footer, still, onEdit }: Props) {
   const { theme } = doc;
   const blocks = doc.blocks.filter((block) => block.enabled);
 

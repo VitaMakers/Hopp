@@ -205,7 +205,7 @@ export function Editor({
 
       <aside className="lg:sticky lg:top-20 lg:self-start">
         <p className="mb-2 text-center text-xs text-stone-500">
-          Prévia · <span className="text-stone-400">toque em qualquer parte para editar</span>
+          Prévia <span className="text-stone-400">(toque em qualquer parte para editar)</span>
         </p>
         <div ref={previewRef} className="mx-auto h-[680px] w-full max-w-[360px] overflow-y-auto rounded-[2.2rem] border-[10px] border-stone-900 bg-white shadow-xl">
           <PageView

@@ -34,7 +34,7 @@ export function ClientSwitcher({ clients, currentId }: { clients: Client[]; curr
         <>
           <button type="button" aria-label="Fechar" className="fixed inset-0 z-30 cursor-default" onClick={() => setOpen(false)} />
           <div className="absolute left-1/2 top-full z-40 mt-1 w-64 -translate-x-1/2 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg">
-            <p className="px-3 pt-3 text-[11px] font-semibold uppercase tracking-wide text-stone-400">Clientes</p>
+            <p className="px-3 pt-3 text-[11px] font-semibold text-stone-500">Clientes</p>
             <div className="max-h-72 overflow-y-auto py-1">
               {clients.map((client) => {
                 const selected = client.id === current.id;

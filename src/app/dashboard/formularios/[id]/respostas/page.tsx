@@ -54,7 +54,7 @@ export default async function RespostasPage({ params }: { params: Promise<{ id: 
             ← Formulários
           </Link>
           <h1 className="mt-1 text-2xl font-bold">{title}</h1>
-          <p className="text-sm text-stone-600">Respostas e desempenho do formulário · sem limite de armazenamento.</p>
+          <p className="text-sm text-stone-600">Respostas e desempenho do formulário, sem limite de armazenamento.</p>
         </div>
         {rows.length ? (
           <a href={`/dashboard/formularios/${id}/respostas/export`} className="btn-primary">

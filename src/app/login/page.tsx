@@ -28,17 +28,14 @@ export default async function LoginPage({
       </div>
 
       {/* Right: an original collage of floating cards (no phone) */}
-      <div className="relative hidden w-1/2 overflow-hidden bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-700 lg:flex lg:items-center lg:justify-center">
+      <div className="relative hidden w-1/2 overflow-hidden bg-blue-600 lg:flex lg:items-center lg:justify-center">
         {/* soft colored glows */}
-        <div className="pointer-events-none absolute -left-24 -top-16 h-80 w-80 rounded-full bg-sky-300/25 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -right-16 h-96 w-96 rounded-full bg-fuchsia-400/25 blur-3xl" />
-        <div className="pointer-events-none absolute right-12 top-10 h-44 w-44 rounded-full bg-amber-300/20 blur-2xl" />
 
         <div className="relative h-[540px] w-[460px]">
           {/* Main profile card */}
           <div className="absolute left-1/2 top-1/2 w-72 -translate-x-1/2 -translate-y-1/2 -rotate-3 rounded-[28px] bg-white p-5 shadow-2xl ring-1 ring-black/5">
             <div className="flex items-center gap-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-lg font-bold text-white">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-stone-900 text-lg font-bold text-white">
                 MA
               </div>
               <div>
@@ -83,7 +80,7 @@ export default async function LoginPage({
           </div>
 
           {/* Media tile with a play button */}
-          <div className="absolute bottom-8 right-8 flex h-28 w-36 rotate-3 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-xl">
+          <div className="absolute bottom-8 right-8 flex h-28 w-36 rotate-3 items-center justify-center rounded-2xl bg-amber-400 shadow-xl">
             <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 shadow">
               <svg viewBox="0 0 24 24" className="ml-0.5 h-5 w-5 text-orange-600" fill="currentColor" aria-hidden>
                 <path d="M8 5v14l11-7z" />

@@ -117,7 +117,7 @@ export default async function ClientsPage({
                     /{client.handle}
                   </a>
                 </div>
-                <span className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${PLAN_BADGE[plan]}`}>
+                <span className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${PLAN_BADGE[plan]}`}>
                   {PLAN_LABEL[plan]}
                 </span>
               </div>

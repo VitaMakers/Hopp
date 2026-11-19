@@ -132,7 +132,7 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
   return (
     <div className="flex flex-col gap-3">
       <ProfileHeader doc={doc} onChange={onChange} plan={plan} />
-      <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-stone-400">Blocos</p>
+      <p className="mt-1 text-xs font-semibold text-stone-500">Blocos</p>
       <button type="button" onClick={() => setAdding(true)} className="btn-primary self-start">
         + Adicionar bloco
       </button>
@@ -238,7 +238,7 @@ function BlockPicker({ onPick, onClose }: { onPick: (type: BlockType) => void; o
             <div className="flex flex-col gap-5">
               {groups.map((group) => (
                 <div key={group.id}>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">{group.label}</p>
+                  <p className="mb-2 text-xs font-semibold text-stone-500">{group.label}</p>
                   <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                     {group.types.map((type) => (
                       <button
@@ -309,7 +309,7 @@ function SortableBlock({
           ⠿
         </button>
         <button type="button" onClick={onToggleOpen} className="min-w-0 flex-1 text-left">
-          <span className="block text-xs uppercase tracking-wide text-stone-400">
+          <span className="block text-xs text-stone-400">
             {BLOCK_CATALOG[block.type].label}
           </span>
           <span className={`block truncate ${block.enabled ? "" : "text-stone-400 line-through"}`}>
@@ -318,7 +318,7 @@ function SortableBlock({
           {stats ? (
             <span className="mt-0.5 block text-xs text-stone-400">
               {fmtN(stats.views)} {stats.views === 1 ? "visualização" : "visualizações"}
-              {blockClicks > 0 ? ` · ${fmtN(blockClicks)} ${blockClicks === 1 ? "clique" : "cliques"}` : ""}
+              {blockClicks > 0 ? `, ${fmtN(blockClicks)} ${blockClicks === 1 ? "clique" : "cliques"}` : ""}
             </span>
           ) : null}
         </button>

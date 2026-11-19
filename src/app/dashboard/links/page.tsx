@@ -26,7 +26,7 @@ export default async function LinksPage() {
           Links rastreáveis para divulgar em qualquer lugar. Os cliques aparecem em Estatísticas.
           {limit > 0 ? (
             <span className="ml-1 font-medium text-stone-700">
-              {Number.isFinite(limit) ? `Usados ${used} de ${limit}.` : `${used} criado${used === 1 ? "" : "s"} · ilimitados no seu plano.`}
+              {Number.isFinite(limit) ? `Usados ${used} de ${limit}.` : `${used} criado${used === 1 ? "" : "s"}, ilimitados no seu plano.`}
             </span>
           ) : null}
         </p>

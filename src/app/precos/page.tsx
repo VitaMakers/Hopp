@@ -83,7 +83,7 @@ export default async function PrecosPage() {
                 className={`relative flex flex-col rounded-2xl bg-white p-6 shadow-sm ring-1 ${featured ? "ring-2 ring-stone-900" : "ring-stone-200"}`}
               >
                 {featured ? (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-stone-900 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-stone-900 px-3 py-1 text-[11px] font-semibold text-white">
                     Mais completo
                   </span>
                 ) : null}
@@ -100,8 +100,13 @@ export default async function PrecosPage() {
                     <li key={f.label} className="flex items-start gap-2">
                       <span className="mt-0.5 text-emerald-600">✓</span>
                       <span>
-                        {f.label}
-                        {typeof f[plan] === "string" ? <span className="text-stone-500"> ({f[plan]})</span> : null}
+                        {typeof f[plan] === "string" ? (
+                          <>
+                            {f.short ?? f.label}: <span className="text-stone-500">{String(f[plan]).toLowerCase()}</span>
+                          </>
+                        ) : (
+                          f.label
+                        )}
                       </span>
                     </li>
                   ))}
@@ -158,8 +163,8 @@ export default async function PrecosPage() {
           Já tem conta?{" "}
           <Link href="/login" className="font-semibold text-stone-900 underline">
             Entrar
-          </Link>{" "}
-          · Pode mudar de plano ou cancelar quando quiser.
+          </Link>.{" "}
+          Você pode mudar de plano ou cancelar quando quiser.
         </p>
       </div>
     </main>
