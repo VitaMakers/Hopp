@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { canUseForms } from "@/lib/entitlements";
 import { FORM_DISPLAY_TYPES, formBlockSchema } from "@/lib/page/schema";
 import { getOwner } from "../../../context";
 import { deleteResponse } from "../../actions";
@@ -9,7 +10,8 @@ type Answer = { label: string; value: string };
 
 export default async function RespostasPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { supabase } = await getOwner();
+  const { supabase, profile } = await getOwner();
+  if (!canUseForms(profile.plan)) redirect("/dashboard/formularios");
 
   const { data: form } = await supabase.from("forms").select("id, code, config").eq("id", id).maybeSingle();
   if (!form) notFound();

@@ -3,6 +3,7 @@
 import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { canUseForms } from "@/lib/entitlements";
 import { FORM_PRESETS } from "@/lib/page/catalog";
 import { formBlockSchema } from "@/lib/page/schema";
 import { getOwner } from "../context";
@@ -11,6 +12,8 @@ import { getOwner } from "../context";
 // so we don't depend on a select-after-insert (which RLS can block).
 export async function createForm(presetId: string) {
   const { supabase, profile } = await getOwner();
+  // Custom forms are a Profissional feature.
+  if (!canUseForms(profile.plan)) redirect("/dashboard/formularios");
   const preset = FORM_PRESETS.find((p) => p.id === presetId) ?? FORM_PRESETS[0];
   const id = crypto.randomUUID();
   const { error } = await supabase
@@ -26,7 +29,8 @@ export type SaveFormState = { ok?: boolean; error?: string };
 export async function saveFormConfig(id: string, config: unknown): Promise<SaveFormState> {
   const parsed = formBlockSchema.safeParse(config);
   if (!parsed.success) return { error: "Formulário inválido." };
-  const { supabase } = await getOwner();
+  const { supabase, profile } = await getOwner();
+  if (!canUseForms(profile.plan)) return { error: "Formulários são do plano Profissional." };
   const { data, error } = await supabase.from("forms").update({ config: parsed.data }).eq("id", id).select("id");
   if (error || !data?.length) return { error: "Não foi possível salvar." };
   revalidatePath("/dashboard/formularios");

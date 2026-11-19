@@ -10,7 +10,7 @@ export function NewFormButton() {
   if (!open) {
     return (
       <button type="button" onClick={() => setOpen(true)} className="btn-primary whitespace-nowrap">
-        + Novo formulário
+        Novo formulário
       </button>
     );
   }

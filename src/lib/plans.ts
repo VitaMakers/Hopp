@@ -24,9 +24,8 @@ export function normalizePlan(value: string | null | undefined): Plan {
   return (PLANS as readonly string[]).includes(value ?? "") ? (value as Plan) : "free";
 }
 
-// Plans sold today, in display order. Profissional is kept only so existing
-// subscribers keep working; it is no longer offered.
-export const PLANS_FOR_SALE = ["free", "essencial"] as const;
+// Plans sold today, in display order.
+export const PLANS_FOR_SALE = ["free", "essencial", "profissional"] as const;
 
 // The price a new paid client adds to the monthly bill.
 export function nextClientPriceBRL(): number {

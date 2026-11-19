@@ -5,47 +5,57 @@ import { normalizePlan } from "@/lib/plans";
 // locks) and by the publish action (to enforce). No "server-only": the editor
 // imports it too.
 
-// One paid plan is sold today: Essencial (R$ 9,90) with everything unlocked.
-// Profissional is no longer offered, but existing Profissional subscribers keep
-// every feature. So "paid" (any plan but Grátis) is what unlocks features.
+// Two paid plans:
+// - Essencial (R$ 9,90): premium models, video, full statistics, unlimited
+//   short links.
+// - Profissional (R$ 29,90): everything in Essencial plus custom forms, the
+//   verified badge and a page without the Virtú.bio mark.
 export function isPaid(plan: string | null | undefined): boolean {
   return normalizePlan(plan) !== "free";
 }
 
-// How many short links each plan may keep: unlimited on the paid plan, none on
-// Grátis. Callers show "ilimitado" when the limit is not finite.
+export function isProfissional(plan: string | null | undefined): boolean {
+  return normalizePlan(plan) === "profissional";
+}
+
+// Short links: unlimited on any paid plan, none on Grátis. Callers show
+// "ilimitado" when the limit is not finite.
 export function shortLinkLimit(plan: string | null | undefined): number {
   return isPaid(plan) ? Infinity : 0;
 }
 
-// The Virtú.bio signature in the footer shows only on Grátis.
+// The Virtú.bio signature in the footer: removed only on Profissional.
 export function showsBadge(plan: string | null | undefined): boolean {
-  return !isPaid(plan);
+  return !isProfissional(plan);
 }
 
-// Premium designs (Autoridade, Presença, etc.) are on the paid plan.
+// Premium designs (Autoridade, Presença, restaurants, etc.): any paid plan.
 export function canUsePremium(plan: string | null | undefined): boolean {
   return isPaid(plan);
 }
 
-// Cover video and the video grid block are on the paid plan.
+// Cover video and the video grid block: any paid plan.
 export function canUseVideo(plan: string | null | undefined): boolean {
   return isPaid(plan);
 }
 
-// Grátis sees only the visit count; the paid plan gets the full dashboard.
+// Grátis sees only the visit count; paid plans get the full dashboard.
 export function hasFullAnalytics(plan: string | null | undefined): boolean {
   return isPaid(plan);
 }
 
-// The blue verified badge is on the paid plan.
+// The blue verified badge: Profissional.
 export function canUseVerified(plan: string | null | undefined): boolean {
-  return isPaid(plan);
+  return isProfissional(plan);
+}
+
+// Custom forms (Formulários area and the form block): Profissional.
+export function canUseForms(plan: string | null | undefined): boolean {
+  return isProfissional(plan);
 }
 
 // Plan ranking, so "has at least this plan" checks are simple comparisons.
-// Essencial and Profissional unlock the same things.
-const PLAN_RANK: Record<string, number> = { free: 0, essencial: 1, profissional: 1 };
+const PLAN_RANK: Record<string, number> = { free: 0, essencial: 1, profissional: 2 };
 
 // True when the user's plan is at least the required tier.
 export function planAllows(userPlan: string | null | undefined, requiredPlan: string | null | undefined): boolean {
@@ -67,6 +77,9 @@ export function planViolations(doc: PageDoc, plan: string | null | undefined): s
       (doc.profile.coverType === "video" && doc.profile.coverVideos.some(Boolean)) ||
       doc.blocks.some((b) => b.type === "videos");
     if (usesVideo) out.push("vídeo de capa ou grade de vídeos (disponível no plano Essencial)");
+  }
+  if (!canUseForms(plan) && doc.blocks.some((b) => b.type === "form" && b.enabled)) {
+    out.push("bloco de formulário (disponível no plano Profissional)");
   }
   return out;
 }

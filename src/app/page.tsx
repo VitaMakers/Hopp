@@ -201,12 +201,13 @@ export default function Home() {
       <section id="planos" className="mx-auto max-w-6xl px-5 py-14">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Planos simples</h2>
-          <p className="mt-3 text-base text-stone-500">Comece grátis, sem cartão. Quando quiser, libere tudo.</p>
+          <p className="mt-3 text-base text-stone-500">Comece grátis, sem cartão. Evolua quando quiser.</p>
         </div>
-        <div className="mx-auto mt-10 grid max-w-3xl gap-4 md:grid-cols-2">
+        <div className="mx-auto mt-10 grid max-w-4xl gap-4 md:grid-cols-3">
           {[
             { name: "Grátis", price: "R$ 0", tag: "Para começar", feats: ["Página no ar", "Modelos essenciais", "Contagem de visitas"], highlight: false },
-            { name: "Essencial", price: formatBRL(PLAN_PRICE_BRL.essencial), tag: "Tudo liberado", feats: ["Modelos premium exclusivos", "Vídeo de capa e métricas completas", "Links curtos ilimitados", "Selo verificado, sem a marca Virtú.bio"], highlight: true },
+            { name: "Essencial", price: formatBRL(PLAN_PRICE_BRL.essencial), tag: "Para crescer", feats: ["Modelos premium exclusivos", "Vídeo de capa e métricas completas", "Links curtos ilimitados"], highlight: true },
+            { name: "Profissional", price: formatBRL(PLAN_PRICE_BRL.profissional), tag: "Completo", feats: ["Tudo do Essencial", "Formulários com respostas no painel", "Selo verificado, sem a marca Virtú.bio"], highlight: false },
           ].map((p) => (
             <div key={p.name} className={`relative flex flex-col rounded-2xl p-6 ${p.highlight ? "bg-stone-900 text-white ring-2 ring-stone-900" : "bg-white ring-1 ring-stone-200"}`}>
               {p.highlight ? <span className="absolute -top-2.5 left-6 rounded-full bg-blue-600 px-2.5 py-0.5 text-[11px] font-semibold text-white">Preço de lançamento</span> : null}

@@ -9,9 +9,11 @@ import { addClient, type AddClientState } from "../actions";
 export function NewClientForm({
   host,
   essencialPrice,
+  profissionalPrice,
 }: {
   host: string;
   essencialPrice: string;
+  profissionalPrice: string;
 }) {
   const [state, action, pending] = useActionState<AddClientState, FormData>(addClient, {});
   const [handle, setHandle] = useState("");
@@ -102,10 +104,11 @@ export function NewClientForm({
 
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 text-sm font-medium text-stone-700">Plano deste cliente</legend>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           {[
             { id: "free", name: "Grátis", price: "Sem cartão" },
             { id: "essencial", name: "Essencial", price: `${essencialPrice}/mês` },
+            { id: "profissional", name: "Profissional", price: `${profissionalPrice}/mês` },
           ].map((opt) => (
             <label
               key={opt.id}
@@ -140,7 +143,7 @@ export function NewClientForm({
       </label>
       {localError || state.error ? <p className="text-sm text-red-600">{localError ?? state.error}</p> : null}
       <button type="submit" disabled={pending || !!localError} className="btn-primary">
-        {pending ? "Criando..." : plan === "essencial" ? "Criar e ir para o pagamento" : "Criar cliente"}
+        {pending ? "Criando..." : plan !== "free" ? "Criar e ir para o pagamento" : "Criar cliente"}
       </button>
     </form>
   );
