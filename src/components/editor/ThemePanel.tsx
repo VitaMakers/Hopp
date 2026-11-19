@@ -1,12 +1,19 @@
 "use client";
 
+import Link from "next/link";
 import { THEME_PRESETS } from "@/lib/page/catalog";
 import type { PageDoc, Theme } from "@/lib/page/schema";
 import { Card, TextField, Toggle } from "./fields";
-import { PremiumSectionsEditor } from "./PremiumSections";
 import { applyPatch, type DocChange, type Patch } from "./types";
 
-type PanelProps = { doc: PageDoc; onChange: DocChange; focus?: { id: string; n: number } | null; onActive?: (id: string | null) => void };
+type PanelProps = {
+  doc: PageDoc;
+  onChange: DocChange;
+  focus?: { id: string; n: number } | null;
+  onActive?: (id: string | null) => void;
+  // Premium models: jump to the colors part in Conteúdo.
+  onGoColors?: () => void;
+};
 
 const LAYOUT_LABELS: Record<Theme["layout"], string> = {
   classic: "Clássico",
@@ -92,20 +99,28 @@ const PREMIUM_NAMES: Record<Exclude<Theme["premium"], "">, string> = {
   casa: "Restaurante Elegante",
 };
 
-export function ThemePanel({ doc, onChange, focus, onActive }: PanelProps) {
+export function ThemePanel({ doc, onChange, onGoColors }: PanelProps) {
   const setTheme = (patch: Patch<Theme>) => onChange((d) => ({ ...d, theme: applyPatch(d.theme, patch) }));
   if (doc.theme.premium) {
     const design = doc.theme.premium as Exclude<Theme["premium"], "">;
+    // Premium models draw their own look; their parts (colors included) are
+    // edited in Conteúdo, next to the page's content.
     return (
-      <div className="flex flex-col gap-4">
-        <Card title={`Modelo premium: ${PREMIUM_NAMES[design]}`}>
-          <p className="-mt-2 text-sm text-stone-600">
-            Edite aqui cada parte do modelo. Os produtos e links ficam na aba <strong>Blocos</strong>; o nome, a bio e a foto, na
-            aba <strong>Perfil</strong>.
-          </p>
-        </Card>
-        <PremiumSectionsEditor doc={doc} onChange={onChange} focus={focus} onActive={onActive} />
-      </div>
+      <Card title={`Modelo premium: ${PREMIUM_NAMES[design]}`}>
+        <p className="-mt-2 text-sm leading-relaxed text-stone-600">
+          Este modelo tem visual próprio. As cores e cada parte do modelo ficam em Conteúdo, junto do que aparece na página.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {onGoColors ? (
+            <button type="button" onClick={onGoColors} className="btn-primary">
+              Editar as cores
+            </button>
+          ) : null}
+          <Link href="/dashboard/modelos" className="rounded-lg border border-[#E5E2DA] px-4 py-2.5 text-sm font-semibold text-stone-900 hover:border-stone-400">
+            Trocar modelo
+          </Link>
+        </div>
+      </Card>
     );
   }
   return (

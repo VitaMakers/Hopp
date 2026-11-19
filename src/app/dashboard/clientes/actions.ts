@@ -36,7 +36,8 @@ export async function addClient(_: AddClientState, form: FormData): Promise<AddC
   // Every client can start on Grátis (no card). Choosing the paid plan sends
   // the agency to Stripe Checkout right after; if they give up, the client just
   // stays on Grátis with the free features.
-  const wantsPaid = String(form.get("plan") ?? "free") === "essencial";
+  const asked = String(form.get("plan") ?? "free");
+  const paidPlan = asked === "essencial" || asked === "profissional" ? asked : null;
 
   // A new client is a new profile owned by this account (no login of its own).
   // The billing trigger forces plan 'free' on insert; paid activation happens
@@ -61,8 +62,8 @@ export async function addClient(_: AddClientState, form: FormData): Promise<AddC
   }
 
   (await cookies()).set(CLIENT_COOKIE, profile.id, COOKIE_OPTS);
-  if (wantsPaid) redirect(`/dashboard/clientes/${profile.id}/assinar?plan=essencial`);
-  redirect("/dashboard");
+  if (paidPlan) redirect(`/dashboard/clientes/${profile.id}/assinar?plan=${paidPlan}`);
+  redirect("/dashboard/editor");
 }
 
 export type DeleteClientState = { error?: string };

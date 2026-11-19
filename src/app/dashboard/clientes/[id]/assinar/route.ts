@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import { stripePriceId } from "@/lib/env";
 import { siteOrigin } from "@/lib/request";
-import { createCustomer, createClientSubscriptionCheckout, subscriptionIsLive } from "@/lib/payments/billing";
+import { changeSubscriptionPlan, createCustomer, createClientSubscriptionCheckout, subscriptionIsLive } from "@/lib/payments/billing";
+import { normalizePlan } from "@/lib/plans";
 import { createAdminClient } from "@/lib/supabase/server";
 import { getOwner } from "../../../context";
 
-// Sends the agency to Stripe Checkout to subscribe one client to the paid plan.
-// Only "essencial" is sold (Profissional is no longer offered; existing
-// Profissional subscriptions keep working). A client that already has a live
-// subscription is never sent to a second checkout, so nobody is billed twice.
+// Subscribes one client to a paid plan (?plan=essencial|profissional).
+// A client that already has a live subscription is never sent to a second
+// checkout: switching plans changes the existing subscription's price, so
+// nobody is billed twice.
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { user, clients } = await getOwner();
   const { id } = await params;
@@ -17,13 +18,22 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   // Only a client this account manages, and only a real paid tier.
   const client = clients.find((c) => c.id === id);
   if (!client) return NextResponse.redirect(`${base}/dashboard/clientes`);
-  const plan = "essencial" as const;
+  const asked = normalizePlan(new URL(req.url).searchParams.get("plan"));
+  const plan: "essencial" | "profissional" = asked === "profissional" ? "profissional" : "essencial";
 
   try {
     const admin = createAdminClient();
-    const { data: current } = await admin.from("profiles").select("stripe_subscription_id").eq("id", client.id).maybeSingle();
+    const { data: current } = await admin.from("profiles").select("plan, stripe_subscription_id").eq("id", client.id).maybeSingle();
     if (current?.stripe_subscription_id && (await subscriptionIsLive(current.stripe_subscription_id))) {
-      return NextResponse.redirect(`${base}/dashboard/clientes?ja-assinado=1`);
+      if (normalizePlan(current.plan) === plan) return NextResponse.redirect(`${base}/dashboard/clientes?ja-assinado=1`);
+      // Changing a paid subscription needs an explicit confirmation step, so a
+      // link prefetch or an accidental click can never switch the plan.
+      if (new URL(req.url).searchParams.get("confirmar") !== "1") {
+        return NextResponse.redirect(`${base}/dashboard/plans?trocar=${plan}`);
+      }
+      await changeSubscriptionPlan(current.stripe_subscription_id, stripePriceId(plan), plan);
+      await admin.from("profiles").update({ plan }).eq("id", client.id);
+      return NextResponse.redirect(`${base}/dashboard/plans?plano=${plan}`);
     }
 
     // One Stripe customer per account (created on first paid client).

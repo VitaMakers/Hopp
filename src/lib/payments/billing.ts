@@ -72,6 +72,22 @@ export async function cancelSubscriptionAtPeriodEnd(subscriptionId: string): Pro
   }
 }
 
+// Moves an existing subscription to another plan's price (upgrade or
+// downgrade) instead of opening a second one. Stripe prorates the difference
+// on the next invoice; the "subscription updated" webhook then sets the plan.
+export async function changeSubscriptionPlan(subscriptionId: string, priceId: string, plan: string): Promise<void> {
+  const stripe = client();
+  const sub = await stripe.subscriptions.retrieve(subscriptionId);
+  const item = sub.items.data[0];
+  if (!item) throw new Error("Assinatura sem item para trocar.");
+  await stripe.subscriptions.update(subscriptionId, {
+    items: [{ id: item.id, price: priceId }],
+    proration_behavior: "create_prorations",
+    cancel_at_period_end: false,
+    metadata: { ...sub.metadata, plan },
+  });
+}
+
 // Whether a subscription is still billing (active, trialing or retrying a
 // failed payment). Used to refuse a second checkout for the same client.
 export async function subscriptionIsLive(subscriptionId: string): Promise<boolean> {

@@ -115,9 +115,9 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
               <Toggle label="Mostrar selo de verificado" checked={profile.verified} onChange={(verified) => setProfile({ verified })} />
             ) : (
               <p className="flex items-center gap-1.5 rounded-lg bg-stone-50 px-3 py-2 text-xs text-stone-500 ring-1 ring-stone-200">
-                🔒 Selo de verificado — disponível no{" "}
+                Selo verificado: disponível no{" "}
                 <Link href="/dashboard/plans" className="font-semibold text-stone-700 underline">
-                  plano Essencial
+                  plano Profissional
                 </Link>
                 .
               </p>

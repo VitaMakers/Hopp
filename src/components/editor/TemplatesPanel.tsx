@@ -24,7 +24,7 @@ export function TemplatesPanel({ doc, onChange, plan, onGoToBlocks }: PanelProps
 
   // A model's required plan comes from its collection: the premium tab needs
   // the paid plan (Essencial), and the essencial tab is free for everyone.
-  const PLAN_LABEL: Record<string, string> = { free: "Grátis", essencial: "Essencial", profissional: "Essencial" };
+  const PLAN_LABEL: Record<string, string> = { free: "Grátis", essencial: "Essencial", profissional: "Profissional" };
   const collectionRequires = (c: TemplateCollection) => c.requiresPlan ?? (c.tab === "premium" ? "essencial" : "free");
   const openRequires = open ? collectionRequires(open) : "free";
   const openAllowed = planAllows(plan, openRequires);

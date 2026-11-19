@@ -661,7 +661,11 @@ export function PremiumSectionsEditor({
         <p className="text-xs font-semibold text-stone-500">Partes do modelo</p>
         <button
           type="button"
-          onClick={() => onChange({ ...doc, theme: { ...doc.theme, premium: "" } })}
+          onClick={() => {
+            if (window.confirm("Sair do modelo premium? A página volta ao layout simples, com seus blocos e seu perfil. Nada vai ao ar até você publicar.")) {
+              onChange((d) => ({ ...d, theme: { ...d.theme, premium: "" } }));
+            }
+          }}
           className="text-xs text-stone-500 underline"
         >
           Sair do modelo

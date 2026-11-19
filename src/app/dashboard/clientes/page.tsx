@@ -145,8 +145,8 @@ export default async function ClientsPage({
               </div>
 
               {selected ? (
-                <Link href="/dashboard" className="btn-primary text-center text-sm">
-                  Cliente ativo — editar
+                <Link href="/dashboard/editor" className="btn-primary text-center text-sm">
+                  Editar página
                 </Link>
               ) : (
                 <form action={selectClient.bind(null, client.id)}>
@@ -158,10 +158,15 @@ export default async function ClientsPage({
 
               {needsPlan ? (
                 <div className="rounded-xl bg-amber-50 p-3 text-xs ring-1 ring-amber-200">
-                  <p className="font-medium text-amber-900">No plano Grátis. Libere modelos premium, vídeo, métricas completas e tire a marca Virtú.bio:</p>
-                  <a href={`/dashboard/clientes/${client.id}/assinar?plan=essencial`} className="mt-2 block rounded-lg bg-white py-1.5 text-center font-medium ring-1 ring-amber-300 hover:ring-amber-500">
-                    Assinar Essencial por {formatBRL(PLAN_PRICE_BRL.essencial)}/mês
-                  </a>
+                  <p className="font-medium text-amber-900">No plano Grátis. Assine para liberar modelos premium, vídeo e métricas completas:</p>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <a href={`/dashboard/clientes/${client.id}/assinar?plan=essencial`} className="rounded-lg bg-white py-1.5 text-center font-medium ring-1 ring-amber-300 hover:ring-amber-500">
+                      Essencial<br />{formatBRL(PLAN_PRICE_BRL.essencial)}/mês
+                    </a>
+                    <a href={`/dashboard/clientes/${client.id}/assinar?plan=profissional`} className="rounded-lg bg-white py-1.5 text-center font-medium ring-1 ring-amber-300 hover:ring-amber-500">
+                      Profissional<br />{formatBRL(PLAN_PRICE_BRL.profissional)}/mês
+                    </a>
+                  </div>
                 </div>
               ) : null}
 

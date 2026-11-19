@@ -1,4 +1,5 @@
 import { toCsv } from "@/lib/csv";
+import { canUseForms } from "@/lib/entitlements";
 import { FORM_DISPLAY_TYPES, formBlockSchema } from "@/lib/page/schema";
 import { getOwner } from "../../../../context";
 
@@ -6,7 +7,8 @@ type Answer = { label: string; value: string };
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { supabase } = await getOwner();
+  const { supabase, profile } = await getOwner();
+  if (!canUseForms(profile.plan)) return new Response("Formulários são do plano Profissional.", { status: 403 });
 
   const { data: form } = await supabase.from("forms").select("config").eq("id", id).maybeSingle();
   if (!form) return new Response("Não encontrado", { status: 404 });
