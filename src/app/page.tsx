@@ -49,6 +49,14 @@ const CORRIDOR: { id: string; name: string; label: string; make?: () => PageDoc 
   { id: "vitrine", name: "Studio Vitrine", label: "Vitrine" },
 ];
 
+const PHONE: [string, string][] = [
+  ["bf-loja", "Loja Black Friday"],
+  ["ecossistema", "Sua Marca"],
+  ["bf-lookbook", "Lookbook Black Friday"],
+  ["bf-mosaico", "Mosaico Black Friday"],
+  ["bf-drop", "Drop Único Black Friday"],
+];
+
 const FEATURES: [string, string][] = [
   ["Tudo em um link só", "Links, vídeos, música, agenda e botão de WhatsApp numa página só."],
   ["Modelos desenhados", "Do básico ao premium, prontos para a sua marca. Você só troca as informações."],
@@ -65,7 +73,8 @@ const PLANS = [
 ];
 
 export default function Home() {
-  const hero = model("bf-loja", "Loja Vibe");
+  // The models that take turns on the phone in the hero, each scrolling slowly.
+  const phone = PHONE.map(([id, name]) => model(id, name)).filter((doc): doc is PageDoc => doc !== null);
   const cards = CORRIDOR.map((c) => ({ ...c, doc: c.make ? c.make() : model(c.id, c.name) }))
     .filter((c) => c.doc)
     .map((c) => ({
@@ -133,13 +142,13 @@ export default function Home() {
         </div>
 
         <HeroStage>
-          {hero ? (
-            <div className="hero-scroll">
+          {phone.map((doc, i) => (
+            <div key={i} className="hero-cycle" style={{ "--i": i, "--n": phone.length } as React.CSSProperties}>
               <div style={{ width: 390 }} className="pointer-events-none">
-                <PageView doc={hero} still />
+                <PageView doc={doc} still />
               </div>
             </div>
-          ) : null}
+          ))}
         </HeroStage>
 
         {/* What goes inside a page, scrolling sideways without stopping */}
