@@ -23,7 +23,7 @@ Virtú.bio (vmbio.pro) lets a business publish a link-in-bio page that looks lik
 Owners share the page in their Instagram bio, WhatsApp and printed material. Agencies switch between clients during the day. The editor shows a live phone preview of the page while editing.
 
 ## Capabilities and Constraints
-- Plans: Grátis (basic, no card), Essencial R$ 9,90 (premium models, video, full statistics, unlimited short links), Profissional R$ 29,90 (everything in Essencial plus custom forms, verified badge, page without the Virtú.bio mark).
+- Plans: Grátis (basic, no card), Essencial R$ 9,90 (premium models, video, full statistics, unlimited short links), Profissional R$ 19,90 (everything in Essencial plus custom forms, verified badge, page without the Virtú.bio mark).
 - The "Modelos" area is a sales showcase: it must make free users want the paid plan.
 - "Formulários" lets the Profissional client build their own forms and see responses instead of using another tool.
 - Clients' published pages and the dashboard sidebar have their own looks; dashboard redesigns must not change clients' published pages.
