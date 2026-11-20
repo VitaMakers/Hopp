@@ -120,11 +120,6 @@ function PageViewInner({ doc, handle, plan, footer, still, onEdit }: Props) {
             </div>
           </div>
         ) : null}
-        {handle ? (
-          <div style={themeVars(theme)} className="bg-[var(--page-bg)] px-5 pb-6 pt-1 text-[var(--page-text)]">
-            <PrivacyNote />
-          </div>
-        ) : null}
       </>
     );
   }
@@ -141,7 +136,6 @@ function PageViewInner({ doc, handle, plan, footer, still, onEdit }: Props) {
         ))}
       </div>
       {footer}
-      {handle ? <PrivacyNote /> : null}
       <FloatingWhatsapp doc={doc} handle={handle} />
     </>
   );
@@ -158,19 +152,6 @@ function PageViewInner({ doc, handle, plan, footer, still, onEdit }: Props) {
         <main className="mx-auto flex w-full max-w-[420px] flex-col items-center px-5 pb-10">{content}</main>
       )}
     </div>
-  );
-}
-
-// The privacy notice on every published page: visits are counted with an
-// anonymous code kept in the visitor's browser, and the visitor is told so.
-function PrivacyNote() {
-  return (
-    <p className="mx-auto mt-6 max-w-[420px] text-center text-[11px] leading-relaxed opacity-60">
-      Esta página registra visitas de forma anônima, para estatísticas.{" "}
-      <a href="/privacidade" target="_blank" rel="noreferrer" className="underline underline-offset-2">
-        Privacidade
-      </a>
-    </p>
   );
 }
 
