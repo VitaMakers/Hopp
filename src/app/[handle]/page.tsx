@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BrandBar } from "@/components/page-view/BrandBar";
 import { Integrations } from "@/components/page-view/Integrations";
 import { PageView } from "@/components/page-view/PageView";
-import { APP_NAME, APP_TAGLINE } from "@/lib/env";
-import { showsBadge } from "@/lib/entitlements";
+import { APP_NAME, APP_TAGLINE, env } from "@/lib/env";
+import { showsBadge, showsBrandBar } from "@/lib/entitlements";
 import { getPublishedPage } from "@/lib/public-data";
 
 type Params = { params: Promise<{ handle: string }> };
@@ -54,6 +55,9 @@ export default async function PublicPage({ params }: Params) {
         ) : null
       }
     />
+    {showsBrandBar(page.doc, page.plan) ? (
+      <BrandBar top={!page.doc.theme.premium} appName={APP_NAME} siteUrl={env.siteUrl()} title={page.doc.seo.title || page.doc.profile.name || `@${page.handle}`} />
+    ) : null}
     </>
   );
 }

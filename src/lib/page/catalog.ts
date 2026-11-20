@@ -361,6 +361,7 @@ export function defaultPageDoc(name: string): PageDoc {
     premium: PREMIUM_DEFAULTS,
     seo: { title: "", description: "" },
     integrations: { metaPixel: "", tiktokPixel: "", googleAnalytics: "", clarity: "" },
+    hideBrand: false,
   };
 }
 

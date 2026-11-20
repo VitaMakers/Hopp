@@ -64,6 +64,7 @@ export function applyTemplateKeepingProfile(current: PageDoc, next: PageDoc): Pa
     socials: ownSocials.length ? ownSocials : next.socials.map((s) => ({ ...s, url: isSampleSocial(s.url) ? "" : s.url })),
     seo: current.seo,
     integrations: current.integrations,
+    hideBrand: current.hideBrand,
   };
   return normalizeLegacyCover(merged);
 }

@@ -489,6 +489,9 @@ export const pageDocSchema = z.object({
       clarity: integrationId,
     })
     .default({ metaPixel: "", tiktokPixel: "", googleAnalytics: "", clarity: "" }),
+  // The Virtú.bio buttons around the page (logo, share, "create yours"). On by
+  // default; only a plan that may remove the brand can turn them off.
+  hideBrand: z.boolean().default(false),
 });
 
 export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number];

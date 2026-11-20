@@ -29,6 +29,16 @@ export function showsBadge(plan: string | null | undefined): boolean {
   return !isProfissional(plan);
 }
 
+// The Virtú.bio buttons around the page (logo, share and "create yours"):
+// every page carries them, and only Profissional may switch them off.
+export function canHideBrand(plan: string | null | undefined): boolean {
+  return isProfissional(plan);
+}
+
+export function showsBrandBar(doc: Pick<PageDoc, "hideBrand">, plan: string | null | undefined): boolean {
+  return !(canHideBrand(plan) && doc.hideBrand);
+}
+
 // Premium designs (Autoridade, Presença, restaurants, etc.): any paid plan.
 export function canUsePremium(plan: string | null | undefined): boolean {
   return isPaid(plan);
