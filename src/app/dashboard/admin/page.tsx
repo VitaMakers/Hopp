@@ -1,12 +1,13 @@
 import { requireAdmin } from "@/lib/admin";
 import { PLAN_LABEL, PLAN_PRICE_BRL, type Plan } from "@/lib/plans";
 import { createAdminClient } from "@/lib/supabase/server";
+import { DeleteAccountButton } from "./DeleteAccountButton";
 import { PlanSelect } from "./PlanSelect";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  await requireAdmin();
+  const { user: me } = await requireAdmin();
   const admin = createAdminClient();
 
   const since30 = new Date(Date.now() - 30 * 86_400_000).toISOString();
@@ -38,7 +39,7 @@ export default async function AdminPage() {
     admin.from("contacts").select("*", { count: "exact", head: true }),
     admin.from("events").select("*", { count: "exact", head: true }).eq("kind", "page_view").gte("created_at", since30),
     admin.from("events").select("*", { count: "exact", head: true }).in("kind", ["block_click", "social_click"]).gte("created_at", since30),
-    admin.from("profiles").select("id, handle, display_name, plan, created_at").order("created_at", { ascending: false }).limit(1000),
+    admin.from("profiles").select("id, account_id, handle, display_name, plan, created_at").order("created_at", { ascending: false }).limit(1000),
   ]);
 
   const total = totalClients.count ?? 0;
@@ -57,7 +58,9 @@ export default async function AdminPage() {
     { key: "profissional", count: proN },
   ];
 
-  const profiles = (recent.data ?? []) as { id: string; handle: string; display_name: string; plan: string; created_at: string }[];
+  const profiles = (recent.data ?? []) as { id: string; account_id: string; handle: string; display_name: string; plan: string; created_at: string }[];
+  const pagesPerAccount = new Map<string, number>();
+  for (const p of profiles) pagesPerAccount.set(p.account_id, (pagesPerAccount.get(p.account_id) ?? 0) + 1);
   const days = 30;
   const daily = new Map<string, number>();
   for (let i = days - 1; i >= 0; i--) daily.set(new Date(Date.now() - i * 86_400_000).toISOString().slice(0, 10), 0);
@@ -127,7 +130,7 @@ export default async function AdminPage() {
       <div className="grid gap-4 lg:grid-cols-5">
         <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200 lg:col-span-3">
           <h2 className="font-semibold">Clientes recentes</h2>
-          <p className="mb-3 text-xs text-stone-500">Mude o plano de qualquer cliente no seletor abaixo (vale na hora, sem cobrança).</p>
+          <p className="mb-3 text-xs text-stone-500">Mude o plano de qualquer cliente no seletor abaixo (vale na hora, sem cobrança) ou exclua a conta.</p>
           {profiles.length === 0 ? (
             <p className="py-6 text-center text-sm text-stone-500">Nenhum cliente ainda.</p>
           ) : (
@@ -136,20 +139,33 @@ export default async function AdminPage() {
                 <tr className="border-b border-stone-200 text-left text-xs text-stone-400">
                   <th className="pb-2 font-medium">Cliente</th>
                   <th className="pb-2 font-medium">Plano</th>
-                  <th className="pb-2 text-right font-medium">Desde</th>
+                  <th className="hidden pb-2 text-right font-medium sm:table-cell">Desde</th>
+                  <th className="pb-2" aria-label="Ações" />
                 </tr>
               </thead>
               <tbody>
                 {profiles.slice(0, 25).map((p) => (
                   <tr key={p.id} className="border-b border-stone-100 last:border-0">
-                    <td className="py-2.5">
+                    <td className="py-2.5 pr-2">
                       <span className="font-medium">{p.display_name || p.handle}</span>
-                      <span className="ml-2 text-xs text-stone-400">/{p.handle}</span>
+                      <span className="block text-xs text-stone-400 sm:ml-2 sm:inline">/{p.handle}</span>
                     </td>
                     <td className="py-2.5">
                       <PlanSelect profileId={p.id} plan={p.plan} />
                     </td>
-                    <td className="py-2.5 text-right tabular-nums text-stone-500">{p.created_at.slice(8, 10)}/{p.created_at.slice(5, 7)}/{p.created_at.slice(0, 4)}</td>
+                    <td className="hidden py-2.5 text-right tabular-nums text-stone-500 sm:table-cell">{p.created_at.slice(8, 10)}/{p.created_at.slice(5, 7)}/{p.created_at.slice(0, 4)}</td>
+                    <td className="py-2.5 pl-3 text-right">
+                      {p.account_id === me.id ? (
+                        <span className="text-xs text-stone-400">Você</span>
+                      ) : (
+                        <DeleteAccountButton
+                          accountId={p.account_id}
+                          handle={p.handle}
+                          name={p.display_name || p.handle}
+                          pages={pagesPerAccount.get(p.account_id) ?? 1}
+                        />
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
