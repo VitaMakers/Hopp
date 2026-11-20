@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { APP_NAME } from "@/lib/env";
-import { siteOrigin } from "@/lib/request";
+import { APP_NAME, env } from "@/lib/env";
 // Self-hosted display fonts used by the page themes ("Elegante", "Impacto", "Técnica").
 import "@fontsource/playfair-display/latin-400.css";
 import "@fontsource/playfair-display/latin-700.css";
@@ -14,9 +13,12 @@ import "@fontsource-variable/bricolage-grotesque";
 import "./globals.css";
 import "./premium.css";
 
-export async function generateMetadata(): Promise<Metadata> {
+// The site address comes from configuration, not from the request: reading the
+// request here would force every page (the public profiles included) to be
+// rebuilt on each visit instead of served from cache.
+export function generateMetadata(): Metadata {
   return {
-    metadataBase: new URL(await siteOrigin()),
+    metadataBase: new URL(env.siteUrl()),
     title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
     description: "Sua página de link na bio: links, vídeos, captação de contatos e estatísticas.",
   };

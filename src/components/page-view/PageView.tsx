@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import type { Block, PageDoc } from "@/lib/page/schema";
-import { SOCIAL_LABELS } from "@/lib/page/catalog";
+import { SOCIAL_LABELS } from "@/lib/page/constants";
 import { spotifyEmbedUrl, youtubeEmbedUrl } from "@/lib/page/embed";
 import { imageSrc, linkHref, mapsDirectionsUrl, mapsEmbedUrl, socialHref, vCard, videoSrc, whatsappHref } from "@/lib/page/links";
 import { PremiumView } from "./PremiumView";

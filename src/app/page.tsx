@@ -4,7 +4,9 @@ import { formatBRL, PLAN_PRICE_BRL } from "@/lib/plans";
 import { TEMPLATES } from "@/lib/page/templates";
 import { PageView } from "@/components/page-view/PageView";
 import type { PageDoc } from "@/lib/page/schema";
+import { HeroModels } from "@/components/landing/HeroModels";
 import { HeroStage } from "@/components/landing/HeroStage";
+import { lightImages } from "@/lib/page/thumb";
 import { Tilt } from "@/components/landing/Tilt";
 import { Tunnel } from "@/components/landing/Tunnel";
 
@@ -74,7 +76,9 @@ const PLANS = [
 
 export default function Home() {
   // The models that take turns on the phone in the hero, each scrolling slowly.
-  const phone = PHONE.map(([id, name]) => model(id, name)).filter((doc): doc is PageDoc => doc !== null);
+  const phone = PHONE.map(([id, name]) => model(id, name))
+    .filter((doc): doc is PageDoc => doc !== null)
+    .map((doc) => lightImages(doc, 640));
   const cards = CORRIDOR.map((c) => ({ ...c, doc: c.make ? c.make() : model(c.id, c.name) }))
     .filter((c) => c.doc)
     .map((c) => ({
@@ -82,7 +86,7 @@ export default function Home() {
       label: c.label,
       node: (
         <div>
-          <PageView doc={c.doc as PageDoc} still />
+          <PageView doc={lightImages(c.doc as PageDoc)} still />
         </div>
       ),
     }));
@@ -142,13 +146,7 @@ export default function Home() {
         </div>
 
         <HeroStage>
-          {phone.map((doc, i) => (
-            <div key={i} className="hero-cycle" style={{ "--i": i, "--n": phone.length } as React.CSSProperties}>
-              <div style={{ width: 390 }} className="pointer-events-none">
-                <PageView doc={doc} still />
-              </div>
-            </div>
-          ))}
+          <HeroModels docs={phone} />
         </HeroStage>
 
         {/* What goes inside a page, scrolling sideways without stopping */}

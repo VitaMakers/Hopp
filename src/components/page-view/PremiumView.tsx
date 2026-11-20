@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { APP_NAME } from "@/lib/env";
 import { showsBadge } from "@/lib/entitlements";
 import type { Block, PageDoc } from "@/lib/page/schema";
-import { SOCIAL_LABELS } from "@/lib/page/catalog";
+import { SOCIAL_LABELS } from "@/lib/page/constants";
 import { youtubeEmbedUrl } from "@/lib/page/embed";
 import { imageSrc, linkHref, socialHref, videoSrc, whatsappHref } from "@/lib/page/links";
 import { SocialIcon } from "./SocialIcon";

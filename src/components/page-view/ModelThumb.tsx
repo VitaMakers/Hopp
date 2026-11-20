@@ -1,6 +1,8 @@
 "use client";
 
+import { useMemo } from "react";
 import type { PageDoc } from "@/lib/page/schema";
+import { lightImages } from "@/lib/page/thumb";
 import { PageView } from "./PageView";
 
 // A small, non-interactive preview of a model's page, shown in the gallery.
@@ -10,6 +12,8 @@ const PHONE = 390;
 
 export function ModelThumb({ doc, width = 176, height = 320 }: { doc: PageDoc; width?: number; height?: number }) {
   const hasVideo = !!doc.profile.coverVideo.trim() || (doc.profile.coverType === "video" && doc.profile.coverVideos.some(Boolean));
+  // Stock photos at thumbnail size, not at the size the full page uses.
+  const light = useMemo(() => lightImages(doc), [doc]);
   return (
     <div
       className="pointer-events-none relative overflow-hidden rounded-[18px] bg-black ring-1 ring-black/10"
@@ -17,7 +21,7 @@ export function ModelThumb({ doc, width = 176, height = 320 }: { doc: PageDoc; w
       aria-hidden="true"
     >
       <div style={{ width: PHONE, transformOrigin: "top left", transform: `scale(${width / PHONE})` }}>
-        <PageView doc={doc} still />
+        <PageView doc={light} still />
       </div>
       {hasVideo ? (
         <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur">

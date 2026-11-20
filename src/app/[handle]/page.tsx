@@ -12,6 +12,12 @@ type Params = { params: Promise<{ handle: string }> };
 // visit. Publishing already revalidates this path on demand, so edits still
 // show immediately; this revalidate is just a safety refresh.
 export const revalidate = 300;
+// Pages are not known at build time: each one is rendered on its first visit
+// and then served from cache until it is published again or the refresh above.
+export const dynamicParams = true;
+export function generateStaticParams() {
+  return [];
+}
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const page = await getPublishedPage((await params).handle);

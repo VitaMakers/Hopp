@@ -80,9 +80,19 @@ export function Tunnel({ cards, children }: { cards: Card[]; children: React.Rea
       if (Math.abs(mx - cx) > 0.002 || Math.abs(my - cy) > 0.002) frame = requestAnimationFrame(draw);
     };
 
+    // Work only while the section is on (or near) the screen.
+    let near = true;
     const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(draw);
+      if (near && !frame) frame = requestAnimationFrame(draw);
     };
+    const watcher = new IntersectionObserver(
+      ([entry]) => {
+        near = entry.isIntersecting;
+        if (near) schedule();
+      },
+      { rootMargin: "200px 0px" },
+    );
+    watcher.observe(el);
     const move = (e: PointerEvent) => {
       if (e.pointerType !== "mouse") return;
       mx = e.clientX / window.innerWidth - 0.5;
@@ -97,6 +107,7 @@ export function Tunnel({ cards, children }: { cards: Card[]; children: React.Rea
     window.addEventListener("pointermove", move, { passive: true });
     return () => {
       cancelAnimationFrame(frame);
+      watcher.disconnect();
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
       window.removeEventListener("pointermove", move);
