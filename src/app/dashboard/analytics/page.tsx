@@ -127,28 +127,92 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   // Device and campaign — error-tolerant (missing columns before migration 0012).
   const { data: uaData } = await supabase
     .from("events")
-    .select("device, browser, utm_source, utm_campaign")
+    .select("device, os, browser, utm_source, utm_campaign")
     .eq("owner_id", profile.id)
     .eq("kind", "page_view")
     .gte("created_at", windowStart.toISOString())
     .limit(5000);
   const uaRows = (uaData ?? []) as {
     device: string | null;
+    os?: string | null;
     browser: string | null;
     utm_source: string | null;
     utm_campaign: string | null;
   }[];
   const byDevice = new Map<string, number>();
+  const byOs = new Map<string, number>();
   const byBrowser = new Map<string, number>();
   const byUtmSource = new Map<string, number>();
   const byCampaign = new Map<string, number>();
   for (const r of uaRows) {
     if (r.device) byDevice.set(r.device, (byDevice.get(r.device) ?? 0) + 1);
+    if (r.os) byOs.set(r.os, (byOs.get(r.os) ?? 0) + 1);
     if (r.browser) byBrowser.set(r.browser, (byBrowser.get(r.browser) ?? 0) + 1);
     if (r.utm_source) byUtmSource.set(r.utm_source, (byUtmSource.get(r.utm_source) ?? 0) + 1);
     if (r.utm_campaign) byCampaign.set(r.utm_campaign, (byCampaign.get(r.utm_campaign) ?? 0) + 1);
   }
   const devices = [...byDevice].sort((a, b) => b[1] - a[1]);
+  const systems = [...byOs].sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const browsers = [...byBrowser].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([name, n]) => [BROWSER_LABELS[name] ?? name, n] as [string, number]);
+
+  // Phone models and returning visitors come from newer columns (migration
+  // 0017): each query stands alone, so the panel works before they exist.
+  const { data: modelData } = await supabase
+    .from("events")
+    .select("model")
+    .eq("owner_id", profile.id)
+    .eq("kind", "page_view")
+    .gte("created_at", windowStart.toISOString())
+    .not("model", "is", null)
+    .limit(5000);
+  const byModel = new Map<string, number>();
+  for (const r of (modelData ?? []) as unknown as { model: string | null }[]) {
+    if (r.model) byModel.set(modelName(r.model), (byModel.get(modelName(r.model)) ?? 0) + 1);
+  }
+  const models = [...byModel].sort((a, b) => b[1] - a[1]).slice(0, 6);
+
+  // Returning visitors: clicks in the last 30 days against the 30 before,
+  // whatever window is selected above.
+  const d30 = new Date(now.getTime() - 30 * 86_400_000).toISOString();
+  const d60 = new Date(now.getTime() - 60 * 86_400_000).toISOString();
+  const { data: visitorData, error: visitorError } = await supabase
+    .from("events")
+    .select("kind, block_id, target, visitor_id, created_at, city, device, os, model")
+    .eq("owner_id", profile.id)
+    .gte("created_at", d60)
+    .not("visitor_id", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(20000);
+  type VisitorRow = { kind: string; block_id: string | null; target: string | null; visitor_id: string; created_at: string; city: string | null; device: string | null; os: string | null; model: string | null };
+  type Visitor = { id: string; visits: number; visitsBefore: number; now: number; before: number; last: string; city: string; device: string; clicks: Map<string, number> };
+  const visitorMap = new Map<string, Visitor>();
+  for (const e of (visitorData ?? []) as unknown as VisitorRow[]) {
+    let v = visitorMap.get(e.visitor_id);
+    if (!v) {
+      v = { id: e.visitor_id, visits: 0, visitsBefore: 0, now: 0, before: 0, last: e.created_at, city: "", device: "", clicks: new Map() };
+      visitorMap.set(e.visitor_id, v);
+    }
+    const recent = e.created_at >= d30;
+    if (e.kind === "page_view") {
+      if (recent) v.visits += 1;
+      else v.visitsBefore += 1;
+      // Rows arrive newest first: keep the latest city and device.
+      if (!v.city && e.city) v.city = e.city;
+      if (!v.device) v.device = e.model ? modelName(e.model) : [e.device, e.os].filter(Boolean).join(", ");
+    } else if (e.kind === "block_click" || e.kind === "social_click") {
+      if (recent) {
+        v.now += 1;
+        const key = e.kind === "block_click" ? `b:${e.block_id ?? ""}` : `s:${e.target ?? ""}`;
+        v.clicks.set(key, (v.clicks.get(key) ?? 0) + 1);
+      } else v.before += 1;
+    }
+  }
+  const seenRecently = [...visitorMap.values()].filter((v) => v.visits > 0);
+  const returning = seenRecently.filter((v) => v.visits + v.visitsBefore > 1).length;
+  const topVisitors = seenRecently
+    .filter((v) => v.visits + v.visitsBefore > 1 || v.now > 0)
+    .sort((a, b) => b.now - a.now || b.visits - a.visits)
+    .slice(0, 12);
   const campaignSources = [...byUtmSource].sort((a, b) => b[1] - a[1]).slice(0, 6);
   const campaigns = [...byCampaign].sort((a, b) => b[1] - a[1]).slice(0, 6);
 
@@ -398,6 +462,126 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
         </div>
       </section>
 
+      {/* Aparelhos dos visitantes */}
+      <section aria-labelledby="aparelhos" className={`${panel} p-6`}>
+        <h2 id="aparelhos" className="font-display text-xl font-bold tracking-[-0.02em]">
+          Aparelhos dos visitantes
+        </h2>
+        <div className="mt-5 grid gap-6 lg:grid-cols-3 lg:gap-0">
+          <div className="lg:pr-6">
+            <h3 className="text-[15px] font-medium text-stone-800">Sistema</h3>
+            {systems.length === 0 ? <p className={empty}>Sem dados ainda.</p> : <ShareBars rows={systems.map(([name, n]) => [SYSTEM_LABELS[name] ?? name, n])} />}
+          </div>
+          <div className="lg:border-l lg:border-[#EFEDE7] lg:px-6">
+            <h3 className="text-[15px] font-medium text-stone-800">Modelos de celular</h3>
+            {models.length === 0 ? (
+              <p className={empty}>Os modelos aparecem para as visitas recebidas a partir de agora.</p>
+            ) : (
+              <>
+                <ShareBars rows={models} />
+                <p className="mt-3 text-xs text-stone-600">O iPhone não informa o modelo exato; ele aparece em grupos, pelo tamanho da tela.</p>
+              </>
+            )}
+          </div>
+          <div className="lg:border-l lg:border-[#EFEDE7] lg:pl-6">
+            <h3 className="text-[15px] font-medium text-stone-800">Navegador</h3>
+            {browsers.length === 0 ? <p className={empty}>Sem dados ainda.</p> : <ShareBars rows={browsers} />}
+          </div>
+        </div>
+      </section>
+
+      {/* Visitantes que mais voltam */}
+      <section aria-labelledby="recorrentes" className={`${panel} p-6`}>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="max-w-2xl">
+            <h2 id="recorrentes" className="font-display text-xl font-bold tracking-[-0.02em]">
+              Visitantes que mais voltam
+            </h2>
+            <p className="mt-1.5 text-sm text-stone-600">Cada visitante é um número anônimo, por aparelho. Cliques nos últimos 30 dias, comparados com os 30 anteriores.</p>
+          </div>
+          {seenRecently.length ? (
+            <dl className="flex gap-7 text-sm">
+              <div>
+                <dt className="text-xs text-stone-600">Visitantes novos</dt>
+                <dd>
+                  <strong className="text-lg font-semibold tabular-nums">{(seenRecently.length - returning).toLocaleString("pt-BR")}</strong>{" "}
+                  <span className="text-stone-600">{Math.round(((seenRecently.length - returning) / seenRecently.length) * 100)}%</span>
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-stone-600">Voltaram</dt>
+                <dd>
+                  <strong className="text-lg font-semibold tabular-nums">{returning.toLocaleString("pt-BR")}</strong>{" "}
+                  <span className="text-stone-600">{Math.round((returning / seenRecently.length) * 100)}%</span>
+                </dd>
+              </div>
+            </dl>
+          ) : null}
+        </div>
+
+        {visitorError || topVisitors.length === 0 ? (
+          <p className={`${empty} mt-2`}>
+            {visitorError || seenRecently.length === 0
+              ? "A contagem por visitante começa com as visitas recebidas a partir de agora."
+              : "Ainda ninguém voltou à página nem clicou nos últimos 30 dias."}
+          </p>
+        ) : (
+          <div className="mt-5 overflow-x-auto">
+            <div className="min-w-[720px]">
+              <div className={`${VISITOR_GRID} border-b border-[#E5E2DA] pb-2.5 text-xs font-semibold text-stone-600`}>
+                <span>Visitante</span>
+                <span>Aparelho</span>
+                <span>Cidade</span>
+                <span className="text-right">Visitas</span>
+                <span className="text-right">Cliques este mês</span>
+                <span className="text-right">Mês passado</span>
+                <span className="text-right">Última visita</span>
+              </div>
+              {topVisitors.map((v) => (
+                <details key={v.id} className="group border-b border-[#EFEDE7] open:bg-[#F7F7FD]">
+                  <summary className={`${VISITOR_GRID} cursor-pointer list-none py-3.5 text-sm marker:hidden hover:bg-[#F7F7FD] [&::-webkit-details-marker]:hidden`}>
+                    <span className="flex items-center gap-2 font-semibold">
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 text-stone-600 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <path d="m9 6 6 6-6 6" />
+                      </svg>
+                      Visitante nº {visitorNumber(v.id)}
+                    </span>
+                    <span className="truncate text-stone-700">{v.device || "—"}</span>
+                    <span className="truncate text-stone-700">{v.city || "—"}</span>
+                    <span className="text-right tabular-nums">{v.visits}</span>
+                    <span className="text-right tabular-nums">
+                      <strong className="font-semibold">{v.now}</strong> <VisitorChange now={v.now} before={v.before} />
+                    </span>
+                    <span className="text-right tabular-nums text-stone-700">{v.before}</span>
+                    <span className="text-right text-stone-600">{relativeTime(v.last)}</span>
+                  </summary>
+                  <div className="px-6 pb-4">
+                    {v.clicks.size === 0 ? (
+                      <p className="text-[13px] text-stone-600">Este visitante não clicou em nada este mês.</p>
+                    ) : (
+                      <>
+                        <p className="text-xs font-semibold text-stone-600">Onde este visitante clicou este mês</p>
+                        <ul className="mt-2 flex flex-wrap gap-2">
+                          {[...v.clicks]
+                            .sort((a, b) => b[1] - a[1])
+                            .map(([key, n]) => (
+                              <li key={key} className="rounded-full border border-[#E5E2DA] bg-white px-3 py-1 text-[13px]">
+                                {key.startsWith("b:") ? (blockNames.get(key.slice(2)) ?? "Bloco removido") : (SOCIAL_LABELS[key.slice(2) as SocialPlatform] ?? key.slice(2))}{" "}
+                                <strong className="font-semibold tabular-nums">{n}</strong>
+                              </li>
+                            ))}
+                        </ul>
+                      </>
+                    )}
+                  </div>
+                </details>
+              ))}
+            </div>
+          </div>
+        )}
+        <p className="mt-4 text-xs text-stone-600">Clique em um visitante para ver em quais botões ele tocou. Se a mesma pessoa usar outro aparelho, ela aparece como outro visitante.</p>
+      </section>
+
       {/* Explorar engajamento */}
       <section aria-labelledby="engajamento" className={`${panel} p-6`}>
         <h2 id="engajamento" className="font-display text-xl font-bold tracking-[-0.02em]">
@@ -600,6 +784,63 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
         <Ranking title="Links curtos" rows={[...summary.byShortLink].map(([id, count]) => [linkNames.get(id) ?? "Link removido", count])} />
       </div>
     </div>
+  );
+}
+
+const VISITOR_GRID = "grid grid-cols-[1.5fr_1.5fr_1.1fr_0.6fr_1.2fr_0.8fr_0.9fr] items-center gap-4 px-2";
+
+const SYSTEM_LABELS: Record<string, string> = { iOS: "iOS (iPhone)", Android: "Android", Windows: "Windows", macOS: "macOS", Linux: "Linux", Outro: "Outros" };
+const BROWSER_LABELS: Record<string, string> = { Instagram: "Instagram (dentro do app)", Facebook: "Facebook (dentro do app)", TikTok: "TikTok (dentro do app)", Outro: "Outros" };
+
+// Android phones report a factory code; the common ones get their shop name.
+const MODEL_NAMES: Record<string, string> = {
+  "SM-S911B": "Galaxy S23", "SM-S916B": "Galaxy S23+", "SM-S918B": "Galaxy S23 Ultra", "SM-S921B": "Galaxy S24", "SM-S926B": "Galaxy S24+", "SM-S928B": "Galaxy S24 Ultra",
+  "SM-S901E": "Galaxy S22", "SM-G991B": "Galaxy S21", "SM-G780G": "Galaxy S20 FE", "SM-S711B": "Galaxy S23 FE",
+  "SM-A546E": "Galaxy A54", "SM-A556E": "Galaxy A55", "SM-A346M": "Galaxy A34", "SM-A356E": "Galaxy A35", "SM-A256E": "Galaxy A25", "SM-A245M": "Galaxy A24",
+  "SM-A155M": "Galaxy A15", "SM-A145M": "Galaxy A14", "SM-A055M": "Galaxy A05", "SM-A057M": "Galaxy A05s", "SM-A536E": "Galaxy A53", "SM-A135M": "Galaxy A13",
+  "SM-A325M": "Galaxy A32", "SM-A125M": "Galaxy A12", "SM-A035M": "Galaxy A03", "SM-M546B": "Galaxy M54", "SM-M346B": "Galaxy M34",
+};
+function modelName(raw: string): string {
+  const key = raw.trim();
+  const known = MODEL_NAMES[key.toUpperCase()] ?? MODEL_NAMES[key.toUpperCase().replace(/\/DS$/, "")];
+  if (known) return known;
+  // Motorola and Xiaomi already send a readable name ("moto g54 5G").
+  return key.replace(/^moto /i, "Moto ").replace(/\b5g\b/i, "5G");
+}
+
+// A short, stable number for an anonymous visitor.
+function visitorNumber(id: string): string {
+  return String(parseInt(id.replace(/-/g, "").slice(0, 8), 16) % 100000).padStart(4, "0");
+}
+
+function VisitorChange({ now, before }: { now: number; before: number }) {
+  if (before === 0) return now > 0 ? <span className="text-xs font-medium text-[#2F6B3A]">novo este mês</span> : null;
+  const pct = Math.round(((now - before) / before) * 100);
+  if (pct === 0) return <span className="text-xs text-stone-600">igual</span>;
+  return <span className={`text-xs font-medium ${pct > 0 ? "text-[#2F6B3A]" : "text-red-700"}`}>{pct > 0 ? "+" : ""}{pct}%</span>;
+}
+
+// Named bars with each one's share of the total.
+function ShareBars({ rows }: { rows: [string, number][] }) {
+  const max = Math.max(1, ...rows.map((r) => r[1]));
+  const total = Math.max(1, rows.reduce((a, r) => a + r[1], 0));
+  return (
+    <ul className="mt-4 flex flex-col gap-4">
+      {rows.map(([name, n]) => (
+        <li key={name}>
+          <span className="flex items-baseline justify-between gap-3 text-sm">
+            <span className="truncate">{name}</span>
+            <span className="flex shrink-0 items-baseline gap-2.5">
+              <span className="text-xs tabular-nums text-stone-600">{Math.round((n / total) * 100)}%</span>
+              <span className="font-semibold tabular-nums">{n.toLocaleString("pt-BR")}</span>
+            </span>
+          </span>
+          <span className="mt-1.5 block h-[5px] overflow-hidden rounded-full bg-[#E9E8EF]">
+            <span className="block h-full rounded-full bg-blue-500" style={{ width: `${Math.max(2, (n / max) * 100)}%` }} />
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
