@@ -5,7 +5,7 @@ import { Editor } from "@/components/editor/Editor";
 import { getOwner } from "../context";
 
 export default async function EditorPage() {
-  const { supabase, profile } = await getOwner();
+  const { supabase, profile, clients } = await getOwner();
   const { data: page } = await supabase
     .from("pages")
     .select("draft, published_at")
@@ -49,6 +49,7 @@ export default async function EditorPage() {
     <Editor
       key={profile.id}
       clientId={profile.id}
+      clients={clients}
       initialDoc={doc}
       handle={profile.handle}
       plan={profile.plan}

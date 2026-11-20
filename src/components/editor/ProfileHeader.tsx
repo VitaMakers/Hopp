@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { canUseVerified } from "@/lib/entitlements";
 import { SOCIAL_LABELS } from "@/lib/page/catalog";
 import { imageSrc } from "@/lib/page/links";
 import { SOCIAL_PLATFORMS, type PageDoc, type SocialPlatform } from "@/lib/page/schema";
-import { SocialIcon } from "@/components/page-view/SocialIcon";
 import { TextArea, TextField, Toggle } from "./fields";
 import { UploadButton, useImageUpload } from "./UploadButton";
 import { applyPatch, type DocChange, type Patch } from "./types";
@@ -21,7 +20,7 @@ function initials(name: string) {
 // summary and, on "Editar", opens every field in place (photo, bio, socials,
 // cover, logo) so the whole header is 100% editable without leaving the card.
 export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange: DocChange; plan: string }) {
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState<false | "perfil" | "capa">(false);
   const [showLinks, setShowLinks] = useState(false);
   const { profile, socials } = doc;
   const avatar = imageSrc(profile.avatarUrl);
@@ -33,68 +32,88 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
   const used = new Set(socials.map((s) => s.platform));
   const available = SOCIAL_PLATFORMS.filter((p) => !used.has(p));
 
-  return (
-    <div className="w-full rounded-2xl bg-white p-4 ring-1 ring-stone-200">
-      <div className="flex items-start gap-3">
-        <div className="flex shrink-0 flex-col items-center gap-1">
-          <button
-            type="button"
-            onClick={avatarUpload.open}
-            disabled={avatarUpload.busy}
-            aria-label="Enviar foto ou logo"
-            title="Clique para enviar a foto/logo"
-            className="group relative h-16 w-16 overflow-hidden rounded-full ring-1 ring-stone-200"
-          >
-            {avatar ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={avatar} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <span className="flex h-full w-full items-center justify-center bg-stone-900 text-lg font-semibold text-white">
-                {initials(profile.name)}
-              </span>
-            )}
-            <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-[10px] font-semibold text-white opacity-0 transition group-hover:opacity-100">
-              {avatarUpload.busy ? "..." : "📷 Trocar"}
-            </span>
+  // Opening from the "Capa" card lands on the cover fields.
+  useEffect(() => {
+    if (editing !== "capa") return;
+    const timer = window.setTimeout(() => document.getElementById("perfil-capa")?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+    return () => window.clearTimeout(timer);
+  }, [editing]);
+
+  const cover = imageSrc(profile.coverUrl) || imageSrc(profile.coverImages?.find((item) => item.url)?.url ?? "");
+  const coverLabel = isPremium
+    ? "Foto do topo do modelo"
+    : profile.coverType === "video"
+      ? "Vídeo"
+      : profile.coverType === "carousel"
+        ? "Fotos que trocam sozinhas"
+        : cover
+          ? `Foto, formato ${profile.coverFormat === "horizontal" ? "horizontal" : profile.coverFormat === "full" ? "tela cheia" : "vertical"}`
+          : "Sem capa";
+  const editButton = "h-9 shrink-0 rounded-[9px] border border-[#E5E2DA] bg-white px-3.5 text-[13px] font-semibold text-stone-900 transition-colors hover:border-stone-400";
+  const face = avatar ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={avatar} alt="" className="h-full w-full object-cover" />
+  ) : (
+    <span className="flex h-full w-full items-center justify-center bg-stone-900 text-[13px] font-semibold text-white">{initials(profile.name)}</span>
+  );
+
+  if (!editing) {
+    return (
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-3 rounded-[14px] border border-[#E5E2DA] bg-white p-3.5">
+          <span className="h-11 w-11 shrink-0 overflow-hidden rounded-full">{face}</span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[15px] font-semibold lg:hidden">Topo da página</span>
+            <span className="hidden truncate text-[15px] font-semibold lg:block">{profile.name || "Seu nome"}</span>
+            <span className="block truncate text-[13px] text-stone-600 lg:hidden">Foto, nome, bio, capa e redes</span>
+            <span className="hidden truncate text-[13px] text-stone-600 lg:block">Foto, nome, bio e redes</span>
+          </span>
+          <button type="button" onClick={() => setEditing("perfil")} className={editButton}>
+            Editar
           </button>
-          <label className="flex items-center gap-1 text-[11px] text-stone-500" title="Mostrar a foto/logo na página">
-            <input type="checkbox" checked={!profile.hideAvatar} onChange={(e) => setProfile({ hideAvatar: !e.target.checked })} />
-            Mostrar
-          </label>
-          <input ref={avatarUpload.inputRef} type="file" accept="image/*" className="sr-only" onChange={avatarUpload.handle} />
-          {avatarUpload.error ? <p className="max-w-[88px] text-center text-[10px] leading-tight text-red-600">{avatarUpload.error}</p> : null}
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-bold text-stone-900">{profile.name || "Seu nome"}</p>
-          <p className="mt-0.5 line-clamp-2 text-sm text-stone-500">
-            {profile.bio || "Escreva uma bio curta sobre você ou seu negócio."}
-          </p>
+        <div className="hidden items-center gap-3 rounded-[14px] border border-[#E5E2DA] bg-white p-3.5 lg:flex">
+          <span className="h-11 w-11 shrink-0 overflow-hidden rounded-[9px] bg-[#F3F2EE]">
+            {cover ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={cover} alt="" className="h-full w-full object-cover" />
+            ) : null}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[15px] font-semibold">Capa</span>
+            <span className="block truncate text-[13px] text-stone-600">{coverLabel}</span>
+          </span>
+          <button type="button" onClick={() => setEditing("capa")} className={editButton}>
+            Editar
+          </button>
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full rounded-[14px] border border-stone-900 bg-white p-3.5">
+      <div className="flex items-center gap-3">
         <button
           type="button"
-          onClick={() => setEditing((v) => !v)}
-          className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold ring-1 transition ${editing ? "bg-stone-900 text-white ring-stone-900" : "text-stone-600 ring-stone-200 hover:text-blue-600 hover:ring-blue-300"}`}
+          onClick={avatarUpload.open}
+          disabled={avatarUpload.busy}
+          aria-label="Enviar foto ou logo"
+          title="Clique para enviar a foto ou o logo"
+          className="h-11 w-11 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80"
         >
-          {editing ? "Concluir" : "Editar"}
+          {face}
+        </button>
+        <input ref={avatarUpload.inputRef} type="file" accept="image/*" className="sr-only" onChange={avatarUpload.handle} />
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[15px] font-semibold">{profile.name || "Seu nome"}</span>
+          <span className="block truncate text-[13px] text-stone-600">{avatarUpload.error ?? (avatarUpload.busy ? "Enviando a foto..." : "Foto, nome, bio, capa e redes")}</span>
+        </span>
+        <button type="button" onClick={() => setEditing(false)} className="h-9 shrink-0 rounded-[9px] bg-stone-900 px-3.5 text-[13px] font-semibold text-white transition-colors hover:bg-stone-800">
+          Concluir
         </button>
       </div>
 
-      {!editing ? (
-        <div className="mt-3 flex flex-wrap items-center gap-1.5">
-          {socials.map((social, index) => (
-            <span key={index} className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-100 text-stone-700">
-              <SocialIcon platform={social.platform} className="h-[18px] w-[18px]" />
-            </span>
-          ))}
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            className="flex h-9 items-center gap-1 rounded-full border border-dashed border-stone-300 px-3 text-xs font-medium text-stone-500 hover:border-stone-400"
-          >
-            {socials.length ? "+ rede social" : "+ Adicionar redes sociais"}
-          </button>
-        </div>
-      ) : (
         <div className="mt-4 flex flex-col gap-4 border-t border-stone-100 pt-4">
           <div className="flex flex-col gap-3">
             <p className="text-xs font-semibold text-stone-500">Perfil</p>
@@ -103,6 +122,7 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
             <TextArea label="Bio" value={profile.bio} maxLength={300} onChange={(bio) => setProfile({ bio })} />
             <TextField label="Foto (envie do seu dispositivo ou cole um link)" type="url" value={profile.avatarUrl} placeholder="https://..." onChange={(avatarUrl) => setProfile({ avatarUrl })} />
             <UploadButton label="Enviar foto" onUploaded={(avatarUrl) => setProfile({ avatarUrl })} />
+            <Toggle label="Mostrar a foto na página" checked={!profile.hideAvatar} onChange={(on) => setProfile({ hideAvatar: !on })} />
             <TextField
               label="WhatsApp flutuante (número com DDD, opcional)"
               type="tel"
@@ -160,7 +180,7 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-3 border-t border-stone-100 pt-4">
+          <div id="perfil-capa" className="flex scroll-mt-4 flex-col gap-3 border-t border-stone-100 pt-4">
             <p className="text-xs font-semibold text-stone-500">Capa</p>
             <p className="-mt-1 text-xs text-stone-500">
               {isPremium
@@ -295,7 +315,6 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
             Concluir
           </button>
         </div>
-      )}
     </div>
   );
 }

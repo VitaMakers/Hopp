@@ -158,7 +158,7 @@ export default async function HomePage() {
           <section aria-labelledby="semana" className={`${panel} px-6 py-[22px]`}>
             <div className="flex items-baseline justify-between">
               <h2 id="semana" className="text-base font-semibold">Últimos 7 dias</h2>
-              <Link href="/dashboard/analytics" className="text-[13px] font-medium text-blue-600 hover:text-blue-700">
+              <Link href="/dashboard/analytics" className="text-[13px] font-semibold text-blue-600 underline underline-offset-4 hover:text-blue-700">
                 Ver estatísticas
               </Link>
             </div>
@@ -224,7 +224,7 @@ export default async function HomePage() {
           <section aria-labelledby="contatos" className={`${panel} px-6 py-[22px]`}>
             <div className="flex items-baseline justify-between">
               <h2 id="contatos" className="text-base font-semibold">Últimos contatos</h2>
-              <Link href="/dashboard/contacts" className="text-[13px] font-medium text-blue-600 hover:text-blue-700">
+              <Link href="/dashboard/contacts" className="text-[13px] font-semibold text-blue-600 underline underline-offset-4 hover:text-blue-700">
                 Ver todos
               </Link>
             </div>
@@ -242,6 +242,16 @@ export default async function HomePage() {
                     <span className="text-[13px] text-stone-600">
                       {new Date(c.created_at).toLocaleDateString("pt-BR", { day: "numeric", month: "short", timeZone: TIME_ZONE })}
                     </span>
+                    {c.phone && c.phone.replace(/\D/g, "").length >= 10 ? (
+                      <a
+                        href={`https://wa.me/${c.phone.replace(/\D/g, "").replace(/^(?!55)/, "55")}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[13px] font-semibold text-blue-600 underline underline-offset-4 hover:text-blue-700"
+                      >
+                        Abrir conversa
+                      </a>
+                    ) : null}
                   </li>
                 ))}
               </ul>
@@ -255,14 +265,14 @@ export default async function HomePage() {
 
         <div className="flex flex-col gap-5 lg:col-span-4">
           <section aria-label="Sua página" className={`${panel} p-5`}>
-            {doc ? (
-              <div className="flex justify-center rounded-[10px] bg-[#F3F2EE] py-5">
+            {doc && paid ? (
+              <div className="mb-4 flex justify-center rounded-[10px] bg-[#F3F2EE] py-5">
                 <span className="block overflow-hidden rounded-[26px] border-[6px] border-stone-900">
                   <ModelThumb doc={doc} width={160} height={290} />
                 </span>
               </div>
             ) : null}
-            <div className="mt-4 flex items-center justify-between">
+            <div className="flex items-center justify-between">
               <span className="truncate text-[15px] font-semibold">{name}</span>
               {publishedAt ? (
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2F6B3A]">
@@ -273,7 +283,7 @@ export default async function HomePage() {
                 <span className="text-xs font-semibold text-stone-600">Rascunho</span>
               )}
             </div>
-            <p className="mt-0.5 text-[13px] text-stone-600">{published}</p>
+            <p className="mt-0.5 truncate text-[13px] text-stone-600">{paid ? published : `${host}/${profile.handle}`}</p>
             <div className="mt-3.5 flex gap-2">
               <Link
                 href="/dashboard/editor"
@@ -281,11 +291,11 @@ export default async function HomePage() {
               >
                 Editar
               </Link>
-              <CopyLinkButton handle={profile.handle} variant="button" />
+              <CopyLinkButton handle={profile.handle} variant="button" label={paid ? "Compartilhar" : "Copiar link"} />
             </div>
           </section>
 
-          {doneCount < steps.length ? (
+          {paid && doneCount < steps.length ? (
             <section aria-labelledby="passos" className={`${panel} p-5`}>
               <h2 id="passos" className="text-base font-semibold">Falta pouco</h2>
               <p className="mt-1 text-[13px] text-stone-600">
