@@ -6,6 +6,7 @@ import { env } from "@/lib/env";
 // (Vercel) also has to know the domain to answer for it and issue the
 // certificate: with VERCEL_TOKEN and VERCEL_PROJECT_ID set this is done
 // automatically; without them the domain waits to be added by hand.
+// VERCEL_PROJECT_ID accepts the project's id or its name.
 
 export const DNS_A_VALUE = "76.76.21.21";
 export const DNS_CNAME_VALUE = "cname.vercel-dns.com";
@@ -39,7 +40,13 @@ function vercel() {
   const token = process.env.VERCEL_TOKEN;
   const project = process.env.VERCEL_PROJECT_ID;
   if (!token || !project) return null;
-  const team = process.env.VERCEL_TEAM_ID ? `?teamId=${encodeURIComponent(process.env.VERCEL_TEAM_ID)}` : "";
+  // The team can be named by its id (team_...) or by its address in Vercel
+  // (the part after vercel.com/ in the project's URL).
+  const team = process.env.VERCEL_TEAM_ID
+    ? `?teamId=${encodeURIComponent(process.env.VERCEL_TEAM_ID)}`
+    : process.env.VERCEL_TEAM_SLUG
+      ? `?slug=${encodeURIComponent(process.env.VERCEL_TEAM_SLUG)}`
+      : "";
   return { token, project, team };
 }
 
