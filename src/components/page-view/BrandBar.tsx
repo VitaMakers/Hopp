@@ -87,7 +87,7 @@ export function BrandBar({ appName, siteUrl, title, top = true }: { appName: str
           <div className={`pointer-events-none fixed inset-x-0 bottom-0 z-30 flex flex-col items-center gap-2 bg-gradient-to-t from-black/60 via-black/25 to-transparent px-4 pb-[max(14px,env(safe-area-inset-bottom))] pt-12 transition-[opacity,transform] duration-300 ${atEnd ? "translate-y-4 opacity-0 [&_*]:pointer-events-none" : ""}`}>
             <div className="pointer-events-auto flex items-center rounded-full bg-white text-stone-900 shadow-[0_6px_24px_rgba(0,0,0,.22)] ring-1 ring-black/5">
               <a href={signup} target="_blank" rel="noopener" className="py-2.5 pl-5 pr-2 text-[15px] font-semibold">
-                {host}/você
+                {host}
               </a>
               <button type="button" onClick={close} aria-label="Fechar" className="flex h-10 w-10 items-center justify-center rounded-full text-stone-600 transition hover:text-stone-900">
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" aria-hidden>
@@ -96,7 +96,7 @@ export function BrandBar({ appName, siteUrl, title, top = true }: { appName: str
               </button>
             </div>
             <a href={signup} target="_blank" rel="noopener" className="pointer-events-auto text-[13px] font-semibold text-white [text-shadow:0_1px_6px_rgba(0,0,0,.5)]">
-              Crie seu {appName}
+              Crie seu link
             </a>
           </div>
         </>

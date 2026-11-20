@@ -15,7 +15,7 @@ export function BrandPanel({ doc, onChange, plan }: { doc: PageDoc; onChange: Do
   return (
     <Card title={`Marca ${APP_NAME} na página`}>
       <p className="text-sm text-stone-600">
-        O logo e o botão de compartilhar no topo, e o convite “Crie seu {APP_NAME}” no rodapé da página publicada.
+        O logo e o botão de compartilhar no topo, e o convite “Crie seu link” no rodapé da página publicada.
       </p>
       <label className={`flex items-center justify-between gap-4 rounded-[10px] border border-[#E5E2DA] px-4 py-3 ${allowed ? "cursor-pointer" : "opacity-60"}`}>
         <span className="text-sm font-medium text-stone-800">Mostrar a marca {APP_NAME}</span>
