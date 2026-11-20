@@ -120,6 +120,7 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
 
   return (
     <div className="flex flex-col gap-3.5">
+      <h2 className="hidden font-display text-[24px] font-bold tracking-[-0.02em] lg:block">Conteúdo</h2>
       <ProfileHeader doc={doc} onChange={onChange} plan={plan} />
 
       {doc.theme.premium ? <PremiumSectionsEditor doc={doc} onChange={onChange} focus={focus} onActive={onActive} /> : null}
@@ -134,7 +135,9 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
           <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" aria-hidden>
             <path d="M12 5v14M5 12h14" />
           </svg>
-          Adicionar bloco
+          <span>
+            Adicionar<span className="hidden lg:inline"> bloco</span>
+          </span>
         </button>
       </div>
 
@@ -150,7 +153,7 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <SortableContext items={doc.blocks.map((block) => block.id)} strategy={verticalListSortingStrategy}>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             {doc.blocks.map((block) => (
               <SortableBlock
                 key={block.id}
@@ -176,16 +179,7 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
       </DndContext>
 
       {doc.blocks.length > 0 ? (
-        <>
-          <button
-            type="button"
-            onClick={() => setAdding("end")}
-            className="self-start rounded-[9px] border border-[#E5E2DA] bg-white px-3.5 py-2 text-[13px] font-semibold text-stone-800 transition-colors hover:border-stone-400"
-          >
-            Adicionar outro bloco no fim
-          </button>
-          <p className="text-xs text-stone-600">Arraste pelos pontinhos para mudar a ordem. A chave esconde o bloco sem apagar.</p>
-        </>
+        <p className="hidden text-xs text-stone-600 lg:block">Arraste pelos pontinhos para mudar a ordem. A chave esconde o bloco sem apagar.</p>
       ) : null}
     </div>
   );
@@ -314,6 +308,7 @@ function SortableBlock({
   stats?: BlockStats;
 }) {
   const blockClicks = stats?.clicks[block.id] ?? 0;
+  const [menu, setMenu] = useState(false);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: block.id,
   });
@@ -322,18 +317,18 @@ function SortableBlock({
       ref={setNodeRef}
       id={`blk-${block.id}`}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`scroll-mt-24 rounded-xl border bg-white transition-colors ${open ? "border-stone-900" : "border-[#E5E2DA]"} ${
+      className={`scroll-mt-24 rounded-[13px] border bg-white transition-colors ${open ? "border-stone-900" : "border-[#E5E2DA]"} ${
         block.enabled ? "" : "bg-[#FAF9F6]"
       } ${isDragging ? "z-10 shadow-[0_12px_32px_-8px_rgba(25,26,61,0.3)]" : ""}`}
     >
-      <div className="flex items-center gap-2.5 py-2.5 pl-2 pr-2.5">
+      <div className="flex items-center gap-2.5 py-3 pl-3 pr-3 lg:pl-2 lg:pr-1.5">
         <button
           type="button"
           {...attributes}
           {...listeners}
           aria-label="Segure e arraste para mudar a ordem"
           title="Segure e arraste para mudar a ordem"
-          className="cursor-grab touch-none rounded-md p-1 text-[#B9B6C9] hover:text-stone-600 active:cursor-grabbing"
+          className="hidden cursor-grab touch-none rounded-md p-1 text-[#B9B6C9] hover:text-stone-600 active:cursor-grabbing lg:block"
         >
           <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden>
             <circle cx="9" cy="6" r="1.6" />
@@ -353,8 +348,9 @@ function SortableBlock({
             {!block.enabled
               ? "Escondido da página"
               : stats
-                ? `${BLOCK_CATALOG[block.type].label}, ${fmtN(blockClicks)} ${blockClicks === 1 ? "clique" : "cliques"} em 30 dias`
+                ? `${fmtN(blockClicks)} ${blockClicks === 1 ? "clique" : "cliques"}`
                 : BLOCK_CATALOG[block.type].label}
+            {block.enabled && stats ? <span className="hidden lg:inline"> em 30 dias</span> : null}
           </span>
         </button>
         <button
@@ -367,6 +363,47 @@ function SortableBlock({
         >
           <span className="h-[18px] w-[18px] rounded-full bg-white" />
         </button>
+        <div className="relative hidden lg:block">
+          <button
+            type="button"
+            onClick={() => setMenu((v) => !v)}
+            aria-label="Mais opções do bloco"
+            aria-expanded={menu}
+            className="flex h-8 w-7 items-center justify-center rounded-md text-stone-600 transition-colors hover:bg-[#F3F2EE] hover:text-stone-900"
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
+              <circle cx="12" cy="5" r="1.7" />
+              <circle cx="12" cy="12" r="1.7" />
+              <circle cx="12" cy="19" r="1.7" />
+            </svg>
+          </button>
+          {menu ? (
+            <>
+              <button type="button" aria-label="Fechar" className="fixed inset-0 z-30 cursor-default" onClick={() => setMenu(false)} />
+              <div className="absolute right-0 top-full z-40 mt-1 w-40 overflow-hidden rounded-[10px] border border-[#E5E2DA] bg-white py-1 shadow-[0_12px_32px_-8px_rgba(25,26,61,0.25)]">
+                {(
+                  [
+                    ["Editar", onToggleOpen, "text-stone-900"],
+                    ["Duplicar", onDuplicate, "text-stone-900"],
+                    ["Excluir", onRemove, "text-red-700"],
+                  ] as const
+                ).map(([label, run, tone]) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => {
+                      setMenu(false);
+                      run();
+                    }}
+                    className={`block w-full px-3 py-2 text-left text-sm font-medium hover:bg-[#F3F2EE] ${tone}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : null}
+        </div>
       </div>
       {open ? (
         <div className="border-t border-[#EFEDE7] p-4">

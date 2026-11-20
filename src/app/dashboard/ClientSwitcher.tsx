@@ -52,9 +52,9 @@ export function ClientSwitcher({
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
-          className="flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm font-medium hover:border-stone-400"
+          className="flex h-9 items-center gap-2 rounded-[10px] border border-[#E5E2DA] bg-white pl-1.5 pr-2.5 text-sm font-semibold transition-colors hover:border-stone-400"
         >
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-stone-900 text-[10px] font-semibold text-white">
+          <span className="flex h-6 w-6 items-center justify-center rounded-[7px] bg-stone-900 text-[10px] font-semibold text-white">
             {initials(current.display_name || current.handle)}
           </span>
           <span className="max-w-[9rem] truncate">{current.display_name || current.handle}</span>
@@ -69,7 +69,7 @@ export function ClientSwitcher({
           <button type="button" aria-label="Fechar" className="fixed inset-0 z-30 cursor-default" onClick={() => setOpen(false)} />
           <div
             className={`absolute top-full z-40 mt-1 overflow-hidden rounded-xl border border-[#E5E2DA] bg-white shadow-[0_12px_32px_-8px_rgba(25,26,61,0.25)] ${
-              sidebar ? "left-0 w-full min-w-60" : "left-1/2 w-64 -translate-x-1/2"
+              sidebar ? "left-0 w-full min-w-60" : "left-0 w-64"
             }`}
           >
             <p className="px-3 pt-3 text-[11px] font-semibold text-stone-500">Clientes</p>

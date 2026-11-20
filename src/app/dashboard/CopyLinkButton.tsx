@@ -4,7 +4,17 @@ import { useState } from "react";
 
 // The page address with a copy button. The origin is read in the browser, so
 // it shows the domain the dashboard is being used on.
-export function CopyLinkButton({ handle, host, variant = "field" }: { handle: string; host?: string; variant?: "field" | "button" }) {
+export function CopyLinkButton({
+  handle,
+  host,
+  variant = "field",
+  label = "Copiar link",
+}: {
+  handle: string;
+  host?: string;
+  variant?: "field" | "button";
+  label?: string;
+}) {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -24,7 +34,7 @@ export function CopyLinkButton({ handle, host, variant = "field" }: { handle: st
         onClick={copy}
         className="h-[38px] flex-1 rounded-[10px] border border-[#E5E2DA] bg-white text-sm font-semibold text-stone-900 transition-colors hover:border-stone-400"
       >
-        {copied ? "Link copiado" : "Copiar link"}
+        {copied ? "Link copiado" : label}
       </button>
     );
   }
