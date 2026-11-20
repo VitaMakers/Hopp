@@ -234,7 +234,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   const blockTypes = new Map<string, BlockType>();
   if (doc.success) {
     for (const block of doc.data.blocks) {
-      blockNames.set(block.id, blockSummary(block) || BLOCK_CATALOG[block.type].label);
+      blockNames.set(block.id, readableName(blockSummary(block)) || BLOCK_CATALOG[block.type].label);
       blockTypes.set(block.id, block.type);
     }
   }
@@ -356,7 +356,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   const empty = "py-6 text-center text-sm text-stone-600";
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-w-0 flex-col gap-5 [&>*]:min-w-0">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-[30px] font-bold leading-tight tracking-[-0.025em]">Estatísticas</h1>
@@ -401,7 +401,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
         <h2 id="visitantes" className="font-display text-xl font-bold tracking-[-0.02em]">
           Conheça seus visitantes
         </h2>
-        <div className="mt-5 grid gap-6 lg:grid-cols-3 lg:gap-0">
+        <div className="mt-5 grid gap-6 lg:grid-cols-3 lg:gap-0 [&>*]:min-w-0">
           <div className="lg:pr-6">
             <h3 className="text-[15px] font-medium text-stone-800">Sessões ao longo do tempo</h3>
             <AreaChart daily={summary.daily} />
@@ -467,7 +467,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
         <h2 id="aparelhos" className="font-display text-xl font-bold tracking-[-0.02em]">
           Aparelhos dos visitantes
         </h2>
-        <div className="mt-5 grid gap-6 lg:grid-cols-3 lg:gap-0">
+        <div className="mt-5 grid gap-6 lg:grid-cols-3 lg:gap-0 [&>*]:min-w-0">
           <div className="lg:pr-6">
             <h3 className="text-[15px] font-medium text-stone-800">Sistema</h3>
             {systems.length === 0 ? <p className={empty}>Sem dados ainda.</p> : <ShareBars rows={systems.map(([name, n]) => [SYSTEM_LABELS[name] ?? name, n])} />}
@@ -491,7 +491,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
       </section>
 
       {/* Visitantes que mais voltam */}
-      <section aria-labelledby="recorrentes" className={`${panel} p-6`}>
+      <section aria-labelledby="recorrentes" className={`${panel} min-w-0 p-6`}>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="max-w-2xl">
             <h2 id="recorrentes" className="font-display text-xl font-bold tracking-[-0.02em]">
@@ -587,7 +587,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
         <h2 id="engajamento" className="font-display text-xl font-bold tracking-[-0.02em]">
           Explorar engajamento dos visitantes
         </h2>
-        <div className="mt-5 grid gap-6 lg:grid-cols-3 lg:gap-0">
+        <div className="mt-5 grid gap-6 lg:grid-cols-3 lg:gap-0 [&>*]:min-w-0">
           <div className="lg:pr-6">
             <h3 className="text-[15px] font-medium text-stone-800">Botões mais clicados</h3>
             {topBlocks.length === 0 ? (
@@ -638,12 +638,12 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           {topBlocks.length === 0 ? (
             <p className={empty}>Sem cliques ainda. Compartilhe o seu link para começar.</p>
           ) : (
-            <table className="w-full text-sm">
+            <table className="w-full table-fixed text-sm">
               <thead>
                 <tr className="border-b border-[#E5E2DA] text-left text-xs text-stone-600">
                   <th className="pb-2 font-semibold">Bloco</th>
-                  <th className="pb-2 text-right font-semibold">Cliques</th>
-                  <th className="hidden pb-2 pl-3 font-semibold sm:table-cell">Participação</th>
+                  <th className="w-[72px] pb-2 text-right font-semibold">Cliques</th>
+                  <th className="hidden w-[38%] pb-2 pl-3 font-semibold sm:table-cell">Participação</th>
                 </tr>
               </thead>
               <tbody>
@@ -651,7 +651,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
                   const share = totalBlockClicks ? Math.round((row.count / totalBlockClicks) * 100) : 0;
                   return (
                     <tr key={index} className="border-b border-[#EFEDE7] last:border-0">
-                      <td className="py-2.5">
+                      <td className="truncate py-2.5 pr-3" title={row.name}>
                         <span className="font-medium">{row.name}</span>
                         {row.type ? <span className="ml-2 text-xs text-stone-600">{BLOCK_CATALOG[row.type].label}</span> : null}
                       </td>
@@ -700,18 +700,20 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           {linkRows.length === 0 ? (
             <p className={empty}>Sem cliques nos últimos 30 dias.</p>
           ) : (
-            <table className="w-full text-sm">
+            <table className="w-full table-fixed text-sm">
               <thead>
                 <tr className="border-b border-[#E5E2DA] text-left text-xs text-stone-600">
                   <th className="pb-2 font-semibold">Link</th>
-                  <th className="pb-2 text-right font-semibold">Esta semana</th>
-                  <th className="pb-2 pl-3 text-right font-semibold">Este mês</th>
+                  <th className="w-[96px] pb-2 text-right font-semibold">Esta semana</th>
+                  <th className="w-[84px] pb-2 pl-3 text-right font-semibold">Este mês</th>
                 </tr>
               </thead>
               <tbody>
                 {linkRows.map((r, i) => (
                   <tr key={i} className="border-b border-[#EFEDE7] last:border-0">
-                    <td className="py-2.5 font-medium">{r.name}</td>
+                    <td className="truncate py-2.5 pr-3 font-medium" title={r.name}>
+                      {r.name}
+                    </td>
                     <td className="py-2.5 text-right tabular-nums">{r.week.toLocaleString("pt-BR")}</td>
                     <td className="py-2.5 pl-3 text-right tabular-nums">{r.month.toLocaleString("pt-BR")}</td>
                   </tr>
@@ -729,9 +731,9 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
             <ul className="flex flex-col gap-3 text-sm">
               {activity.map((item, index) => (
                 <li key={index} className="flex items-start justify-between gap-3">
-                  <span className="flex items-start gap-2.5">
+                  <span className="flex min-w-0 items-start gap-2.5">
                     <span className="mt-1 h-2 w-2 shrink-0 rounded-full" style={{ background: item.color }} />
-                    <span>{item.text}</span>
+                    <span className="min-w-0 break-words">{item.text}</span>
                   </span>
                   <span className="shrink-0 whitespace-nowrap text-xs text-stone-600">{item.when}</span>
                 </li>
@@ -806,6 +808,19 @@ function modelName(raw: string): string {
   if (known) return known;
   // Motorola and Xiaomi already send a readable name ("moto g54 5G").
   return key.replace(/^moto /i, "Moto ").replace(/\b5g\b/i, "5G");
+}
+
+// A button without a title is named after its address; show where it goes
+// ("WhatsApp", "ifood.com.br") instead of the whole link.
+function readableName(name: string): string {
+  if (!/^https?:\/\//i.test(name)) return name;
+  try {
+    const host = new URL(name).hostname.replace(/^www\./, "");
+    if (/whatsapp\.com$|^wa\.me$/.test(host)) return "WhatsApp";
+    return host;
+  } catch {
+    return name;
+  }
 }
 
 // A short, stable number for an anonymous visitor.
