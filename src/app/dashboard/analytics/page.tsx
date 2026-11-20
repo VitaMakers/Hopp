@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { GeoPanel, type GeoCity, type GeoCountry } from "./GeoPanel";
 import { LiveVisitors } from "./LiveVisitors";
+import { COUNTRIES } from "./world";
 import { pctChange, referrerName, summarize, type EventRow, type Summary } from "@/lib/analytics";
 import { hasFullAnalytics } from "@/lib/entitlements";
 import { BLOCK_CATALOG, SOCIAL_LABELS, blockSummary } from "@/lib/page/catalog";
@@ -77,15 +79,37 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
 
   // Visitor location — a separate, error-tolerant query so missing country/city
   // columns (migration 0011 not run) never break the dashboard.
-  const { data: geoData } = await supabase
-    .from("events")
-    .select("country, city")
-    .eq("owner_id", profile.id)
-    .eq("kind", "page_view")
-    .gte("created_at", windowStart.toISOString())
-    .not("country", "is", null)
-    .limit(5000);
-  const geoRows = (geoData ?? []) as { country: string | null; city: string | null }[];
+  const geoQuery = (columns: string) =>
+    supabase
+      .from("events")
+      .select(columns)
+      .eq("owner_id", profile.id)
+      .eq("kind", "page_view")
+      .gte("created_at", windowStart.toISOString())
+      .not("country", "is", null)
+      .limit(5000);
+  // The position columns are newer (migration 0016): fall back without them.
+  let { data: geoData, error: geoError } = await geoQuery("country, city, lat, lon");
+  if (geoError) ({ data: geoData, error: geoError } = await geoQuery("country, city"));
+  const geoRows = (geoData ?? []) as unknown as { country: string | null; city: string | null; lat?: number | null; lon?: number | null }[];
+  // Each city with its visits and, when known, where it is.
+  const cityAgg = new Map<string, { city: string; cc: string; count: number; lat: number; lon: number; located: number }>();
+  for (const r of geoRows) {
+    if (!r.city || !r.country) continue;
+    const key = `${r.city}|${r.country}`;
+    const entry = cityAgg.get(key) ?? { city: r.city, cc: r.country, count: 0, lat: 0, lon: 0, located: 0 };
+    entry.count += 1;
+    if (typeof r.lat === "number" && typeof r.lon === "number") {
+      entry.lat += r.lat;
+      entry.lon += r.lon;
+      entry.located += 1;
+    }
+    cityAgg.set(key, entry);
+  }
+  const geoCities: GeoCity[] = [...cityAgg.values()]
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 120)
+    .map((c) => ({ city: c.city, cc: c.cc, count: c.count, lat: c.located ? c.lat / c.located : null, lon: c.located ? c.lon / c.located : null }));
   const byCountry = new Map<string, number>();
   const byCity = new Map<string, number>();
   for (const r of geoRows) {
@@ -95,9 +119,10 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
       byCity.set(key, (byCity.get(key) ?? 0) + 1);
     }
   }
-  const countries = [...byCountry].sort((a, b) => b[1] - a[1]).slice(0, 8);
-  const maxCountry = Math.max(1, ...countries.map(([, n]) => n));
-  const cities = [...byCity].sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const geoCountries: GeoCountry[] = [...byCountry]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 12)
+    .map(([cc, count]) => ({ cc, name: countryName(cc), count, box: COUNTRIES[cc]?.b ?? null }));
 
   // Device and campaign — error-tolerant (missing columns before migration 0012).
   const { data: uaData } = await supabase
@@ -124,8 +149,6 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
     if (r.utm_campaign) byCampaign.set(r.utm_campaign, (byCampaign.get(r.utm_campaign) ?? 0) + 1);
   }
   const devices = [...byDevice].sort((a, b) => b[1] - a[1]);
-  const maxDevice = Math.max(1, ...devices.map(([, n]) => n));
-  const browsers = [...byBrowser].sort((a, b) => b[1] - a[1]).slice(0, 5);
   const campaignSources = [...byUtmSource].sort((a, b) => b[1] - a[1]).slice(0, 6);
   const campaigns = [...byCampaign].sort((a, b) => b[1] - a[1]).slice(0, 6);
 
@@ -226,48 +249,196 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   if (sources.length) insights.push(`A maior parte das visitas vem de ${sources[0][0]}.`);
   if (summary.clicks === 0) insights.push("Ainda sem toques — compartilhe seu link para começar a receber dados.");
 
+  // ---- Numbers the highlights add on top of the summary ----
+  const spDay = (iso: string) => new Date(iso).toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+  const todayKey = spDay(now.toISOString());
+  const yesterdayKey = spDay(new Date(now.getTime() - 86_400_000).toISOString());
+  const dayCount = (kinds: string[], key: string, distinct = false) => {
+    const rows = current.filter((e) => kinds.includes(e.kind) && spDay(e.created_at) === key);
+    return distinct ? new Set(rows.map((e) => e.visit_id ?? e.created_at)).size : rows.length;
+  };
+  const CLICK_KINDS = ["block_click", "social_click"];
+  const today = { views: dayCount(["page_view"], todayKey), visitors: dayCount(["page_view"], todayKey, true), clicks: dayCount(CLICK_KINDS, todayKey) };
+  const yesterday = { views: dayCount(["page_view"], yesterdayKey), visitors: dayCount(["page_view"], yesterdayKey, true), clicks: dayCount(CLICK_KINDS, yesterdayKey) };
+
+  // Average visits per weekday, in Brasília time.
+  const weekdayTotals = Array.from({ length: 7 }, () => ({ total: 0, days: new Set<string>() }));
+  for (let i = 0; i < days; i++) {
+    const d = new Date(now.getTime() - i * 86_400_000);
+    const wd = new Date(spDay(d.toISOString()) + "T12:00:00Z").getUTCDay();
+    weekdayTotals[wd].days.add(spDay(d.toISOString()));
+  }
+  for (const e of current) {
+    if (e.kind !== "page_view") continue;
+    const wd = new Date(spDay(e.created_at) + "T12:00:00Z").getUTCDay();
+    weekdayTotals[wd].total += 1;
+  }
+  const weekdays = ["Dom.", "Seg.", "Ter.", "Qua.", "Qui.", "Sex.", "Sáb."].map((label, i) => ({
+    label,
+    value: weekdayTotals[i].days.size ? weekdayTotals[i].total / weekdayTotals[i].days.size : 0,
+  }));
+
+  const bounce = summary.views ? 1 - summary.clickRate : 0;
+  const prevBounce = prev.views ? 1 - prev.clickRate : 0;
+  const clicksPerVisit = summary.views ? summary.clicks / summary.views : 0;
+  const prevClicksPerVisit = prev.views ? prev.clicks / prev.views : 0;
+  const fmtDate = (d: Date) => d.toLocaleDateString("pt-BR", { day: "numeric", month: "short", timeZone: "America/Sao_Paulo" });
+  const comparedWith = `${fmtDate(prevStart)} a ${fmtDate(new Date(windowStart.getTime() - 86_400_000))}`;
+  const deviceColors = ["#3A55F5", "#58B6E0", "#191A3D", "#B9B6C9"];
+  const deviceSegments = devices.map(([label, value], i) => ({ label, value, color: deviceColors[i % deviceColors.length] }));
+  const deviceTotal = devices.reduce((a, [, n]) => a + n, 0);
+
+  const panel = "rounded-[14px] border border-[#E5E2DA] bg-white";
+  const empty = "py-6 text-center text-sm text-stone-600";
+
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+    <div className="flex flex-col gap-5">
+      <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">O que as pessoas fazem na sua página</h1>
-          <p className="text-sm text-stone-500">Comparado com o período anterior.</p>
+          <h1 className="font-display text-[30px] font-bold leading-tight tracking-[-0.025em]">Estatísticas</h1>
+          <p className="mt-2 text-[15px] text-stone-600">Uma visão geral da atividade da sua página.</p>
         </div>
-        <div className="flex gap-1 rounded-lg bg-stone-100 p-1">
+      </header>
+
+      <LiveVisitors initial={initialLive} />
+
+      <div className="flex flex-wrap items-center gap-3">
+        <div role="tablist" aria-label="Período" className="inline-flex rounded-[11px] bg-[#E9E7E1] p-[3px]">
           {WINDOWS.map((w) => (
             <Link
               key={w}
               href={`?days=${w}`}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${w === days ? "bg-white text-stone-900 shadow-sm" : "text-stone-500 hover:text-stone-900"}`}
+              role="tab"
+              aria-selected={w === days}
+              className={`flex h-8 items-center rounded-[9px] px-3.5 text-[13px] font-semibold transition-colors ${w === days ? "bg-white text-stone-900" : "text-stone-700 hover:text-stone-900"}`}
             >
+              <span className="hidden sm:inline">Últimos&nbsp;</span>
               {w} dias
             </Link>
           ))}
         </div>
+        <p className="text-sm text-stone-600">em comparação com o período anterior ({comparedWith})</p>
       </div>
 
-      <LiveVisitors initial={initialLive} />
+      {/* Principais estatísticas */}
+      <section aria-labelledby="principais" className={`${panel} p-5`}>
+        <h2 id="principais" className="text-[15px] font-semibold">
+          Principais estatísticas
+        </h2>
+        <div className="mt-3 grid gap-3 md:grid-cols-3">
+          <Stat label="Sessões da página" value={summary.views} delta={pctChange(summary.views, prev.views)} spark={summary.daily.map((d) => d.views)} today={today.views} yesterday={yesterday.views} />
+          <Stat label="Visitantes únicos" value={summary.visitors} delta={pctChange(summary.visitors, prev.visitors)} spark={summary.daily.map((d) => d.views)} today={today.visitors} yesterday={yesterday.visitors} />
+          <Stat label="Cliques nos botões" value={summary.clicks} delta={pctChange(summary.clicks, prev.clicks)} spark={summary.daily.map((d) => d.clicks)} today={today.clicks} yesterday={yesterday.clicks} />
+        </div>
+      </section>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <Kpi label="Visitas" value={summary.views} delta={pctChange(summary.views, prev.views)} spark={summary.daily.map((d) => d.views)} sparkColor="#2563eb" />
-        <Kpi label="Visitantes" value={summary.visitors} delta={pctChange(summary.visitors, prev.visitors)} hint="Pessoas diferentes" />
-        <Kpi label="Toques em botões" value={summary.clicks} delta={pctChange(summary.clicks, prev.clicks)} spark={summary.daily.map((d) => d.clicks)} sparkColor="#111827" />
-        <Kpi
-          label="Visitas com toque"
-          value={`${(summary.clickRate * 100).toFixed(1).replace(".", ",")}%`}
-          delta={pctChange(summary.clickRate, prev.clickRate)}
-          hint="Visitas com ao menos um toque"
-        />
-        <Kpi label="Tempo médio" value={fmtDur(avgMs)} delta={pctChange(avgMs, prevAvgMs)} hint="Na sua página" />
-      </div>
+      {/* Conheça seus visitantes */}
+      <section aria-labelledby="visitantes" className={`${panel} p-6`}>
+        <h2 id="visitantes" className="font-display text-xl font-bold tracking-[-0.02em]">
+          Conheça seus visitantes
+        </h2>
+        <div className="mt-5 grid gap-6 lg:grid-cols-3 lg:gap-0">
+          <div className="lg:pr-6">
+            <h3 className="text-[15px] font-medium text-stone-800">Sessões ao longo do tempo</h3>
+            <AreaChart daily={summary.daily} />
+          </div>
+          <div className="lg:border-l lg:border-[#EFEDE7] lg:px-6">
+            <h3 className="text-[15px] font-medium text-stone-800">Principais fontes de tráfego</h3>
+            {sources.length === 0 ? (
+              <p className={empty}>Sem visitas ainda.</p>
+            ) : (
+              <ul className="mt-4 flex flex-col gap-4">
+                {sources.slice(0, 5).map(([name, count]) => (
+                  <BarRow key={name} name={name} count={count} max={maxSource} delta={pctChange(count, prev.byReferrer.get(name) ?? 0)} />
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="lg:border-l lg:border-[#EFEDE7] lg:pl-6">
+            <h3 className="text-[15px] font-medium text-stone-800">Sessões por dispositivo</h3>
+            {deviceSegments.length === 0 ? (
+              <p className={empty}>Sem dados de dispositivo ainda.</p>
+            ) : (
+              <div className="mt-4 flex items-center gap-5">
+                <Donut segments={deviceSegments} caption="sessões" />
+                <ul className="flex min-w-0 flex-1 flex-col gap-3 text-sm">
+                  {deviceSegments.map((seg) => (
+                    <li key={seg.label}>
+                      <span className="flex items-center gap-2">
+                        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: seg.color }} />
+                        <span className="truncate">{seg.label}</span>
+                      </span>
+                      <span className="mt-0.5 block pl-4 text-[13px] text-stone-600">
+                        <strong className="font-semibold text-stone-900">{Math.round((seg.value / Math.max(1, deviceTotal)) * 100)}%</strong> · {seg.value.toLocaleString("pt-BR")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Sessões por cidade: mapa */}
+      <section aria-labelledby="mapa" className={`${panel} p-6`}>
+        <h2 id="mapa" className="font-display text-xl font-bold tracking-[-0.02em]">
+          Sessões por cidade
+        </h2>
+        <div className="mt-5">
+          {geoCountries.length === 0 ? (
+            <p className={empty}>Sem dados de localização ainda. Eles aparecem conforme as visitas chegam.</p>
+          ) : (
+            <GeoPanel countries={geoCountries} cities={geoCities}>
+              {Object.entries(COUNTRIES).map(([cc, shape]) => (
+                <path key={cc} d={shape.d} />
+              ))}
+            </GeoPanel>
+          )}
+        </div>
+      </section>
+
+      {/* Explorar engajamento */}
+      <section aria-labelledby="engajamento" className={`${panel} p-6`}>
+        <h2 id="engajamento" className="font-display text-xl font-bold tracking-[-0.02em]">
+          Explorar engajamento dos visitantes
+        </h2>
+        <div className="mt-5 grid gap-6 lg:grid-cols-3 lg:gap-0">
+          <div className="lg:pr-6">
+            <h3 className="text-[15px] font-medium text-stone-800">Botões mais clicados</h3>
+            {topBlocks.length === 0 ? (
+              <p className={empty}>Nenhum botão clicado nesse período.</p>
+            ) : (
+              <ul className="mt-4 flex flex-col gap-4">
+                {topBlocks.slice(0, 5).map((row, i) => (
+                  <BarRow key={i} name={row.name} count={row.count} max={topBlocks[0].count} />
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="lg:border-l lg:border-[#EFEDE7] lg:px-6">
+            <h3 className="text-[15px] font-medium text-stone-800">Estatísticas de engajamento</h3>
+            <ul className="mt-2">
+              <Engagement label="Cliques por sessão" value={clicksPerVisit.toFixed(1).replace(".", ",")} delta={pctChange(clicksPerVisit, prevClicksPerVisit)} icon="pages" />
+              <Engagement label="Duração média da sessão" value={fmtDur(avgMs)} delta={pctChange(avgMs, prevAvgMs)} icon="clock" />
+              <Engagement label="Taxa de rejeição" value={`${(bounce * 100).toFixed(1).replace(".", ",")}%`} delta={pctChange(bounce, prevBounce)} icon="exit" lowerIsBetter />
+            </ul>
+            <p className="mt-3 text-xs text-stone-600">Rejeição é a parte das sessões que saiu sem clicar em nada.</p>
+          </div>
+          <div className="lg:border-l lg:border-[#EFEDE7] lg:pl-6">
+            <h3 className="text-[15px] font-medium text-stone-800">Média de sessões por dia da semana</h3>
+            <WeekdayBars data={weekdays} />
+          </div>
+        </div>
+      </section>
 
       {insights.length ? (
-        <section className="rounded-xl bg-stone-900 p-5 text-white">
-          <h2 className="mb-3 text-sm font-semibold text-stone-300">O que pede atenção</h2>
-          <ul className="flex flex-col gap-2 text-sm">
+        <section className={`${panel} p-6`}>
+          <h2 className="font-display text-xl font-bold tracking-[-0.02em]">O que pede atenção</h2>
+          <ul className="mt-4 flex flex-col gap-2.5 text-sm">
             {insights.map((text, i) => (
               <li key={i} className="flex items-start gap-2.5">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-600" />
                 <span>{text}</span>
               </li>
             ))}
@@ -275,40 +446,38 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
         </section>
       ) : null}
 
-      <DailyChart summary={summary} />
-
       <Heatmap heat={heat} max={heatMax} />
 
-      <div className="grid gap-4 lg:grid-cols-5">
-        <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200 lg:col-span-3">
-          <h2 className="mb-3 font-semibold">Toques por botão</h2>
+      <div className="grid gap-5 lg:grid-cols-5">
+        <section className={`${panel} p-5 lg:col-span-3`}>
+          <h2 className="mb-3 text-[15px] font-semibold">Toques por botão</h2>
           {topBlocks.length === 0 ? (
-            <p className="py-6 text-center text-sm text-stone-500">Sem cliques ainda. Compartilhe o seu link para começar.</p>
+            <p className={empty}>Sem cliques ainda. Compartilhe o seu link para começar.</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-200 text-left text-xs text-stone-400">
-                  <th className="pb-2 font-medium">Bloco</th>
-                  <th className="pb-2 text-right font-medium">Cliques</th>
-                  <th className="hidden pb-2 pl-3 font-medium sm:table-cell">Participação</th>
+                <tr className="border-b border-[#E5E2DA] text-left text-xs text-stone-600">
+                  <th className="pb-2 font-semibold">Bloco</th>
+                  <th className="pb-2 text-right font-semibold">Cliques</th>
+                  <th className="hidden pb-2 pl-3 font-semibold sm:table-cell">Participação</th>
                 </tr>
               </thead>
               <tbody>
                 {topBlocks.map((row, index) => {
                   const share = totalBlockClicks ? Math.round((row.count / totalBlockClicks) * 100) : 0;
                   return (
-                    <tr key={index} className="border-b border-stone-100 last:border-0">
+                    <tr key={index} className="border-b border-[#EFEDE7] last:border-0">
                       <td className="py-2.5">
                         <span className="font-medium">{row.name}</span>
-                        {row.type ? <span className="ml-2 text-xs text-stone-400">{BLOCK_CATALOG[row.type].label}</span> : null}
+                        {row.type ? <span className="ml-2 text-xs text-stone-600">{BLOCK_CATALOG[row.type].label}</span> : null}
                       </td>
                       <td className="py-2.5 text-right tabular-nums">{row.count.toLocaleString("pt-BR")}</td>
                       <td className="hidden py-2.5 pl-3 sm:table-cell">
                         <div className="flex items-center gap-2">
-                          <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-stone-100">
-                            <span className="block h-full rounded-full bg-stone-800" style={{ width: `${share}%` }} />
+                          <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#EFEDE7]">
+                            <span className="block h-full rounded-full bg-stone-900" style={{ width: `${share}%` }} />
                           </span>
-                          <span className="w-9 text-right text-xs tabular-nums text-stone-500">{share}%</span>
+                          <span className="w-9 text-right text-xs tabular-nums text-stone-600">{share}%</span>
                         </div>
                       </td>
                     </tr>
@@ -319,19 +488,19 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           )}
         </section>
 
-        <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200 lg:col-span-2">
-          <h2 className="mb-3 font-semibold">Distribuição de cliques</h2>
+        <section className={`${panel} p-5 lg:col-span-2`}>
+          <h2 className="mb-3 text-[15px] font-semibold">Distribuição de cliques</h2>
           {donut.length === 0 ? (
-            <p className="py-6 text-center text-sm text-stone-500">Sem cliques ainda.</p>
+            <p className={empty}>Sem cliques ainda.</p>
           ) : (
             <div className="flex items-center gap-4">
               <Donut segments={donut} />
               <ul className="flex flex-1 flex-col gap-2 text-sm">
-                {donut.map((s) => (
-                  <li key={s.label} className="flex items-center gap-2">
-                    <span className="h-3 w-3 shrink-0 rounded-sm" style={{ background: s.color }} />
-                    <span className="flex-1 truncate">{s.label}</span>
-                    <span className="tabular-nums text-stone-500">{s.value.toLocaleString("pt-BR")}</span>
+                {donut.map((seg) => (
+                  <li key={seg.label} className="flex items-center gap-2">
+                    <span className="h-3 w-3 shrink-0 rounded-sm" style={{ background: seg.color }} />
+                    <span className="flex-1 truncate">{seg.label}</span>
+                    <span className="tabular-nums text-stone-600">{seg.value.toLocaleString("pt-BR")}</span>
                   </li>
                 ))}
               </ul>
@@ -340,30 +509,38 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
         </section>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
-          <h2 className="mb-3 font-semibold">Fontes de tráfego</h2>
-          {sources.length === 0 ? (
-            <p className="py-6 text-center text-sm text-stone-500">Sem visitas ainda.</p>
+      <div className="grid gap-5 lg:grid-cols-2">
+        <section className={`${panel} p-5`}>
+          <h2 className="text-[15px] font-semibold">Pessoas por link</h2>
+          <p className="mb-3 text-xs text-stone-600">Quantas pessoas diferentes clicaram em cada link.</p>
+          {linkRows.length === 0 ? (
+            <p className={empty}>Sem cliques nos últimos 30 dias.</p>
           ) : (
-            <ul className="flex flex-col gap-2.5 text-sm">
-              {sources.map(([name, count]) => (
-                <li key={name} className="flex items-center gap-3">
-                  <span className="w-28 shrink-0 truncate">{name}</span>
-                  <span className="h-2 flex-1 overflow-hidden rounded-full bg-stone-100">
-                    <span className="block h-full rounded-full bg-[#3b6ef5]" style={{ width: `${(count / maxSource) * 100}%` }} />
-                  </span>
-                  <span className="w-10 text-right tabular-nums text-stone-500">{count.toLocaleString("pt-BR")}</span>
-                </li>
-              ))}
-            </ul>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[#E5E2DA] text-left text-xs text-stone-600">
+                  <th className="pb-2 font-semibold">Link</th>
+                  <th className="pb-2 text-right font-semibold">Esta semana</th>
+                  <th className="pb-2 pl-3 text-right font-semibold">Este mês</th>
+                </tr>
+              </thead>
+              <tbody>
+                {linkRows.map((r, i) => (
+                  <tr key={i} className="border-b border-[#EFEDE7] last:border-0">
+                    <td className="py-2.5 font-medium">{r.name}</td>
+                    <td className="py-2.5 text-right tabular-nums">{r.week.toLocaleString("pt-BR")}</td>
+                    <td className="py-2.5 pl-3 text-right tabular-nums">{r.month.toLocaleString("pt-BR")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </section>
 
-        <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
-          <h2 className="mb-3 font-semibold">Atividade recente</h2>
+        <section className={`${panel} p-5`}>
+          <h2 className="mb-3 text-[15px] font-semibold">Atividade recente</h2>
           {activity.length === 0 ? (
-            <p className="py-6 text-center text-sm text-stone-500">Nada ainda.</p>
+            <p className={empty}>Nada ainda.</p>
           ) : (
             <ul className="flex flex-col gap-3 text-sm">
               {activity.map((item, index) => (
@@ -372,7 +549,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
                     <span className="mt-1 h-2 w-2 shrink-0 rounded-full" style={{ background: item.color }} />
                     <span>{item.text}</span>
                   </span>
-                  <span className="shrink-0 whitespace-nowrap text-xs text-stone-400">{item.when}</span>
+                  <span className="shrink-0 whitespace-nowrap text-xs text-stone-600">{item.when}</span>
                 </li>
               ))}
             </ul>
@@ -380,139 +557,28 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
         </section>
       </div>
 
-      <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
-        <h2 className="font-semibold">Pessoas por link</h2>
-        <p className="mb-3 text-xs text-stone-500">Quantas pessoas diferentes clicaram em cada link.</p>
-        {linkRows.length === 0 ? (
-          <p className="py-6 text-center text-sm text-stone-500">Sem cliques nos últimos 30 dias.</p>
+      <section className={`${panel} p-5`}>
+        <h2 className="mb-3 text-[15px] font-semibold">Campanhas</h2>
+        {campaignSources.length === 0 && campaigns.length === 0 ? (
+          <div className="text-sm text-stone-600">
+            <p>Nenhuma campanha ainda.</p>
+            <p className="mt-2">
+              Adicione <code className="rounded bg-[#F3F2EE] px-1">?utm_source=instagram&amp;utm_campaign=promo</code> no fim do seu link ao divulgar. Assim dá para medir de qual post ou anúncio veio cada visita.
+            </p>
+          </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-stone-200 text-left text-xs text-stone-400">
-                <th className="pb-2 font-medium">Link</th>
-                <th className="pb-2 text-right font-medium">Esta semana</th>
-                <th className="pb-2 pl-3 text-right font-medium">Este mês</th>
-              </tr>
-            </thead>
-            <tbody>
-              {linkRows.map((r, i) => (
-                <tr key={i} className="border-b border-stone-100 last:border-0">
-                  <td className="py-2.5">
-                    <span className="font-medium">{r.name}</span>
-                    {r.type ? <span className="ml-2 text-xs text-stone-400">{BLOCK_CATALOG[r.type].label}</span> : null}
-                  </td>
-                  <td className="py-2.5 text-right tabular-nums">{r.week.toLocaleString("pt-BR")}</td>
-                  <td className="py-2.5 pl-3 text-right tabular-nums">{r.month.toLocaleString("pt-BR")}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </section>
-
-      <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
-        <h2 className="mb-3 font-semibold">Sessões por local</h2>
-        {countries.length === 0 ? (
-          <p className="py-6 text-center text-sm text-stone-500">
-            Sem dados de localização ainda — vão aparecer conforme as novas visitas chegarem.
-          </p>
-        ) : (
-          <>
-            <WorldMap countries={countries} />
-            <div className="grid gap-6 md:grid-cols-2">
-            <div>
-              <p className="mb-2 text-xs font-semibold text-stone-500">Países</p>
-              <ul className="flex flex-col gap-2.5 text-sm">
-                {countries.map(([cc, count]) => (
-                  <li key={cc} className="flex items-center gap-3">
-                    <span className="w-32 shrink-0 truncate">
-                      {flagEmoji(cc)} {countryName(cc)}
-                    </span>
-                    <span className="h-2 flex-1 overflow-hidden rounded-full bg-stone-100">
-                      <span className="block h-full rounded-full bg-[#2563eb]" style={{ width: `${(count / maxCountry) * 100}%` }} />
-                    </span>
-                    <span className="w-10 text-right tabular-nums text-stone-500">{count.toLocaleString("pt-BR")}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <p className="mb-2 text-xs font-semibold text-stone-500">Cidades</p>
-              {cities.length === 0 ? (
-                <p className="text-sm text-stone-500">Sem cidade identificada.</p>
-              ) : (
-                <ol className="flex flex-col gap-2 text-sm">
-                  {cities.map(([key, count]) => {
-                    const [city, cc] = key.split("|");
-                    return (
-                      <li key={key} className="flex justify-between gap-3">
-                        <span className="truncate">
-                          {cc ? `${flagEmoji(cc)} ` : ""}
-                          {city}
-                        </span>
-                        <span className="tabular-nums text-stone-600">{count.toLocaleString("pt-BR")}</span>
-                      </li>
-                    );
-                  })}
-                </ol>
-              )}
-            </div>
-            </div>
-          </>
-        )}
-      </section>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
-          <h2 className="mb-3 font-semibold">Dispositivos</h2>
-          {devices.length === 0 ? (
-            <p className="py-6 text-center text-sm text-stone-500">Sem dados de dispositivo ainda.</p>
-          ) : (
-            <>
-              <ul className="flex flex-col gap-2.5 text-sm">
-                {devices.map(([name, count]) => (
-                  <li key={name} className="flex items-center gap-3">
-                    <span className="w-24 shrink-0">{name}</span>
-                    <span className="h-2 flex-1 overflow-hidden rounded-full bg-stone-100">
-                      <span className="block h-full rounded-full bg-[#2563eb]" style={{ width: `${(count / maxDevice) * 100}%` }} />
-                    </span>
-                    <span className="w-10 text-right tabular-nums text-stone-500">{count.toLocaleString("pt-BR")}</span>
-                  </li>
-                ))}
-              </ul>
-              {browsers.length ? (
-                <div className="mt-4 border-t border-stone-100 pt-3">
-                  <p className="mb-2 text-xs font-semibold text-stone-500">Navegadores</p>
-                  <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-stone-600">
-                    {browsers.map(([name, count]) => (
-                      <li key={name} className="tabular-nums">
-                        {name} <span className="text-stone-400">{count.toLocaleString("pt-BR")}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-            </>
-          )}
-        </section>
-
-        <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
-          <h2 className="mb-3 font-semibold">Campanhas</h2>
-          {campaignSources.length === 0 && campaigns.length === 0 ? (
-            <div className="py-4 text-sm text-stone-500">
-              <p>Nenhuma campanha ainda.</p>
-              <p className="mt-2">
-                Adicione <code className="rounded bg-stone-100 px-1">?utm_source=instagram&amp;utm_campaign=promo</code> no fim do seu
-                link ao divulgar — assim dá para medir de qual post/anúncio veio cada visita.
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-4">
-              {campaignSources.length ? (
-                <div>
-                  <p className="mb-2 text-xs font-semibold text-stone-500">Origem (utm_source)</p>
+          <div className="grid gap-6 sm:grid-cols-2">
+            {(
+              [
+                ["Origem", campaignSources],
+                ["Campanha", campaigns],
+              ] as const
+            ).map(([title, rows]) =>
+              rows.length ? (
+                <div key={title}>
+                  <p className="mb-2 text-xs font-semibold text-stone-600">{title}</p>
                   <ul className="flex flex-col gap-1.5 text-sm">
-                    {campaignSources.map(([name, count]) => (
+                    {rows.map(([name, count]) => (
                       <li key={name} className="flex justify-between gap-3">
                         <span className="truncate">{name}</span>
                         <span className="tabular-nums text-stone-600">{count.toLocaleString("pt-BR")}</span>
@@ -520,26 +586,13 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
                     ))}
                   </ul>
                 </div>
-              ) : null}
-              {campaigns.length ? (
-                <div>
-                  <p className="mb-2 text-xs font-semibold text-stone-500">Campanha (utm_campaign)</p>
-                  <ul className="flex flex-col gap-1.5 text-sm">
-                    {campaigns.map(([name, count]) => (
-                      <li key={name} className="flex justify-between gap-3">
-                        <span className="truncate">{name}</span>
-                        <span className="tabular-nums text-stone-600">{count.toLocaleString("pt-BR")}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-            </div>
-          )}
-        </section>
-      </div>
+              ) : null,
+            )}
+          </div>
+        )}
+      </section>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-2">
         <Ranking
           title="Cliques nas redes"
           rows={[...summary.bySocial].map(([platform, count]) => [SOCIAL_LABELS[platform as SocialPlatform] ?? platform, count])}
@@ -550,38 +603,145 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   );
 }
 
-function Kpi({
-  label,
-  value,
-  delta,
-  hint,
-  spark,
-  sparkColor = "#2563eb",
-}: {
-  label: string;
-  value: number | string;
-  delta: number | null;
-  hint?: string;
-  spark?: number[];
-  sparkColor?: string;
-}) {
+// One of the three headline numbers: value, change against the previous
+// period, a small trend line, and today next to yesterday.
+function Stat({ label, value, delta, spark, today, yesterday }: { label: string; value: number; delta: number | null; spark: number[]; today: number; yesterday: number }) {
   return (
-    <div className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
-      <p className="text-sm text-stone-500">{label}</p>
-      <div className="mt-1 flex items-end justify-between gap-2">
-        <p className="text-3xl font-bold tabular-nums">{typeof value === "number" ? value.toLocaleString("pt-BR") : value}</p>
-        <Delta value={delta} />
+    <div className="flex items-start justify-between gap-3 rounded-[10px] border border-[#EFEDE7] p-3.5">
+      <div className="min-w-0">
+        <p className="text-[13px] text-stone-700">{label}</p>
+        <p className="mt-1 flex items-baseline gap-2">
+          <span className="text-[22px] font-semibold tabular-nums tracking-[-0.02em]">{value.toLocaleString("pt-BR")}</span>
+          <Trend value={delta} />
+        </p>
+        <p className="mt-1 text-xs text-stone-600">
+          {today.toLocaleString("pt-BR")} hoje <span aria-hidden>·</span> {yesterday.toLocaleString("pt-BR")} ontem
+        </p>
       </div>
-      {spark && spark.some((v) => v > 0) ? (
-        <div className="mt-2">
-          <Spark data={spark} color={sparkColor} />
-        </div>
-      ) : hint ? (
-        <p className="mt-1 text-xs text-stone-400">{hint}</p>
-      ) : null}
+      <div className="mt-3 w-[42%] max-w-[150px] shrink-0">{spark.some((v) => v > 0) ? <Spark data={spark} color="#3A55F5" /> : <span className="block h-px w-full translate-y-3 bg-[#D9DDFD]" />}</div>
     </div>
   );
 }
+
+// Change against the previous period: an arrow and the percentage, green when
+// it is good news and red when it is not.
+function Trend({ value, lowerIsBetter = false }: { value: number | null; lowerIsBetter?: boolean }) {
+  if (value === null || !isFinite(value)) return null;
+  if (Math.abs(value) < 0.5) return <span className="text-xs tabular-nums text-stone-600">0%</span>;
+  const up = value > 0;
+  const good = lowerIsBetter ? !up : up;
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs font-medium tabular-nums ${good ? "text-[#2F6B3A]" : "text-red-700"}`}>
+      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d={up ? "M3 17 9 11l4 4 8-8M15 7h6v6" : "M3 7l6 6 4-4 8 8M15 17h6v-6"} />
+      </svg>
+      {Math.abs(value).toFixed(0)}%
+    </span>
+  );
+}
+
+// A named bar with its count, and the change when there is one to compare.
+function BarRow({ name, count, max, delta }: { name: string; count: number; max: number; delta?: number | null }) {
+  return (
+    <li>
+      <span className="flex items-baseline justify-between gap-3 text-sm">
+        <span className="truncate">{name}</span>
+        <span className="flex shrink-0 items-center gap-2.5">
+          {delta !== undefined ? <Trend value={delta} /> : null}
+          <span className="font-semibold tabular-nums">{count.toLocaleString("pt-BR")}</span>
+        </span>
+      </span>
+      <span className="mt-1.5 block h-[5px] overflow-hidden rounded-full bg-[#E9E8EF]">
+        <span className="block h-full rounded-full bg-blue-500" style={{ width: `${Math.max(2, (count / Math.max(1, max)) * 100)}%` }} />
+      </span>
+    </li>
+  );
+}
+
+function Engagement({ label, value, delta, icon, lowerIsBetter }: { label: string; value: string; delta: number | null; icon: "pages" | "clock" | "exit"; lowerIsBetter?: boolean }) {
+  return (
+    <li className="flex items-center gap-3 border-b border-[#EFEDE7] py-3.5 last:border-b-0">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#EDEDF8] text-stone-900">
+        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          {icon === "pages" ? (
+            <path d="M9 11V5a1.5 1.5 0 0 1 3 0v5m0 0V8.5a1.5 1.5 0 0 1 3 0V11m0 0v-1a1.5 1.5 0 0 1 3 0v5a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L3.5 15a1.5 1.5 0 0 1 2.5-1.6L9 16" />
+          ) : icon === "clock" ? (
+            <>
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 2" />
+            </>
+          ) : (
+            <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10" />
+          )}
+        </svg>
+      </span>
+      <span className="min-w-0 flex-1 text-sm">{label}</span>
+      <Trend value={delta} lowerIsBetter={lowerIsBetter} />
+      <span className="text-sm font-semibold tabular-nums">{value}</span>
+    </li>
+  );
+}
+
+// Sessions per day as a filled line, with a light scale on the left.
+function AreaChart({ daily }: { daily: Summary["daily"] }) {
+  const n = daily.length;
+  const max = Math.max(1, ...daily.map((d) => d.views));
+  const top = Math.max(4, Math.ceil(max / 4) * 4);
+  const W = 320;
+  const H = 170;
+  const left = 26;
+  const x = (i: number) => left + (n <= 1 ? (W - left) / 2 : (i / (n - 1)) * (W - left - 4));
+  const y = (v: number) => 8 + (1 - v / top) * (H - 16);
+  // A smooth curve through the points (each segment eased horizontally).
+  const line = daily
+    .map((d, i) => {
+      if (i === 0) return `M${x(0).toFixed(1)} ${y(d.views).toFixed(1)}`;
+      const mid = ((x(i - 1) + x(i)) / 2).toFixed(1);
+      return `C${mid} ${y(daily[i - 1].views).toFixed(1)} ${mid} ${y(d.views).toFixed(1)} ${x(i).toFixed(1)} ${y(d.views).toFixed(1)}`;
+    })
+    .join(" ");
+  const area = `${line} L${x(n - 1).toFixed(1)} ${H - 8} L${x(0).toFixed(1)} ${H - 8} Z`;
+  const ticks = [1, 0.75, 0.5, 0.25].map((t) => Math.round(top * t));
+  const step = Math.max(1, Math.ceil(n / 5));
+  const label = (day: string) => new Date(day + "T12:00:00Z").toLocaleDateString("pt-BR", { day: "numeric", month: "short", timeZone: "UTC" }).replace(".", "");
+  return (
+    <div className="mt-3">
+      <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" role="img" aria-label="Sessões por dia">
+        {ticks.map((t) => (
+          <g key={t}>
+            <line x1={left} x2={W} y1={y(t)} y2={y(t)} stroke="#EFEDE7" strokeWidth="1" />
+            <text x={left - 6} y={y(t) + 3.5} textAnchor="end" fontSize="10" fill="#5B5D7A">
+              {t}
+            </text>
+          </g>
+        ))}
+        <path d={area} fill="#3A55F5" opacity="0.16" />
+        <path d={line} fill="none" stroke="#3A55F5" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
+      </svg>
+      <div className="flex justify-between pl-[26px] text-[11px] text-stone-600">
+        {daily.filter((_, i) => i % step === 0).map((d) => (
+          <span key={d.day}>{label(d.day)}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function WeekdayBars({ data }: { data: { label: string; value: number }[] }) {
+  const max = Math.max(1, ...data.map((d) => d.value));
+  return (
+    <div className="mt-4 flex h-[150px] items-end gap-2.5">
+      {data.map((d) => (
+        <div key={d.label} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1.5">
+          <span className="text-[11px] tabular-nums text-stone-600">{d.value >= 10 ? Math.round(d.value) : d.value.toFixed(1).replace(".", ",").replace(",0", "")}</span>
+          <span className="block w-full rounded-t-[4px] bg-blue-500" style={{ height: `${Math.max(2, (d.value / max) * 100)}%` }} />
+          <span className="truncate text-[11px] text-stone-600">{d.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 
 function Spark({ data, color }: { data: number[]; color: string }) {
   const n = data.length;
@@ -605,72 +765,7 @@ function Spark({ data, color }: { data: number[]; color: string }) {
   );
 }
 
-function Delta({ value }: { value: number | null }) {
-  if (value === null || !isFinite(value) || Math.abs(value) < 0.05) {
-    return <span className="pb-1 text-xs text-stone-400">—</span>;
-  }
-  const up = value > 0;
-  return (
-    <span className={`pb-1 text-xs font-semibold tabular-nums ${up ? "text-emerald-600" : "text-red-500"}`}>
-      {up ? "▲" : "▼"} {Math.abs(value).toFixed(0)}%
-    </span>
-  );
-}
 
-function DailyChart({ summary }: { summary: Summary }) {
-  const daily = summary.daily;
-  const n = daily.length;
-  const max = Math.max(1, ...daily.map((d) => Math.max(d.views, d.clicks)));
-  const W = 600;
-  const H = 180;
-  const padX = 4;
-  const padTop = 10;
-  const x = (i: number) => (n <= 1 ? W / 2 : (i / (n - 1)) * (W - padX * 2) + padX);
-  const y = (v: number) => H - (v / max) * (H - padTop) - 2;
-  const buildLine = (sel: (d: (typeof daily)[number]) => number) =>
-    daily.map((d, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)} ${y(sel(d)).toFixed(1)}`).join(" ");
-  const viewsLine = buildLine((d) => d.views);
-  const viewsArea = `${viewsLine} L ${x(n - 1).toFixed(1)} ${H} L ${x(0).toFixed(1)} ${H} Z`;
-  const clicksLine = buildLine((d) => d.clicks);
-  const step = n > 30 ? 10 : n > 10 ? 5 : 2;
-  const labels = daily.filter((_, i) => i % step === 0);
-  return (
-    <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-semibold">Visitas e cliques por dia</h2>
-        <div className="flex gap-4 text-xs text-stone-500">
-          <span className="flex items-center gap-1.5">
-            <span className="h-0.5 w-3 rounded-full bg-[#2563eb]" /> Visitas
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-0.5 w-3 rounded-full bg-stone-800" /> Cliques
-          </span>
-        </div>
-      </div>
-      <div className="relative">
-        <span className="absolute left-0 top-0 text-[10px] text-stone-400">{max.toLocaleString("pt-BR")}</span>
-        <svg viewBox={`0 0 ${W} ${H}`} className="h-48 w-full" preserveAspectRatio="none" role="img" aria-label="Gráfico de visitas e cliques por dia">
-          <defs>
-            <linearGradient id="viewsFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#2563eb" stopOpacity="0.22" />
-              <stop offset="1" stopColor="#2563eb" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <path d={viewsArea} fill="url(#viewsFill)" />
-          <path d={viewsLine} fill="none" stroke="#2563eb" strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round" />
-          <path d={clicksLine} fill="none" stroke="#111827" strokeWidth="1.5" strokeDasharray="4 3" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
-        </svg>
-      </div>
-      <div className="mt-2 flex justify-between text-[10px] text-stone-400">
-        {labels.map((d) => (
-          <span key={d.day}>
-            {d.day.slice(8, 10)}/{d.day.slice(5, 7)}
-          </span>
-        ))}
-      </div>
-    </section>
-  );
-}
 
 function Heatmap({ heat, max }: { heat: number[][]; max: number }) {
   const days = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -719,7 +814,7 @@ function Heatmap({ heat, max }: { heat: number[][]; max: number }) {
   );
 }
 
-function Donut({ segments }: { segments: { label: string; value: number; color: string }[] }) {
+function Donut({ segments, caption = "cliques" }: { segments: { label: string; value: number; color: string }[]; caption?: string }) {
   const total = segments.reduce((a, s) => a + s.value, 0) || 1;
   let offset = 25; // start at top
   return (
@@ -749,7 +844,7 @@ function Donut({ segments }: { segments: { label: string; value: number; color: 
         {total.toLocaleString("pt-BR")}
       </text>
       <text x="18" y="23" textAnchor="middle" dominantBaseline="middle" className="fill-stone-400 text-[2.6px]">
-        cliques
+        {caption}
       </text>
     </svg>
   );
@@ -802,12 +897,6 @@ function FreeAnalytics({ visits }: { visits: number }) {
   );
 }
 
-// ISO-3166 alpha-2 → emoji flag (regional indicator letters).
-function flagEmoji(cc: string): string {
-  if (!/^[A-Za-z]{2}$/.test(cc)) return "🌐";
-  const base = 0x1f1e6;
-  return String.fromCodePoint(...[...cc.toUpperCase()].map((c) => base + c.charCodeAt(0) - 65));
-}
 
 const COUNTRY_NAMES: Record<string, string> = {
   BR: "Brasil",
@@ -835,70 +924,8 @@ function countryName(cc: string): string {
   return COUNTRY_NAMES[cc.toUpperCase()] ?? cc.toUpperCase();
 }
 
-// Rough continent blobs (equirectangular, in degrees) used to draw a dotted
-// world map. Each is [centerLon, centerLat, radiusLon, radiusLat]; a grid point
-// is "land" when it falls inside any blob.
-const CONTINENTS: [number, number, number, number][] = [
-  [-100, 45, 34, 20], // North America
-  [-95, 62, 32, 13], // Canada
-  [-85, 14, 11, 9], // Central America
-  [-42, 72, 12, 9], // Greenland
-  [-60, -15, 17, 30], // South America
-  [-66, 3, 13, 11], // northern South America
-  [15, 52, 27, 13], // Europe
-  [18, 2, 23, 33], // Africa
-  [95, 50, 52, 26], // Asia
-  [80, 22, 12, 14], // India
-  [112, 8, 17, 11], // Southeast Asia
-  [134, -25, 17, 11], // Australia
-];
-function isLand(lon: number, lat: number): boolean {
-  return CONTINENTS.some(([cx, cy, rx, ry]) => ((lon - cx) / rx) ** 2 + ((lat - cy) / ry) ** 2 <= 1);
-}
 
-// Approximate country centroids [lon, lat] for placing pins.
-const CENTROIDS: Record<string, [number, number]> = {
-  BR: [-52, -10], PT: [-8, 39.5], US: [-98, 39], AR: [-64, -38], CL: [-71, -35], CO: [-73, 4],
-  MX: [-102, 23], UY: [-56, -33], PY: [-58, -23], PE: [-76, -10], ES: [-4, 40], GB: [-2, 54],
-  FR: [2, 47], DE: [10, 51], IT: [12, 42], CA: [-106, 56], JP: [138, 36], AU: [134, -25],
-  AO: [17, -12], MZ: [35, -18],
-};
 
-// A dotted world map with a pin per country, sized by sessions.
-function WorldMap({ countries }: { countries: [string, number][] }) {
-  const max = Math.max(1, ...countries.map(([, n]) => n));
-  const lats: number[] = [];
-  for (let lat = 78; lat >= -56; lat -= 4) lats.push(lat);
-  const lons: number[] = [];
-  for (let lon = -170; lon <= 178; lon += 4) lons.push(lon);
-  const dots = lats.flatMap((lat) =>
-    lons
-      .filter((lon) => isLand(lon, lat))
-      .map((lon) => <circle key={`${lon},${lat}`} cx={lon + 180} cy={90 - lat} r={1.1} className="fill-stone-300" />),
-  );
-  const pins = countries
-    .filter(([cc]) => CENTROIDS[cc])
-    .map(([cc, count]) => {
-      const [lon, lat] = CENTROIDS[cc];
-      const r = 2.2 + (count / max) * 5;
-      return (
-        <g key={cc}>
-          <circle cx={lon + 180} cy={90 - lat} r={r + 2} fill="#2563eb" fillOpacity={0.15} />
-          <circle cx={lon + 180} cy={90 - lat} r={r} fill="#2563eb" stroke="#fff" strokeWidth={0.8}>
-            <title>{`${countryName(cc)}: ${count.toLocaleString("pt-BR")} ${count === 1 ? "sessão" : "sessões"}`}</title>
-          </circle>
-        </g>
-      );
-    });
-  return (
-    <div className="mb-5 overflow-hidden rounded-xl bg-stone-50 ring-1 ring-stone-100">
-      <svg viewBox="8 14 344 150" className="h-56 w-full" role="img" aria-label="Mapa de sessões por país">
-        {dots}
-        {pins}
-      </svg>
-    </div>
-  );
-}
 
 function Ranking({ title, rows }: { title: string; rows: [string, number][] }) {
   const sorted = rows.sort((a, b) => b[1] - a[1]).slice(0, 10);
