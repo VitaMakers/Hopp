@@ -429,6 +429,10 @@ export const pageDocSchema = z.object({
     // Framing of the single cover image (image type), as object-position %.
     coverPosX: z.number().int().min(0).max(100).default(50),
     coverPosY: z.number().int().min(0).max(100).default(50),
+    // Size of the cover on the page, in %. Below 100 the cover band gets
+    // narrower (the whole image looks smaller); above 100 the image is zoomed
+    // inside the band (closer, cropping the edges).
+    coverScale: z.number().int().min(40).max(200).default(100),
     // Cover banner look (classic/card layouts): height in px, rounded bottom
     // corners, and a fade into the page background to soften the edge.
     coverHeight: z.number().int().min(120).max(900).default(420),
