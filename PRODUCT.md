@@ -12,7 +12,7 @@ Two primary users, served equally:
 - **Agencies and social-media managers** who manage the pages of several clients from one account, mostly on a computer, and need speed and organization.
 
 ## Product Purpose
-Virtú.bio (virttu.tech) lets a business publish a link-in-bio page that looks like a professional mini-site, edit it without design skills, and see who visits and what they click. Success: the owner finds every function without help, the page looks distinct from generic link lists, and free users see enough value to upgrade.
+Virtú.bio (vmbio.pro) lets a business publish a link-in-bio page that looks like a professional mini-site, edit it without design skills, and see who visits and what they click. Success: the owner finds every function without help, the page looks distinct from generic link lists, and free users see enough value to upgrade.
 
 ## Positioning
 - Premium designed models: pages that look like a real site, not a stack of identical buttons.

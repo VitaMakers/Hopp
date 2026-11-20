@@ -4,7 +4,7 @@ import { useState } from "react";
 
 // The page address with a copy button. The origin is read in the browser, so
 // it shows the domain the dashboard is being used on.
-export function CopyLinkButton({ handle, variant = "field" }: { handle: string; variant?: "field" | "button" }) {
+export function CopyLinkButton({ handle, host, variant = "field" }: { handle: string; host?: string; variant?: "field" | "button" }) {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -32,7 +32,7 @@ export function CopyLinkButton({ handle, variant = "field" }: { handle: string; 
   return (
     <span className="flex h-10 items-center overflow-hidden rounded-[10px] border border-[#E5E2DA] bg-white">
       <span className="px-3 text-sm text-stone-700">
-        virttu.tech/<strong className="font-semibold text-stone-900">{handle}</strong>
+        {host ?? "vmbio.pro"}/<strong className="font-semibold text-stone-900">{handle}</strong>
       </span>
       <button
         type="button"

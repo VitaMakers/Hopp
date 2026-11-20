@@ -5,6 +5,7 @@ import { blockSummary } from "@/lib/page/catalog";
 import { pageDocSchema, type PageDoc } from "@/lib/page/schema";
 import { TEMPLATES } from "@/lib/page/templates";
 import { formatBRL, PLAN_PRICE_BRL } from "@/lib/plans";
+import { siteOrigin } from "@/lib/request";
 import { getOwner } from "./context";
 import { CopyLinkButton } from "./CopyLinkButton";
 
@@ -33,6 +34,7 @@ function change(now: number, before: number): { text: string; up: boolean | null
 
 export default async function HomePage() {
   const { supabase, profile } = await getOwner();
+  const host = new URL(await siteOrigin()).host;
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * DAY).toISOString();
   const twoWeeksAgo = new Date(now.getTime() - 14 * DAY).toISOString();
@@ -107,7 +109,7 @@ export default async function HomePage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <CopyLinkButton handle={profile.handle} />
+          <CopyLinkButton handle={profile.handle} host={host} />
           <Link href="/dashboard/editor" className="inline-flex h-10 items-center rounded-[10px] bg-stone-900 px-[18px] text-sm font-semibold text-white transition-colors hover:bg-stone-800">
             Editar página
           </Link>

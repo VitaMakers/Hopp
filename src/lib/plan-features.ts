@@ -14,7 +14,7 @@ export type PlanFeature = {
 };
 
 export const PLAN_FEATURES: PlanFeature[] = [
-  { label: "Página no seu endereço (virttu.tech/voce)", free: true, essencial: true, profissional: true },
+  { label: "Página no seu endereço (vmbio.pro/voce)", free: true, essencial: true, profissional: true },
   { label: "Blocos de links, produtos e captação de contatos", free: true, essencial: true, profissional: true },
   { label: "Modelos essenciais prontos", free: true, essencial: true, profissional: true },
   { label: "Modelos premium exclusivos", free: false, essencial: true, profissional: true },
