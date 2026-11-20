@@ -433,6 +433,10 @@ export const pageDocSchema = z.object({
     // closer, cropping the edges). Values under 100 come from an earlier
     // version, where they shrank the band: they are read as its width.
     coverScale: z.number().int().min(40).max(200).default(100),
+    // Height of the cover band relative to its format, in % (100 = the
+    // format's own height; less = shorter, more = taller). Not used by the
+    // "original" format, whose height follows the image.
+    coverTall: z.number().int().min(40).max(160).default(100),
     // How much of the page width the cover band takes, in %.
     coverWidth: z.number().int().min(40).max(100).default(100),
     // Breathing room around the cover: with it the cover sits inside the page

@@ -256,6 +256,7 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
                       x={profile.coverPosX}
                       y={profile.coverPosY}
                       zoom={zoomValue / 100}
+                      tall={profile.coverTall}
                       onChange={(x, y) => setProfile({ coverPosX: x, coverPosY: y })}
                     />
                     <div className="flex max-w-[280px] flex-col gap-4">
@@ -277,6 +278,19 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
                         value={widthValue}
                         onChange={(coverWidth) => setProfile({ coverWidth, coverScale: zoomValue })}
                       />
+                      {profile.coverFormat === "original" ? (
+                        <p className="text-xs text-stone-600">No formato Original a altura acompanha a imagem. Para escolher a altura, use Horizontal, Vertical ou Tela cheia.</p>
+                      ) : (
+                        <CoverSlider
+                          id="cover-tall"
+                          label="Altura"
+                          hint="Deixa a capa mais baixa ou mais alta."
+                          min={40}
+                          max={160}
+                          value={profile.coverTall}
+                          onChange={(coverTall) => setProfile({ coverTall })}
+                        />
+                      )}
                       <div className="flex flex-col gap-1.5">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="text-[13px] font-medium text-stone-800">Espaço em volta:</span>
@@ -322,7 +336,7 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
                       </div>
                     </div>
                     {imageSrc(img.url) ? (
-                      <CoverPositioner url={img.url} format={profile.coverFormat} x={img.x} y={img.y} onChange={(x, y) => setProfile({ coverImages: profile.coverImages.map((it, j) => (j === i ? { ...it, x, y } : it)) })} />
+                      <CoverPositioner url={img.url} format={profile.coverFormat} x={img.x} y={img.y} tall={profile.coverTall} onChange={(x, y) => setProfile({ coverImages: profile.coverImages.map((it, j) => (j === i ? { ...it, x, y } : it)) })} />
                     ) : null}
                     {showLinks ? (
                       <TextField label="" type="url" value={img.url} placeholder="https://..." onChange={(v) => setProfile({ coverImages: profile.coverImages.map((it, j) => (j === i ? { ...it, url: v } : it)) })} />
@@ -378,7 +392,7 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
 
 // A compact 3×3 picker for the focal point of a cover image (object-position).
 // The middle dot centres it; corners/edges pull the framing that way.
-const POS_ASPECT: Record<string, string> = { horizontal: "16 / 9", vertical: "4 / 5", full: "2 / 3" };
+const POS_ASPECT: Record<string, number> = { horizontal: 16 / 9, vertical: 4 / 5, full: 2 / 3 };
 
 // Shows the cover at the chosen format and lets the owner DRAG the image to
 // choose which part shows (sets object-position). No buttons — just drag.
@@ -388,6 +402,7 @@ function CoverPositioner({
   x,
   y,
   zoom = 1,
+  tall = 100,
   onChange,
 }: {
   url: string;
@@ -395,6 +410,8 @@ function CoverPositioner({
   x: number;
   y: number;
   zoom?: number;
+  // Height of the band, in % of the format's own height.
+  tall?: number;
   onChange: (x: number, y: number) => void;
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
@@ -429,7 +446,7 @@ function CoverPositioner({
       onPointerUp={up}
       onPointerCancel={up}
       className="relative w-full max-w-[280px] cursor-grab touch-none select-none overflow-hidden rounded-xl ring-1 ring-stone-300 active:cursor-grabbing"
-      style={format === "original" ? undefined : { aspectRatio: POS_ASPECT[format] ?? "4 / 5" }}
+      style={format === "original" ? undefined : { aspectRatio: (POS_ASPECT[format] ?? 4 / 5) / (tall / 100) }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={src} alt="" draggable={false} className={`pointer-events-none ${format === "original" ? "block h-auto w-full" : "absolute inset-0 h-full w-full object-cover"}`} style={{ objectPosition: `${x}% ${y}%`, transform: zoom > 1 ? `scale(${zoom})` : undefined, transformOrigin: `${x}% ${y}%` }} />
