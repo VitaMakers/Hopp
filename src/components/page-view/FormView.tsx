@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { youtubeEmbedUrl } from "@/lib/page/embed";
 import { imageSrc, whatsappHref } from "@/lib/page/links";
-import { FORM_DISPLAY_TYPES, type Block } from "@/lib/page/schema";
+import { FORM_DISPLAY_TYPES } from "@/lib/page/constants";
+import type { Block } from "@/lib/page/schema";
 import { DateField } from "./DateField";
 
 type FormConfig = Extract<Block, { type: "form" }>;

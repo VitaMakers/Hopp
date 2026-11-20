@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { PREMIUM_DEFAULTS, type Block, type BlockType, type PageDoc, type SocialPlatform, type Theme } from "./schema";
+import { PREMIUM_DEFAULTS, type Block, type BlockType, type PageDoc, type Theme } from "./schema";
 
 export const BLOCK_CATALOG: Record<BlockType, { label: string; description: string }> = {
   link: { label: "Link", description: "Botão que leva a qualquer endereço" },
@@ -22,21 +22,7 @@ export const BLOCK_CATALOG: Record<BlockType, { label: string; description: stri
   videos: { label: "Vídeos", description: "Vários vídeos em grade ou carrossel, tocando na página" },
 };
 
-export const SOCIAL_LABELS: Record<SocialPlatform, string> = {
-  instagram: "Instagram",
-  tiktok: "TikTok",
-  youtube: "YouTube",
-  facebook: "Facebook",
-  x: "X",
-  linkedin: "LinkedIn",
-  threads: "Threads",
-  pinterest: "Pinterest",
-  spotify: "Spotify",
-  whatsapp: "WhatsApp",
-  telegram: "Telegram",
-  email: "E-mail",
-  website: "Site",
-};
+export { SOCIAL_LABELS } from "./constants";
 
 export function createBlock(type: BlockType): Block {
   const base = { id: nanoid(10), enabled: true };

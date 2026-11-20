@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { stripePriceId } from "@/lib/env";
 import { changeSubscriptionPlan, subscriptionBelongsTo, subscriptionIsLive } from "@/lib/payments/billing";
@@ -22,6 +23,7 @@ export async function switchPlan(clientId: string, plan: "essencial" | "profissi
     if (subscriptionId && (await subscriptionIsLive(subscriptionId)) && (await subscriptionBelongsTo(subscriptionId, user.id))) {
       await changeSubscriptionPlan(subscriptionId, stripePriceId(plan), plan);
       await admin.from("profiles").update({ plan }).eq("id", client.id);
+      revalidatePath(`/${client.handle}`);
       changed = true;
     }
   } catch (error) {

@@ -203,7 +203,7 @@ body {
 .hero-cycle {
   position: absolute; left: 0; top: 0; width: 100%; opacity: 0;
   animation: heroCycle calc(var(--n) * 16s) linear infinite backwards;
-  animation-delay: calc(var(--i) * 16s);
+  animation-delay: calc(var(--i) * 16s - var(--lag, 0s));
 }
 @keyframes heroCycle {
   0% { opacity: 0; transform: translateY(0); }

@@ -228,8 +228,7 @@ export const FORM_FIELD_TYPES = [
   "image",
   "video",
 ] as const;
-// Blocks that show something but don't collect an answer.
-export const FORM_DISPLAY_TYPES = ["header", "image", "video"] as const;
+export { FORM_DISPLAY_TYPES } from "./constants";
 export const formFieldSchema = z.object({
   label: z.string().max(200),
   type: z.enum(FORM_FIELD_TYPES).default("text"),
