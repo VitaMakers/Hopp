@@ -115,3 +115,72 @@ body {
 .vita-premium-editable [data-edit]:hover [data-edit]:hover {
   outline-color: rgba(37, 99, 235, 0.9);
 }
+
+/* ---------- Landing: hero photo with the live page on the phone ---------- */
+.hero-stage-wrap { position: absolute; inset: 0; overflow: hidden; container-type: size; }
+/* The photo always covers the hero, anchored to the right where the phone is. */
+.hero-stage {
+  position: absolute; right: 0; top: 50%; translate: 0 -50%;
+  width: max(90cqw, 90cqh * 1.7872); aspect-ratio: 1344 / 752; top: 55%;
+  container-type: inline-size; will-change: transform;
+}
+/* A 390x894 page mapped onto the four corners of the phone's screen in the
+   photo (measured on the 1344px-wide original), then scaled with the photo. */
+.hero-screen {
+  position: absolute; left: 0; top: 0; width: 390px; height: 894px; overflow: hidden;
+  border-radius: 54px; background: #0e0e12; transform-origin: 0 0;
+  transform: scale(tan(atan2(100cqw, 1344px)))
+    matrix3d(0.50602535,0.077794563,0,-7.2591889e-05,-0.20971765,0.56053435,0,-2.8149557e-05,0,0,1,0,1001.0012,60.142918,0,1);
+}
+@media (max-width: 1023px) {
+  .hero-stage-wrap { position: relative; inset: auto; height: 132vw; max-height: 760px; container-type: normal; }
+  .hero-stage { width: 240%; top: 0; translate: none; }
+}
+
+/* ---------- Landing: 3D corridor of models ---------- */
+.tunnel-stage { perspective: 1000px; background: #070817; }
+.tunnel-ring {
+  position: absolute; left: 50%; top: 50%; width: 70vmin; height: 70vmin; border-radius: 9999px;
+  border: 1px solid rgba(150, 165, 255, 0.34); transform: translate(-50%, -50%) scale(0.4); opacity: 0;
+  pointer-events: none; will-change: transform, opacity;
+}
+.tunnel-card {
+  position: absolute; left: 50%; top: 50%; width: 200px; opacity: 0; will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+.tunnel-thumb {
+  position: relative; width: 200px; height: 340px; overflow: hidden; border-radius: 22px; background: #000;
+  box-shadow: 0 30px 70px -18px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.14); contain: strict;
+}
+.tunnel-thumb > div { width: 390px; transform-origin: top left; transform: scale(calc(200 / 390)); pointer-events: none; }
+.tunnel-label {
+  display: block; margin-top: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px;
+  letter-spacing: 0.24em; text-transform: uppercase; color: rgba(255, 255, 255, 0.72);
+}
+.tunnel-title { will-change: transform; text-shadow: 0 2px 40px rgba(7, 8, 23, 0.9); }
+@media (max-width: 639px) {
+  .tunnel-card { width: 132px; }
+  .tunnel-thumb { width: 132px; height: 226px; border-radius: 16px; }
+  .tunnel-thumb > div { transform: scale(calc(132 / 390)); }
+  .tunnel-label { font-size: 8px; }
+}
+/* Without motion: a plain row of models to swipe through. */
+@media (prefers-reduced-motion: reduce) {
+  .tunnel { height: auto !important; }
+  .tunnel-stage { position: static; height: auto; padding: 72px 0; display: flex; flex-direction: column; }
+  .tunnel-title { position: static; order: -1; padding-bottom: 32px; }
+  .tunnel-cards { position: static; display: flex; gap: 16px; overflow-x: auto; padding: 0 20px; }
+  .tunnel-card { position: static; opacity: 1; flex: none; }
+  .tunnel-ring, .tunnel-hint { display: none; }
+  .tunnel-cta { position: static; opacity: 1 !important; padding-top: 32px; }
+}
+
+/* ---------- Landing: cards that tilt toward the mouse ---------- */
+.tilt { position: relative; transition: transform 0.25s ease-out; transform-style: preserve-3d; }
+.tilt::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
+  background: radial-gradient(420px circle at var(--gx, 50%) var(--gy, 50%), rgba(140, 158, 255, 0.2), transparent 60%);
+  transition: opacity 0.25s;
+}
+.tilt:hover::after { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .tilt { transform: none !important; } }
