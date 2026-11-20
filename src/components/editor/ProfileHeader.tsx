@@ -240,7 +240,46 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
                 <TextField label="Imagem da capa (link ou envie)" type="url" value={profile.coverUrl} placeholder="https://..." onChange={(coverUrl) => setProfile({ coverUrl })} />
                 <UploadButton label="Enviar capa" onUploaded={(coverUrl) => setProfile({ coverUrl })} />
                 {!isPremium && imageSrc(profile.coverUrl) ? (
-                  <CoverPositioner url={profile.coverUrl} format={profile.coverFormat} x={profile.coverPosX} y={profile.coverPosY} onChange={(x, y) => setProfile({ coverPosX: x, coverPosY: y })} />
+                  <>
+                    <CoverPositioner
+                      url={profile.coverUrl}
+                      format={profile.coverFormat}
+                      x={profile.coverPosX}
+                      y={profile.coverPosY}
+                      zoom={Math.max(100, profile.coverScale) / 100}
+                      onChange={(x, y) => setProfile({ coverPosX: x, coverPosY: y })}
+                    />
+                    <div className="flex max-w-[280px] flex-col gap-1.5">
+                      <div className="flex items-baseline justify-between">
+                        <label htmlFor="cover-scale" className="text-[13px] font-medium text-stone-800">
+                          Tamanho da imagem
+                        </label>
+                        <span className="text-[13px] tabular-nums text-stone-600">{profile.coverScale}%</span>
+                      </div>
+                      <div className="flex items-center gap-2.5">
+                        <span aria-hidden className="text-sm text-stone-600">−</span>
+                        <input
+                          id="cover-scale"
+                          type="range"
+                          min={40}
+                          max={200}
+                          step={5}
+                          value={profile.coverScale}
+                          onChange={(e) => setProfile({ coverScale: Number(e.target.value) })}
+                          className="h-1.5 w-full cursor-pointer accent-stone-900"
+                        />
+                        <span aria-hidden className="text-sm text-stone-600">+</span>
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-xs text-stone-600">Para a esquerda a imagem fica menor na página; para a direita, mais próxima.</p>
+                        {profile.coverScale !== 100 ? (
+                          <button type="button" onClick={() => setProfile({ coverScale: 100 })} className="shrink-0 text-xs font-semibold text-stone-800 underline underline-offset-2">
+                            Voltar a 100%
+                          </button>
+                        ) : null}
+                      </div>
+                    </div>
+                  </>
                 ) : null}
                 <p className="-mt-1 text-xs text-stone-500">Tamanho recomendado: 1080 × 1350 px (retrato).</p>
               </>
@@ -325,7 +364,21 @@ const POS_ASPECT: Record<string, string> = { horizontal: "16 / 9", vertical: "4 
 
 // Shows the cover at the chosen format and lets the owner DRAG the image to
 // choose which part shows (sets object-position). No buttons — just drag.
-function CoverPositioner({ url, format, x, y, onChange }: { url: string; format: string; x: number; y: number; onChange: (x: number, y: number) => void }) {
+function CoverPositioner({
+  url,
+  format,
+  x,
+  y,
+  zoom = 1,
+  onChange,
+}: {
+  url: string;
+  format: string;
+  x: number;
+  y: number;
+  zoom?: number;
+  onChange: (x: number, y: number) => void;
+}) {
   const boxRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{ px: number; py: number; x: number; y: number } | null>(null);
   const src = imageSrc(url);
@@ -361,7 +414,7 @@ function CoverPositioner({ url, format, x, y, onChange }: { url: string; format:
       style={{ aspectRatio: POS_ASPECT[format] ?? "4 / 5" }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt="" draggable={false} className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ objectPosition: `${x}% ${y}%` }} />
+      <img src={src} alt="" draggable={false} className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ objectPosition: `${x}% ${y}%`, transform: zoom > 1 ? `scale(${zoom})` : undefined, transformOrigin: `${x}% ${y}%` }} />
       <span className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 rounded bg-black/55 px-2 py-0.5 text-[10px] font-medium text-white">
         arraste para posicionar
       </span>

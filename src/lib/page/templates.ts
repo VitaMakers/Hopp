@@ -139,7 +139,7 @@ export function page(
 ): PageDoc {
   return {
     version: 1,
-    profile: { name, bio: "", avatarUrl: "", coverUrl: "", coverVideo: "", logo: "", verified: false, hideAvatar: false, hideName: false, coverType: "image", coverImages: [], coverVideos: [], coverSeconds: 4, coverPosX: 50, coverPosY: 50, coverHeight: 420, coverRounded: true, coverShade: false, coverFit: "cover", coverFormat: "vertical", floatingWhatsapp: "", ...parts.profile },
+    profile: { name, bio: "", avatarUrl: "", coverUrl: "", coverVideo: "", logo: "", verified: false, hideAvatar: false, hideName: false, coverType: "image", coverImages: [], coverVideos: [], coverSeconds: 4, coverPosX: 50, coverPosY: 50, coverScale: 100, coverHeight: 420, coverRounded: true, coverShade: false, coverFit: "cover", coverFormat: "vertical", floatingWhatsapp: "", ...parts.profile },
     socials: parts.socials ?? [],
     blocks: parts.blocks,
     theme: { ...baseTheme, ...parts.theme },

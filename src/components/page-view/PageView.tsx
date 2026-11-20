@@ -421,10 +421,19 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
   const coverRadius = profile.coverRounded ? "rounded-[1.4rem]" : "";
   const coverAspect = COVER_ASPECT[profile.coverFormat] ?? COVER_ASPECT.vertical;
   const hasHeader = headerHasContent(doc);
+  // The owner's size choice: under 100% the band shrinks and centres; over
+  // 100% the image zooms in around the point chosen when positioning it.
+  const coverScale = profile.coverScale ?? 100;
+  const coverSmall = coverScale < 100;
+  const coverZoom = Math.max(100, coverScale) / 100;
+  const zoomOrigin = coverImages.length === 1 ? `${coverImages[0].x}% ${coverImages[0].y}%` : "50% 50%";
   return (
     <>
       {showBanner ? (
-        <div className={`relative -mx-5 w-[calc(100%+2.5rem)] overflow-hidden ${coverAspect} ${coverRadius}`}>
+        <div
+          className={`relative overflow-hidden ${coverAspect} ${coverRadius} ${coverSmall ? "mx-auto mt-5" : "-mx-5 w-[calc(100%+2.5rem)]"}`}
+          style={coverSmall ? { width: `${coverScale}%` } : undefined}
+        >
           <CoverMedia
             videos={coverVideos}
             images={coverImages}
@@ -432,6 +441,7 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
             fallback={null}
             alt=""
             className="absolute inset-0 h-full w-full object-cover"
+            style={coverZoom > 1 ? { transform: `scale(${coverZoom})`, transformOrigin: zoomOrigin } : undefined}
           />
           {profile.coverShade ? <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-b from-transparent to-[var(--page-bg)]" /> : null}
         </div>
