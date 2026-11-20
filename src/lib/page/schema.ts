@@ -429,10 +429,15 @@ export const pageDocSchema = z.object({
     // Framing of the single cover image (image type), as object-position %.
     coverPosX: z.number().int().min(0).max(100).default(50),
     coverPosY: z.number().int().min(0).max(100).default(50),
-    // Size of the cover on the page, in %. Below 100 the cover band gets
-    // narrower (the whole image looks smaller); above 100 the image is zoomed
-    // inside the band (closer, cropping the edges).
+    // Zoom of the image inside the cover band, in % (100 = fills it, more =
+    // closer, cropping the edges). Values under 100 come from an earlier
+    // version, where they shrank the band: they are read as its width.
     coverScale: z.number().int().min(40).max(200).default(100),
+    // How much of the page width the cover band takes, in %.
+    coverWidth: z.number().int().min(40).max(100).default(100),
+    // Breathing room around the cover: with it the cover sits inside the page
+    // like a card; without it, it touches the top (and the sides at 100%).
+    coverGap: z.boolean().default(false),
     // Cover banner look (classic/card layouts): height in px, rounded bottom
     // corners, and a fade into the page background to soften the edge.
     coverHeight: z.number().int().min(120).max(900).default(420),
@@ -443,7 +448,8 @@ export const pageDocSchema = z.object({
     coverFit: z.enum(["cover", "contain"]).default("cover"),
     // Cover shape preset (consistent on phone and computer because it uses an
     // aspect ratio, not a fixed pixel height).
-    coverFormat: z.enum(["horizontal", "vertical", "full"]).default("vertical"),
+    // "original" follows the image's own proportion, so nothing is cropped.
+    coverFormat: z.enum(["horizontal", "vertical", "full", "original"]).default("vertical"),
     // Shown in the Presença/Ecossistema header in place of the name text.
     logo: z.string().max(1000).default(""),
     verified: z.boolean().default(false),
