@@ -74,7 +74,10 @@ export default function PrivacyPage() {
 
         <Section title="7. Cookies">
           Usamos cookies essenciais para manter você conectado e para o funcionamento do serviço. Não usamos cookies de
-          publicidade de terceiros.
+          publicidade de terceiros. Nas páginas publicadas, guardamos no navegador do visitante um código anônimo, que
+          serve apenas para as estatísticas do criador da página: saber se uma visita é nova ou de alguém que já esteve
+          ali, de qual cidade e de que tipo de aparelho. Esse código não informa nome, e-mail nem telefone, e pode ser
+          apagado a qualquer momento limpando os dados do navegador.
         </Section>
 
         <Section title="8. Retenção">

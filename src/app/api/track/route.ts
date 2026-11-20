@@ -11,6 +11,10 @@ const bodySchema = z.object({
   target: z.string().max(500).optional(),
   referrer: z.string().max(500).optional(),
   visitId: z.uuid().optional(),
+  // Anonymous code kept in the visitor's browser (returning visitors).
+  visitorId: z.uuid().optional(),
+  // Phone model, when the browser tells it.
+  model: z.string().max(60).optional(),
   duration: z.number().int().min(0).max(86_400).optional(),
   utmSource: z.string().max(120).optional(),
   utmMedium: z.string().max(120).optional(),
@@ -31,7 +35,12 @@ function parseUA(ua: string): { device: string; os: string; browser: string } {
   else if (/mac os x|macintosh/.test(u)) os = "macOS";
   else if (/linux/.test(u)) os = "Linux";
   let browser = "Outro";
-  if (/edg\//.test(u)) browser = "Edge";
+  // Pages opened inside an app (the usual way from a link in bio) come first:
+  // their user agents also mention Safari or Chrome.
+  if (/instagram/.test(u)) browser = "Instagram";
+  else if (/fban|fbav|fb_iab/.test(u)) browser = "Facebook";
+  else if (/tiktok|musical_ly|bytedance/.test(u)) browser = "TikTok";
+  else if (/edg\//.test(u)) browser = "Edge";
   else if (/opr\/|opera/.test(u)) browser = "Opera";
   else if (/chrome|crios/.test(u)) browser = "Chrome";
   else if (/firefox|fxios/.test(u)) browser = "Firefox";
@@ -45,7 +54,7 @@ export async function POST(request: Request) {
   }
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ ok: false }, { status: 400 });
-  const { handle, kind, blockId, target, referrer, visitId, duration, utmSource, utmMedium, utmCampaign } = parsed.data;
+  const { handle, kind, blockId, target, referrer, visitId, visitorId, model, duration, utmSource, utmMedium, utmCampaign } = parsed.data;
   const ownerId = await ownerIdForHandle(handle);
   if (!ownerId) return NextResponse.json({ ok: false }, { status: 404 });
 
@@ -88,6 +97,10 @@ export async function POST(request: Request) {
   // Approximate position (the city's centre, as the CDN reports it), rounded
   // to about 1 km, for the dots on the statistics map.
   const position: Record<string, unknown> = {};
+  // The newest columns travel with the position, so a database that doesn't
+  // have them yet still records the visit.
+  if (visitorId) position.visitor_id = visitorId;
+  if (kind === "page_view" && model) position.model = model.replace(/[^\p{L}\p{N} .,()+\-/]/gu, "").trim().slice(0, 60) || null;
   if (kind === "page_view") {
     const lat = Number(request.headers.get("x-vercel-ip-latitude"));
     const lon = Number(request.headers.get("x-vercel-ip-longitude"));
