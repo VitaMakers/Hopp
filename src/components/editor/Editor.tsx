@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { publish, saveDraft } from "@/app/dashboard/actions";
 import { PageView } from "@/components/page-view/PageView";
 import { APP_NAME, APP_TAGLINE } from "@/lib/env";
-import { planViolations, showsBadge } from "@/lib/entitlements";
-import { formatBRL, normalizePlan, PLAN_LABEL, PLAN_PRICE_BRL } from "@/lib/plans";
+import { showsBadge } from "@/lib/entitlements";
 import type { PageDoc } from "@/lib/page/schema";
 import { BlocksPanel } from "./BlocksPanel";
 import { SeoPanel } from "./SeoPanel";
@@ -112,11 +111,6 @@ export function Editor({
       setNotice("Modelo aplicado no rascunho. Revise e publique quando quiser.");
       history.replaceState(null, "", window.location.pathname);
     }
-    // Coming back from the checkout.
-    if (new URLSearchParams(window.location.search).get("assinado") === "1") {
-      setNotice("Assinatura confirmada. Agora é só clicar em Publicar. Se o botão ainda pedir a assinatura, atualize a página em alguns segundos.");
-      history.replaceState(null, "", window.location.pathname);
-    }
   }, []);
 
   function handleEdit(target: string) {
@@ -190,21 +184,6 @@ export function Editor({
       if (pendingDoc.current) void flush();
     };
   }, [flush]);
-
-  // What the draft uses that the current plan doesn't cover (a premium model,
-  // video, a form block). The page can be edited freely; going live needs the
-  // plan, so the price is shown up front instead of as an error at the end.
-  const violations = useMemo(() => planViolations(doc, plan), [doc, plan]);
-  const needed = violations.some((v) => v.includes("Profissional")) ? "profissional" : "essencial";
-  const [leaving, setLeaving] = useState(false);
-
-  async function onUpgrade() {
-    setLeaving(true);
-    // Save the last edits before leaving for the checkout.
-    if (pendingDoc.current) await flush();
-    window.location.href =
-      normalizePlan(plan) === "free" ? `/dashboard/clientes/${clientId}/assinar?plan=${needed}&voltar=editor` : `/dashboard/plans?trocar=${needed}`;
-  }
 
   function onPublish() {
     setMessage(null);
@@ -285,51 +264,18 @@ export function Editor({
           >
             Ver página
           </a>
-          {violations.length ? (
-            <button
-              type="button"
-              onClick={onUpgrade}
-              disabled={leaving}
-              className="h-9 rounded-[9px] bg-blue-600 px-[18px] text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-60"
-            >
-              {leaving ? "Abrindo..." : "Assinar e publicar"}
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={onPublish}
-              disabled={publishing}
-              className="h-9 rounded-[9px] bg-blue-600 px-[18px] text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-60"
-            >
-              {publishing ? "Publicando..." : "Publicar"}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={onPublish}
+            disabled={publishing}
+            className="h-9 rounded-[9px] bg-blue-600 px-[18px] text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-60"
+          >
+            {publishing ? "Publicando..." : "Publicar"}
+          </button>
         </div>
       </header>
 
-      {violations.length ? (
-        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-[12px] border border-[#D9DDFD] bg-[#EDEDF8] px-4 py-3">
-          <p className="min-w-0 flex-1 basis-[280px] text-sm leading-relaxed text-stone-900">
-            <strong className="font-semibold">
-              Esta página usa recursos do plano {PLAN_LABEL[needed]} ({formatBRL(PLAN_PRICE_BRL[needed])} por mês).
-            </strong>{" "}
-            Edite à vontade e veja como fica. Para colocar no ar, assine; dá para cancelar quando quiser.
-          </p>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <Link href="/dashboard/modelos" className="text-sm font-semibold text-stone-800 underline-offset-4 hover:underline">
-              Trocar por um modelo grátis
-            </Link>
-            <button
-              type="button"
-              onClick={onUpgrade}
-              disabled={leaving}
-              className="h-9 rounded-[9px] bg-stone-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-stone-800 disabled:opacity-60"
-            >
-              Assinar o {PLAN_LABEL[needed]}
-            </button>
-          </div>
-        </div>
-      ) : !publishedAt ? (
+      {!publishedAt ? (
         <p className="rounded-[10px] bg-amber-50 px-4 py-2.5 text-sm text-amber-900 ring-1 ring-amber-200">
           Sua página ainda não está no ar. Quando estiver pronta, clique em Publicar.
         </p>
