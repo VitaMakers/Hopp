@@ -45,6 +45,11 @@ export function hasFullAnalytics(plan: string | null | undefined): boolean {
 }
 
 // The blue verified badge: Profissional.
+// A domain of the client's own in front of the page: Profissional.
+export function canUseCustomDomain(plan: string | null | undefined): boolean {
+  return isProfissional(plan);
+}
+
 export function canUseVerified(plan: string | null | undefined): boolean {
   return isProfissional(plan);
 }
