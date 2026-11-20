@@ -146,6 +146,7 @@ export function page(
     premium: { ...PREMIUM_DEFAULTS, ...parts.premium },
     seo: { title: "", description: "" },
     integrations: { metaPixel: "", tiktokPixel: "", googleAnalytics: "", clarity: "" },
+    hideBrand: false,
   };
 }
 
