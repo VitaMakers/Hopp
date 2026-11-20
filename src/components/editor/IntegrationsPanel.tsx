@@ -28,6 +28,12 @@ export function IntegrationsPanel({ doc, onChange, plan }: { doc: PageDoc; onCha
   return (
     <Card title="Integrações">
       <p className="text-sm text-stone-600">Ligue a página às suas contas de anúncios e de análise. Cole só o código de cada serviço; ele passa a valer depois de publicar.</p>
+      <p className="text-[13px] text-stone-600">
+        Ao conectar um pixel, você é responsável por informar os visitantes da sua página.{" "}
+        <Link href="/termos" target="_blank" className="underline underline-offset-2">
+          Termos de Uso
+        </Link>
+      </p>
       {!allowed ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-[10px] bg-[#F3F2EE] px-4 py-3">
           <p className="text-sm text-stone-700">Disponível no plano Profissional.</p>
