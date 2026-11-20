@@ -142,13 +142,20 @@ export default function Home() {
           ) : null}
         </HeroStage>
 
-        {/* What goes inside a page */}
-        <div className="relative z-10 w-full border-t border-stone-200 bg-white/80 backdrop-blur lg:absolute lg:inset-x-0 lg:bottom-0">
-          <ul className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-center gap-x-9 gap-y-2 px-5 py-5 text-[13px] font-semibold tracking-wide text-stone-600 lg:justify-between">
-            {INSIDE.map((item) => (
-              <li key={item}>{item}</li>
+        {/* What goes inside a page, scrolling sideways without stopping */}
+        <div className="relative z-10 w-full border-t border-stone-200 bg-white lg:absolute lg:inset-x-0 lg:bottom-0">
+          <div className="marquee py-5 text-[13px] font-semibold tracking-wide text-stone-600">
+            {[0, 1].map((copy) => (
+              <ul key={copy} aria-hidden={copy === 1} className="marquee-track">
+                {[...INSIDE, ...INSIDE].map((item, i) => (
+                  <li key={i} className="flex items-center gap-12">
+                    {item}
+                    <span aria-hidden className="h-1 w-1 rounded-full bg-blue-600" />
+                  </li>
+                ))}
+              </ul>
             ))}
-          </ul>
+          </div>
         </div>
       </section>
 
