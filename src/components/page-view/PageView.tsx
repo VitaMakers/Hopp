@@ -419,7 +419,9 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
   // the same on phone and computer). The image fills it; the owner drags it to
   // choose what shows. Corners round only when "Arredondadas" is chosen.
   const coverRadius = profile.coverRounded ? "rounded-[1.4rem]" : "";
-  const coverAspect = COVER_ASPECT[profile.coverFormat] ?? COVER_ASPECT.vertical;
+  // Width over height: the format's own proportion, made shorter or taller by
+  // the owner's height choice.
+  const coverAspect = (COVER_ASPECT[profile.coverFormat] ?? COVER_ASPECT.vertical) / ((profile.coverTall ?? 100) / 100);
   const hasHeader = headerHasContent(doc);
   // The owner's size choice: under 100% the band shrinks and centres; over
   // 100% the image zooms in around the point chosen when positioning it.
@@ -435,8 +437,8 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
     <>
       {showBanner ? (
         <div
-          className={`relative overflow-hidden ${coverNatural ? "" : coverAspect} ${coverRadius} ${coverBleed ? "-mx-5 w-[calc(100%+2.5rem)]" : "mx-auto"} ${coverGap ? "mt-5" : ""}`}
-          style={coverBleed ? undefined : { width: `${coverWidth}%` }}
+          className={`relative overflow-hidden ${coverRadius} ${coverBleed ? "-mx-5 w-[calc(100%+2.5rem)]" : "mx-auto"} ${coverGap ? "mt-5" : ""}`}
+          style={{ aspectRatio: coverNatural ? undefined : coverAspect, width: coverBleed ? undefined : `${coverWidth}%` }}
         >
           <CoverMedia
             videos={coverVideos}
@@ -465,10 +467,10 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
 }
 
 // The aspect ratio for each cover format preset.
-const COVER_ASPECT: Record<string, string> = {
-  horizontal: "aspect-[16/9]",
-  vertical: "aspect-[4/5]",
-  full: "aspect-[2/3]",
+const COVER_ASPECT: Record<string, number> = {
+  horizontal: 16 / 9,
+  vertical: 4 / 5,
+  full: 2 / 3,
 };
 
 // True when the header (avatar, name, bio or logo) has anything to show. When
