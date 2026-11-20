@@ -83,3 +83,33 @@ export function planViolations(doc: PageDoc, plan: string | null | undefined): s
   }
   return out;
 }
+
+// The published page as the plan allows it to be shown. Publishing already
+// refuses what the plan doesn't cover, but a page can outlive its plan (a
+// cancelled subscription) or be written around the dashboard, so the public
+// page applies the same rules when it is read: a premium design falls back to
+// the simple layout, videos give way to the cover image, and form blocks are
+// left out.
+export function enforcePlan(doc: PageDoc, plan: string | null | undefined): PageDoc {
+  if (planViolations(doc, plan).length === 0) return doc;
+  let next = doc;
+  if (!canUsePremium(plan) && next.theme.premium) {
+    next = { ...next, theme: { ...next.theme, premium: "" } };
+  }
+  if (!canUseVideo(plan)) {
+    next = {
+      ...next,
+      profile: {
+        ...next.profile,
+        coverVideo: "",
+        coverVideos: [],
+        coverType: next.profile.coverType === "video" ? "image" : next.profile.coverType,
+      },
+      blocks: next.blocks.filter((b) => b.type !== "videos"),
+    };
+  }
+  if (!canUseForms(plan)) {
+    next = { ...next, blocks: next.blocks.filter((b) => b.type !== "form") };
+  }
+  return next;
+}

@@ -66,7 +66,9 @@ export async function detachClient(clientId: string, _prev: DetachState, form: F
     }
   }
 
-  const { error } = await admin.from("profiles").update({ account_id: userId }).eq("id", clientId).eq("account_id", accountId);
+  // The payout account stays with whoever connected it: the new owner
+  // connects their own to keep selling.
+  const { error } = await admin.from("profiles").update({ account_id: userId, stripe_account_id: null }).eq("id", clientId).eq("account_id", accountId);
   if (error) return { error: "Não foi possível transferir o cliente." };
 
   revalidatePath("/dashboard/clientes");

@@ -8,7 +8,7 @@ export default async function EditorPage() {
   const { supabase, profile, clients } = await getOwner();
   const { data: page } = await supabase
     .from("pages")
-    .select("draft, published_at")
+    .select("draft, published_at, updated_at")
     .eq("owner_id", profile.id)
     .maybeSingle();
   const parsed = pageDocSchema.safeParse(page?.draft);
@@ -50,6 +50,7 @@ export default async function EditorPage() {
       key={profile.id}
       clientId={profile.id}
       clients={clients}
+      draftAt={page?.updated_at ?? null}
       initialDoc={doc}
       handle={profile.handle}
       plan={profile.plan}

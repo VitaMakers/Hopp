@@ -6,7 +6,7 @@ import { safeHttpUrl, shortCodeError } from "@/lib/handles";
 import { pageDocSchema } from "@/lib/page/schema";
 import { getOwner } from "./context";
 
-export type ActionResult = { ok: true; publishedAt?: string } | { ok: false; error: string };
+export type ActionResult = { ok: true; publishedAt?: string; savedAt?: string } | { ok: false; error: string };
 
 // Turns the first validation problem into words the owner understands, so a
 // too-long text doesn't silently block every save.
@@ -44,13 +44,14 @@ export async function saveDraft(clientId: string, input: unknown): Promise<Actio
   if (!parsed.success) return { ok: false, error: invalidMessage(parsed.error.issues) };
   const { supabase, client } = await targetClient(clientId);
   if (!client) return { ok: false, error: "Este cliente não está mais na sua conta. Recarregue a página." };
+  const savedAt = new Date().toISOString();
   const { data, error } = await supabase
     .from("pages")
-    .update({ draft: parsed.data, updated_at: new Date().toISOString() })
+    .update({ draft: parsed.data, updated_at: savedAt })
     .eq("owner_id", client.id)
     .select("id");
   // No error and no row means nothing was saved, so report it.
-  return error || !data?.length ? { ok: false, error: "Não foi possível salvar." } : { ok: true };
+  return error || !data?.length ? { ok: false, error: "Não foi possível salvar." } : { ok: true, savedAt };
 }
 
 export async function publish(clientId: string, input: unknown): Promise<ActionResult> {
@@ -61,7 +62,7 @@ export async function publish(clientId: string, input: unknown): Promise<ActionR
   // Enforce the plan: a page using paid-only features can't be published.
   const violations = planViolations(parsed.data, client.plan);
   if (violations.length) {
-    return { ok: false, error: `Seu plano não inclui: ${violations.join("; ")}. Assine o Essencial em Planos para publicar.` };
+    return { ok: false, error: `Seu plano não inclui: ${violations.join("; ")}. Assine esse plano em Planos para publicar.` };
   }
   // The verified badge is a paid perk; strip it on Grátis.
   if (!canUseVerified(client.plan)) parsed.data.profile.verified = false;

@@ -58,9 +58,16 @@ type Status = "saved" | "dirty" | "saving" | "error";
 
 export type BlockStats = { views: number; clicks: Record<string, number> };
 
+// The last version this browser saved for each client, with the time the
+// server recorded. Going back in the browser can remount the editor with the
+// page as it was first loaded; this keeps the newer saved version instead, so
+// the next edit doesn't write an old page over it.
+const lastSaved = new Map<string, { doc: PageDoc; at: string }>();
+
 export function Editor({
   clientId,
   clients,
+  draftAt,
   initialDoc,
   handle,
   plan,
@@ -71,13 +78,18 @@ export function Editor({
   clientId: string;
   // Every client of the account, for the switcher in the top bar.
   clients: Client[];
+  // When the draft handed in as initialDoc was last written, per the server.
+  draftAt?: string | null;
   initialDoc: PageDoc;
   handle: string;
   plan: string;
   publishedAt: string | null;
   stats?: BlockStats;
 }) {
-  const [doc, setDoc] = useState(initialDoc);
+  const [doc, setDoc] = useState(() => {
+    const saved = lastSaved.get(clientId);
+    return saved && draftAt && saved.at > draftAt ? saved.doc : initialDoc;
+  });
   const [tab, setTab] = useState<TabId>("conteudo");
   const [device, setDevice] = useState<"celular" | "computador">("celular");
   const [notice, setNotice] = useState<string | null>(null);
@@ -150,6 +162,7 @@ export function Editor({
     // A newer save started, or newer edits are waiting: let those decide.
     if (seq !== saveSeq.current || pendingDoc.current) return;
     setStatus(result.ok ? "saved" : "error");
+    if (result.ok && result.savedAt) lastSaved.set(clientId, { doc: next, at: result.savedAt });
     if (result.ok) {
       // Clear an earlier save error once saving works again.
       setMessage((m) => (m && m.startsWith("Não foi possível salvar") ? null : m));
@@ -201,9 +214,13 @@ export function Editor({
       if (result.ok) {
         setStatus("saved");
         setPublishedAt(result.publishedAt ?? new Date().toISOString());
+        if (result.publishedAt) lastSaved.set(clientId, { doc, at: result.publishedAt });
         setMessage("Página publicada. Já está no ar.");
       } else {
         setMessage(result.error);
+        // Nothing was written: keep the edits and save them as a draft.
+        pendingDoc.current = doc;
+        void flush();
       }
     });
   }

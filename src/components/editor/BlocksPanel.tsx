@@ -179,7 +179,7 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
       </DndContext>
 
       {doc.blocks.length > 0 ? (
-        <p className="hidden text-xs text-stone-600 lg:block">Arraste pelos pontinhos para mudar a ordem. A chave esconde o bloco sem apagar.</p>
+        <p className="text-xs text-stone-600">Arraste pelos pontinhos para mudar a ordem. A chave esconde o bloco sem apagar.</p>
       ) : null}
     </div>
   );
@@ -328,7 +328,7 @@ function SortableBlock({
           {...listeners}
           aria-label="Segure e arraste para mudar a ordem"
           title="Segure e arraste para mudar a ordem"
-          className="hidden cursor-grab touch-none rounded-md p-1 text-[#B9B6C9] hover:text-stone-600 active:cursor-grabbing lg:block"
+          className="cursor-grab touch-none rounded-md p-1 text-[#B9B6C9] hover:text-stone-600 active:cursor-grabbing"
         >
           <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden>
             <circle cx="9" cy="6" r="1.6" />

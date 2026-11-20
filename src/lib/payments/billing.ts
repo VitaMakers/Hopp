@@ -88,6 +88,19 @@ export async function changeSubscriptionPlan(subscriptionId: string, priceId: st
   });
 }
 
+// Whether a subscription was opened by this account. A client can change
+// hands while the previous account's subscription runs out its paid period;
+// only the account that pays may change or reactivate it.
+export async function subscriptionBelongsTo(subscriptionId: string, accountId: string): Promise<boolean> {
+  try {
+    const sub = await client().subscriptions.retrieve(subscriptionId);
+    return sub.metadata?.account_id === accountId;
+  } catch (error) {
+    if (isMissing(error)) return false;
+    throw error;
+  }
+}
+
 // Whether a subscription is still billing (active, trialing or retrying a
 // failed payment). Used to refuse a second checkout for the same client.
 export async function subscriptionIsLive(subscriptionId: string): Promise<boolean> {
