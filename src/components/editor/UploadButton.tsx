@@ -90,9 +90,12 @@ export function UploadButton({ onUploaded, label = "Enviar imagem" }: { onUpload
         type="button"
         onClick={open}
         disabled={busy}
-        className="self-start rounded-lg border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-900 disabled:opacity-50"
+        className="inline-flex h-9 items-center gap-2 self-start rounded-[9px] border border-[#E5E2DA] bg-white px-3.5 text-[13px] font-semibold text-stone-900 transition-colors hover:border-stone-400 hover:bg-[#F3F2EE] disabled:opacity-60"
       >
-        {busy ? "Enviando..." : `⬆ ${label}`}
+        <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-stone-600" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M12 16V4M7 9l5-5 5 5M5 20h14" />
+        </svg>
+        {busy ? "Enviando..." : label}
       </button>
       <input ref={inputRef} type="file" accept="image/*" className="sr-only" onChange={handle} />
       {error ? <p className="text-xs text-red-600">{error}</p> : null}

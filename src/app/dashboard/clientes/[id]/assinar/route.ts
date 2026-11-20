@@ -20,7 +20,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   if (!client) return NextResponse.redirect(`${base}/dashboard/clientes`);
   const asked = normalizePlan(new URL(req.url).searchParams.get("plan"));
   const plan: "essencial" | "profissional" = asked === "profissional" ? "profissional" : "essencial";
-  const fromEditor = new URL(req.url).searchParams.get("voltar") === "editor";
 
   try {
     const admin = createAdminClient();
@@ -55,9 +54,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       accountId: user.id,
       clientId: client.id,
       plan,
-      // Coming from the editor (a paid model waiting to go live), return there.
-      successUrl: fromEditor ? `${base}/dashboard/editor?assinado=1` : `${base}/dashboard/clientes?assinado=1`,
-      cancelUrl: fromEditor ? `${base}/dashboard/editor` : `${base}/dashboard/clientes?cancelado=1`,
+      successUrl: `${base}/dashboard/clientes?assinado=1`,
+      cancelUrl: `${base}/dashboard/clientes?cancelado=1`,
     });
     return NextResponse.redirect(url);
   } catch (error) {
