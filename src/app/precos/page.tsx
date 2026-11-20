@@ -70,7 +70,7 @@ export default async function PrecosPage() {
           </Link>
           <h1 className="mt-3 text-3xl font-bold text-stone-900 sm:text-4xl">Escolha o seu plano</h1>
           <p className="mx-auto mt-3 max-w-xl text-stone-600">
-            Comece grátis, sem cartão. O <strong>Essencial</strong> libera os modelos premium, vídeo e métricas completas. O <strong>Profissional</strong> soma formulários próprios, selo verificado e a página sem a marca Virtú.bio.
+            Comece grátis, sem cartão. O <strong>Essencial</strong> libera os modelos premium, vídeo e métricas completas. O <strong>Profissional</strong> soma domínio próprio, formulários próprios, selo verificado e a página sem a marca Virtú.bio.
           </p>
         </header>
 

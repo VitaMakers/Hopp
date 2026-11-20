@@ -71,7 +71,7 @@ const INSIDE = ["Links", "Vídeos", "Cardápio", "Agenda", "WhatsApp", "Formulá
 const PLANS = [
   { name: "Grátis", price: "R$ 0", tag: "Para começar", feats: ["Página no ar", "Modelos essenciais", "Contagem de visitas"], highlight: false },
   { name: "Essencial", price: formatBRL(PLAN_PRICE_BRL.essencial), tag: "Para crescer", feats: ["Modelos premium exclusivos", "Vídeo de capa e métricas completas", "Links curtos ilimitados"], highlight: true },
-  { name: "Profissional", price: formatBRL(PLAN_PRICE_BRL.profissional), tag: "Completo", feats: ["Tudo do Essencial", "Formulários com respostas no painel", "Selo verificado, sem a marca Virtú.bio"], highlight: false },
+  { name: "Profissional", price: formatBRL(PLAN_PRICE_BRL.profissional), tag: "Completo", feats: ["Tudo do Essencial", "Domínio próprio (suamarca.com.br)", "Formulários com respostas no painel", "Selo verificado, sem a marca Virtú.bio"], highlight: false },
 ];
 
 export default function Home() {

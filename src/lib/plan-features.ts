@@ -22,6 +22,7 @@ export const PLAN_FEATURES: PlanFeature[] = [
   { label: "Vídeo de capa e grade de vídeos", free: false, essencial: true, profissional: true },
   { label: "Links curtos próprios", free: false, essencial: "Ilimitados", profissional: "Ilimitados" },
   { label: "Formulários próprios, com as respostas no painel", free: false, essencial: false, profissional: true },
+  { label: "Domínio próprio (suamarca.com.br)", free: false, essencial: false, profissional: true },
   { label: "Selo verificado azul", free: false, essencial: false, profissional: true },
   { label: "Sem a marca Virtú.bio no rodapé", free: false, essencial: false, profissional: true },
 ];
@@ -30,7 +31,7 @@ export const PLAN_FEATURES: PlanFeature[] = [
 export const PLAN_PITCH: Record<Plan, string> = {
   free: "Para começar e colocar sua página no ar hoje.",
   essencial: "Modelos premium, vídeo e métricas completas.",
-  profissional: "Tudo do Essencial, mais formulários, selo verificado e sua página sem a marca Virtú.bio.",
+  profissional: "Tudo do Essencial, mais domínio próprio, formulários, selo verificado e sua página sem a marca Virtú.bio.",
 };
 
 export const PLAN_ORDER: Plan[] = ["free", "essencial", "profissional"];
