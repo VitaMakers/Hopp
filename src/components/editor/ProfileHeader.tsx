@@ -39,6 +39,11 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
     return () => window.clearTimeout(timer);
   }, [editing]);
 
+  // Sizes as the sliders show them. An older version stored "smaller" as a
+  // scale under 100: that reads as the band's width.
+  const zoomValue = Math.max(100, profile.coverScale);
+  const widthValue = Math.min(profile.coverWidth, profile.coverScale < 100 ? profile.coverScale : 100);
+
   const cover = imageSrc(profile.coverUrl) || imageSrc(profile.coverImages?.find((item) => item.url)?.url ?? "");
   const coverLabel = isPremium
     ? "Foto do topo do modelo"
@@ -47,7 +52,7 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
       : profile.coverType === "carousel"
         ? "Fotos que trocam sozinhas"
         : cover
-          ? `Foto, formato ${profile.coverFormat === "horizontal" ? "horizontal" : profile.coverFormat === "full" ? "tela cheia" : "vertical"}`
+          ? `Foto, formato ${profile.coverFormat === "horizontal" ? "horizontal" : profile.coverFormat === "full" ? "tela cheia" : profile.coverFormat === "original" ? "original" : "vertical"}`
           : "Sem capa";
   const editButton = "h-9 shrink-0 rounded-[9px] border border-[#E5E2DA] bg-white px-3.5 text-[13px] font-semibold text-stone-900 transition-colors hover:border-stone-400";
   const face = avatar ? (
@@ -206,7 +211,7 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
             <div className="flex flex-col gap-2 rounded-lg bg-stone-50 p-2.5">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium text-stone-700">Formato:</span>
-                {([["horizontal", "Horizontal"], ["vertical", "Vertical"], ["full", "Tela cheia"]] as const).map(([v, l]) => (
+                {([["original", "Original"], ["horizontal", "Horizontal"], ["vertical", "Vertical"], ["full", "Tela cheia"]] as const).map(([v, l]) => (
                   <button
                     key={v}
                     type="button"
@@ -217,7 +222,11 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
                   </button>
                 ))}
               </div>
-              <p className="-mt-1 text-xs text-stone-500">O formato vale igual no celular e no computador. Arraste a imagem (abaixo) para escolher a parte que aparece.</p>
+              <p className="-mt-1 text-xs text-stone-500">
+                {profile.coverFormat === "original"
+                  ? "Original mostra a imagem inteira, na proporção em que foi feita, sem cortar."
+                  : "O formato vale igual no celular e no computador. Arraste a imagem (abaixo) para escolher a parte que aparece."}
+              </p>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium text-stone-700">Bordas:</span>
                 {([["true", "Arredondadas"], ["false", "Retas"]] as const).map(([v, l]) => (
@@ -246,37 +255,46 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
                       format={profile.coverFormat}
                       x={profile.coverPosX}
                       y={profile.coverPosY}
-                      zoom={Math.max(100, profile.coverScale) / 100}
+                      zoom={zoomValue / 100}
                       onChange={(x, y) => setProfile({ coverPosX: x, coverPosY: y })}
                     />
-                    <div className="flex max-w-[280px] flex-col gap-1.5">
-                      <div className="flex items-baseline justify-between">
-                        <label htmlFor="cover-scale" className="text-[13px] font-medium text-stone-800">
-                          Tamanho da imagem
-                        </label>
-                        <span className="text-[13px] tabular-nums text-stone-600">{profile.coverScale}%</span>
-                      </div>
-                      <div className="flex items-center gap-2.5">
-                        <span aria-hidden className="text-sm text-stone-600">−</span>
-                        <input
-                          id="cover-scale"
-                          type="range"
-                          min={40}
-                          max={200}
-                          step={5}
-                          value={profile.coverScale}
-                          onChange={(e) => setProfile({ coverScale: Number(e.target.value) })}
-                          className="h-1.5 w-full cursor-pointer accent-stone-900"
-                        />
-                        <span aria-hidden className="text-sm text-stone-600">+</span>
-                      </div>
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="text-xs text-stone-600">Para a esquerda a imagem fica menor na página; para a direita, mais próxima.</p>
-                        {profile.coverScale !== 100 ? (
-                          <button type="button" onClick={() => setProfile({ coverScale: 100 })} className="shrink-0 text-xs font-semibold text-stone-800 underline underline-offset-2">
-                            Voltar a 100%
-                          </button>
-                        ) : null}
+                    <div className="flex max-w-[280px] flex-col gap-4">
+                      <CoverSlider
+                        id="cover-scale"
+                        label="Tamanho da imagem"
+                        hint="Aproxima a imagem dentro da capa."
+                        min={100}
+                        max={200}
+                        value={zoomValue}
+                        onChange={(coverScale) => setProfile({ coverScale, coverWidth: widthValue })}
+                      />
+                      <CoverSlider
+                        id="cover-width"
+                        label="Largura"
+                        hint="Quanto da largura da página a capa ocupa."
+                        min={40}
+                        max={100}
+                        value={widthValue}
+                        onChange={(coverWidth) => setProfile({ coverWidth, coverScale: zoomValue })}
+                      />
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-[13px] font-medium text-stone-800">Espaço em volta:</span>
+                          {([["true", "Com"], ["false", "Sem"]] as const).map(([v, l]) => (
+                            <button
+                              key={v}
+                              type="button"
+                              aria-pressed={String(profile.coverGap) === v}
+                              onClick={() => setProfile({ coverGap: v === "true" })}
+                              className={`rounded-lg px-3 py-1 text-sm ring-1 ${String(profile.coverGap) === v ? "bg-stone-900 text-white ring-stone-900" : "text-stone-600 ring-stone-300"}`}
+                            >
+                              {l}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="text-xs text-stone-600">
+                          {profile.coverGap ? "A capa fica dentro da página, como um cartão." : "A capa encosta no topo da página."}
+                        </p>
                       </div>
                     </div>
                   </>
@@ -411,13 +429,69 @@ function CoverPositioner({
       onPointerUp={up}
       onPointerCancel={up}
       className="relative w-full max-w-[280px] cursor-grab touch-none select-none overflow-hidden rounded-xl ring-1 ring-stone-300 active:cursor-grabbing"
-      style={{ aspectRatio: POS_ASPECT[format] ?? "4 / 5" }}
+      style={format === "original" ? undefined : { aspectRatio: POS_ASPECT[format] ?? "4 / 5" }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt="" draggable={false} className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ objectPosition: `${x}% ${y}%`, transform: zoom > 1 ? `scale(${zoom})` : undefined, transformOrigin: `${x}% ${y}%` }} />
+      <img src={src} alt="" draggable={false} className={`pointer-events-none ${format === "original" ? "block h-auto w-full" : "absolute inset-0 h-full w-full object-cover"}`} style={{ objectPosition: `${x}% ${y}%`, transform: zoom > 1 ? `scale(${zoom})` : undefined, transformOrigin: `${x}% ${y}%` }} />
       <span className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 rounded bg-black/55 px-2 py-0.5 text-[10px] font-medium text-white">
-        arraste para posicionar
+        {format === "original" && zoom <= 1 ? "imagem inteira" : "arraste para posicionar"}
       </span>
+    </div>
+  );
+}
+
+// One labelled size bar with its value and a way back to the starting point.
+function CoverSlider({
+  id,
+  label,
+  hint,
+  min,
+  max,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  hint: string;
+  min: number;
+  max: number;
+  value: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-baseline justify-between">
+        <label htmlFor={id} className="text-[13px] font-medium text-stone-800">
+          {label}
+        </label>
+        <span className="text-[13px] tabular-nums text-stone-600">{value}%</span>
+      </div>
+      <div className="flex items-center gap-2.5">
+        <span aria-hidden className="text-sm text-stone-600">
+          −
+        </span>
+        <input
+          id={id}
+          type="range"
+          min={min}
+          max={max}
+          step={5}
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="h-1.5 w-full cursor-pointer accent-stone-900"
+        />
+        <span aria-hidden className="text-sm text-stone-600">
+          +
+        </span>
+      </div>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs text-stone-600">{hint}</p>
+        {value !== 100 ? (
+          <button type="button" onClick={() => onChange(100)} className="shrink-0 text-xs font-semibold text-stone-800 underline underline-offset-2">
+            Voltar a 100%
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }

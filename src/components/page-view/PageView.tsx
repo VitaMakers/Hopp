@@ -424,15 +424,19 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
   // The owner's size choice: under 100% the band shrinks and centres; over
   // 100% the image zooms in around the point chosen when positioning it.
   const coverScale = profile.coverScale ?? 100;
-  const coverSmall = coverScale < 100;
+  const coverWidth = Math.min(profile.coverWidth ?? 100, coverScale < 100 ? coverScale : 100);
+  const coverGap = !!profile.coverGap;
+  const coverBleed = coverWidth >= 100 && !coverGap;
   const coverZoom = Math.max(100, coverScale) / 100;
+  // "Original" lets a single image set the band's proportion (nothing cropped).
+  const coverNatural = profile.coverFormat === "original" && coverVideos.length === 0 && coverImages.length === 1;
   const zoomOrigin = coverImages.length === 1 ? `${coverImages[0].x}% ${coverImages[0].y}%` : "50% 50%";
   return (
     <>
       {showBanner ? (
         <div
-          className={`relative overflow-hidden ${coverAspect} ${coverRadius} ${coverSmall ? "mx-auto mt-5" : "-mx-5 w-[calc(100%+2.5rem)]"}`}
-          style={coverSmall ? { width: `${coverScale}%` } : undefined}
+          className={`relative overflow-hidden ${coverNatural ? "" : coverAspect} ${coverRadius} ${coverBleed ? "-mx-5 w-[calc(100%+2.5rem)]" : "mx-auto"} ${coverGap ? "mt-5" : ""}`}
+          style={coverBleed ? undefined : { width: `${coverWidth}%` }}
         >
           <CoverMedia
             videos={coverVideos}
@@ -440,7 +444,7 @@ function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?:
             seconds={coverSeconds}
             fallback={null}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover"
+            className={coverNatural ? "block h-auto w-full" : "absolute inset-0 h-full w-full object-cover"}
             style={coverZoom > 1 ? { transform: `scale(${coverZoom})`, transformOrigin: zoomOrigin } : undefined}
           />
           {profile.coverShade ? <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-b from-transparent to-[var(--page-bg)]" /> : null}
