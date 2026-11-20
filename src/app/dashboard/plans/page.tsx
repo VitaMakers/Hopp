@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PLAN_FEATURES, PLAN_LABEL, PLAN_ORDER, PLAN_PITCH, PLAN_PRICE_BRL } from "@/lib/plan-features";
 import { normalizePlan } from "@/lib/plans";
 import { getOwner } from "../context";
+import { switchPlan } from "./actions";
 import { CancelSubscriptionButton } from "../clientes/CancelSubscriptionButton";
 
 // Built from the same list as the public pricing page (src/lib/plan-features),
@@ -39,12 +40,11 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
             <Link href="/dashboard/plans" className="rounded-lg px-4 py-2 text-sm font-semibold ring-1 ring-stone-300 hover:ring-stone-900">
               Cancelar
             </Link>
-            <a
-              href={`/dashboard/clientes/${profile.id}/assinar?plan=${switchTo}&confirmar=1`}
-              className="rounded-lg bg-stone-900 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-800"
-            >
-              Confirmar troca
-            </a>
+            <form action={switchPlan.bind(null, profile.id, switchTo)}>
+              <button type="submit" className="rounded-lg bg-stone-900 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-800">
+                Confirmar troca
+              </button>
+            </form>
           </div>
         </div>
       ) : null}

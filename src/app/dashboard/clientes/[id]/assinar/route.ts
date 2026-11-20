@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { stripePriceId } from "@/lib/env";
 import { siteOrigin } from "@/lib/request";
-import { changeSubscriptionPlan, createCustomer, createClientSubscriptionCheckout, subscriptionIsLive } from "@/lib/payments/billing";
+import { createCustomer, createClientSubscriptionCheckout, subscriptionBelongsTo, subscriptionIsLive } from "@/lib/payments/billing";
 import { normalizePlan } from "@/lib/plans";
 import { createAdminClient } from "@/lib/supabase/server";
 import { getOwner } from "../../../context";
@@ -24,16 +24,18 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   try {
     const admin = createAdminClient();
     const { data: current } = await admin.from("profiles").select("plan, stripe_subscription_id").eq("id", client.id).maybeSingle();
-    if (current?.stripe_subscription_id && (await subscriptionIsLive(current.stripe_subscription_id))) {
+    // A live subscription opened by this account is never duplicated. Opening
+    // this address can't change it either: the switch is a confirmed action on
+    // the plans page (a link alone must never touch billing). A subscription
+    // left by a previous account (the client was transferred) is not this
+    // account's to change, so the new owner gets a checkout of their own.
+    if (
+      current?.stripe_subscription_id &&
+      (await subscriptionIsLive(current.stripe_subscription_id)) &&
+      (await subscriptionBelongsTo(current.stripe_subscription_id, user.id))
+    ) {
       if (normalizePlan(current.plan) === plan) return NextResponse.redirect(`${base}/dashboard/clientes?ja-assinado=1`);
-      // Changing a paid subscription needs an explicit confirmation step, so a
-      // link prefetch or an accidental click can never switch the plan.
-      if (new URL(req.url).searchParams.get("confirmar") !== "1") {
-        return NextResponse.redirect(`${base}/dashboard/plans?trocar=${plan}`);
-      }
-      await changeSubscriptionPlan(current.stripe_subscription_id, stripePriceId(plan), plan);
-      await admin.from("profiles").update({ plan }).eq("id", client.id);
-      return NextResponse.redirect(`${base}/dashboard/plans?plano=${plan}`);
+      return NextResponse.redirect(`${base}/dashboard/plans?trocar=${plan}`);
     }
 
     // One Stripe customer per account (created on first paid client).
