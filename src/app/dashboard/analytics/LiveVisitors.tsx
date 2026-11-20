@@ -28,23 +28,17 @@ export function LiveVisitors({ initial }: { initial: number }) {
 
   const active = count > 0;
   return (
-    <div className="flex items-center gap-3 rounded-xl bg-white p-4 ring-1 ring-stone-200">
-      <span className="relative flex h-3 w-3">
-        {active ? <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" /> : null}
-        <span className={`relative inline-flex h-3 w-3 rounded-full ${active ? "bg-emerald-500" : "bg-stone-300"}`} />
-      </span>
-      <div>
-        <p className="text-sm font-semibold">
-          {active ? (
-            <>
-              {count.toLocaleString("pt-BR")} {count === 1 ? "visitante agora" : "visitantes agora"}
-            </>
-          ) : (
-            "Nenhum visitante agora"
-          )}
-        </p>
-        <p className="text-xs text-stone-500">Nos últimos 5 minutos, atualiza sozinho</p>
-      </div>
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-[14px] border border-[#E5E2DA] bg-white px-5 py-3.5" aria-live="polite">
+      <p className="flex items-center gap-2.5 text-[15px] font-medium">
+        <span className="relative flex h-2.5 w-2.5">
+          {active ? <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#2F9E4F] opacity-60" /> : null}
+          <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${active ? "bg-[#2F9E4F]" : "bg-[#B9B6C9]"}`} />
+        </span>
+        {count.toLocaleString("pt-BR")} {count === 1 ? "visitante online" : "visitantes online"}
+      </p>
+      <p className="border-[#E5E2DA] text-sm text-stone-600 sm:border-l sm:pl-4">
+        {active ? "Pessoas com a sua página aberta nos últimos 5 minutos." : "Quando alguém estiver na sua página, aparece aqui em tempo real."}
+      </p>
     </div>
   );
 }

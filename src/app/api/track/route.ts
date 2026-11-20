@@ -85,10 +85,26 @@ export async function POST(request: Request) {
     if (utmCampaign) extra.utm_campaign = utmCampaign.slice(0, 120);
   }
 
+  // Approximate position (the city's centre, as the CDN reports it), rounded
+  // to about 1 km, for the dots on the statistics map.
+  const position: Record<string, unknown> = {};
+  if (kind === "page_view") {
+    const lat = Number(request.headers.get("x-vercel-ip-latitude"));
+    const lon = Number(request.headers.get("x-vercel-ip-longitude"));
+    if (Number.isFinite(lat) && Number.isFinite(lon) && (lat !== 0 || lon !== 0) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
+      position.lat = Math.round(lat * 100) / 100;
+      position.lon = Math.round(lon * 100) / 100;
+    }
+  }
+
   const admin = createAdminClient();
-  let { error } = await admin.from("events").insert({ ...row, ...extra });
-  // The location/device/utm columns may not exist yet (migrations 0011/0012 not
-  // run) — if so, retry without them so tracking never breaks.
+  let { error } = await admin.from("events").insert({ ...row, ...extra, ...position });
+  // Newer columns may not exist yet (a migration not run): retry with fewer,
+  // so tracking never breaks. First without the position, then without the
+  // location/device/campaign columns.
+  if (error && Object.keys(position).length) {
+    ({ error } = await admin.from("events").insert({ ...row, ...extra }));
+  }
   if (error && Object.keys(extra).length) {
     ({ error } = await admin.from("events").insert(row));
   }
