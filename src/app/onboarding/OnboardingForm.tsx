@@ -60,7 +60,7 @@ export function OnboardingForm({ host, essencialPrice }: { host: string; essenci
       disabled={pending || !!localError}
       className="h-12 w-full rounded-[10px] bg-blue-600 text-[15px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-60"
     >
-      {pending ? "Criando..." : "Criar minha página"}
+      {pending ? "Criando..." : chosen?.premium ? "Criar e testar este modelo" : "Criar minha página"}
     </button>
   );
 
@@ -111,7 +111,7 @@ export function OnboardingForm({ host, essencialPrice }: { host: string; essenci
           <p className="mt-0.5 text-[15px] font-semibold">{chosen ? chosen.t.name : "Página em branco"}</p>
           {chosen?.premium ? (
             <p className="mt-1.5 text-[13px] leading-relaxed text-stone-600">
-              Modelo premium: você monta agora e assina o Essencial ({essencialPrice} por mês) na hora de publicar.
+              Modelo do plano Essencial ({essencialPrice} por mês). Você monta e vê como fica sem pagar; a assinatura só é pedida na hora de colocar no ar.
             </p>
           ) : null}
         </div>
@@ -199,7 +199,7 @@ export function OnboardingForm({ host, essencialPrice }: { host: string; essenci
                     >
                       {mounted ? <ModelThumb doc={t.build(name.trim() || t.name)} width={200} height={328} /> : <span className="block aspect-[200/328] w-full animate-pulse bg-[#EFEDE7]" />}
                       {tab === "premium" ? (
-                        <span className="absolute right-2 top-2 rounded-full bg-white px-2 py-1 text-[11px] font-semibold text-stone-900">Essencial</span>
+                        <span className="absolute right-2 top-2 rounded-full bg-white px-2 py-1 text-[11px] font-semibold text-stone-900">{essencialPrice}/mês</span>
                       ) : null}
                       {on ? (
                         <span className="absolute left-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white">
