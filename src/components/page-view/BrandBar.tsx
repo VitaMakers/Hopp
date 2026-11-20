@@ -13,7 +13,8 @@ export function BrandBar({ appName, siteUrl, title, top = true }: { appName: str
   // the footer are never covered.
   const [atEnd, setAtEnd] = useState(false);
   const host = siteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
-  const signup = `${siteUrl.replace(/\/$/, "")}/login?criar`;
+  // The landing page first, so a visitor learns what it is before signing up.
+  const signup = siteUrl;
 
   useEffect(() => {
     try {
