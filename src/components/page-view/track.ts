@@ -80,11 +80,35 @@ function send(payload: string) {
 export function track(handle: string | undefined, body: Record<string, string>) {
   if (!handle) return;
   const base = { handle, visitId, visitorId: visitorId(), ...body };
-  if (body.kind !== "page_view") return send(JSON.stringify(base));
+  if (body.kind !== "page_view") {
+    forward(body);
+    return send(JSON.stringify(base));
+  }
   // The page view also carries the phone model; don't hold the view back for
   // it longer than a moment.
   const wait = new Promise<string>((resolve) => window.setTimeout(() => resolve(""), 400));
   void Promise.race([deviceModel(), wait]).then((model) => send(JSON.stringify(model ? { ...base, model } : base)));
+}
+
+// The owner's own pixels and analytics (when connected) also hear about a
+// button click, so their reports and ad audiences can use it.
+type Services = {
+  fbq?: (...args: unknown[]) => void;
+  ttq?: { track?: (event: string, data?: Record<string, unknown>) => void };
+  gtag?: (...args: unknown[]) => void;
+  clarity?: (...args: unknown[]) => void;
+};
+function forward(body: Record<string, string>) {
+  try {
+    const w = window as unknown as Services;
+    const label = body.target || body.blockId || "";
+    w.fbq?.("trackCustom", "CliqueNoBotao", { tipo: body.kind, destino: label });
+    w.ttq?.track?.("ClickButton", { content_name: label });
+    w.gtag?.("event", "clique_no_botao", { tipo: body.kind, destino: label });
+    w.clarity?.("event", "clique_no_botao");
+  } catch {
+    // A blocked or broken third-party script must never stop the click.
+  }
 }
 
 export function startVisit() {

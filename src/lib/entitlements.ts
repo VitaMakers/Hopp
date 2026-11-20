@@ -45,6 +45,11 @@ export function hasFullAnalytics(plan: string | null | undefined): boolean {
 }
 
 // The blue verified badge: Profissional.
+// The owner's own pixels and analytics accounts on the page: Profissional.
+export function canUseIntegrations(plan: string | null | undefined): boolean {
+  return isProfissional(plan);
+}
+
 // A domain of the client's own in front of the page: Profissional.
 export function canUseCustomDomain(plan: string | null | undefined): boolean {
   return isProfissional(plan);
@@ -96,8 +101,13 @@ export function planViolations(doc: PageDoc, plan: string | null | undefined): s
 // the simple layout, videos give way to the cover image, and form blocks are
 // left out.
 export function enforcePlan(doc: PageDoc, plan: string | null | undefined): PageDoc {
-  if (planViolations(doc, plan).length === 0) return doc;
+  const hasIntegrations = Object.values(doc.integrations ?? {}).some(Boolean);
+  if (planViolations(doc, plan).length === 0 && (canUseIntegrations(plan) || !hasIntegrations)) return doc;
   let next = doc;
+  // Integrations never block publishing; they just don't load without the plan.
+  if (!canUseIntegrations(plan) && hasIntegrations) {
+    next = { ...next, integrations: { metaPixel: "", tiktokPixel: "", googleAnalytics: "", clarity: "" } };
+  }
   if (!canUsePremium(plan) && next.theme.premium) {
     next = { ...next, theme: { ...next.theme, premium: "" } };
   }
