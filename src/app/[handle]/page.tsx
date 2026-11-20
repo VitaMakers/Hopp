@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Integrations } from "@/components/page-view/Integrations";
 import { PageView } from "@/components/page-view/PageView";
 import { APP_NAME, APP_TAGLINE } from "@/lib/env";
 import { showsBadge } from "@/lib/entitlements";
@@ -38,6 +39,8 @@ export default async function PublicPage({ params }: Params) {
   const page = await getPublishedPage((await params).handle);
   if (!page) notFound();
   return (
+    <>
+    <Integrations ids={page.doc.integrations} />
     <PageView
       doc={page.doc}
       handle={page.handle}
@@ -51,5 +54,6 @@ export default async function PublicPage({ params }: Params) {
         ) : null
       }
     />
+    </>
   );
 }

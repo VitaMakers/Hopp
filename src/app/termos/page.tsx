@@ -57,19 +57,26 @@ export default function TermsPage() {
           fornece a ferramenta.
         </Section>
 
-        <Section title="7. Disponibilidade e limitação de responsabilidade">
+        <Section title="7. Integrações com outros serviços">
+          Você pode ligar a sua página a contas suas em outros serviços, como pixels de anúncio (Meta, TikTok), Google
+          Analytics e Microsoft Clarity. Os dados coletados por esses serviços vão para a sua conta em cada um deles e
+          seguem os termos e as políticas de privacidade deles. Ao conectar um serviço, você é responsável por informar
+          os visitantes da sua página e por cumprir a legislação de proteção de dados aplicável.
+        </Section>
+
+        <Section title="8. Disponibilidade e limitação de responsabilidade">
           Fazemos o possível para manter o serviço no ar, mas ele é fornecido &quot;como está&quot;, sem garantias de
           disponibilidade ininterrupta. Na medida permitida por lei, não nos responsabilizamos por lucros cessantes ou
           danos indiretos decorrentes do uso do serviço.
         </Section>
 
-        <Section title="8. Encerramento">
+        <Section title="9. Encerramento">
           Você pode excluir sua conta a qualquer momento nas Configurações. Podemos encerrar contas que violem estes
           Termos. Ao encerrar, os dados associados podem ser removidos conforme nossa{" "}
           <Link href="/privacidade" className="underline">Política de Privacidade</Link>.
         </Section>
 
-        <Section title="9. Alterações">
+        <Section title="10. Alterações">
           Podemos atualizar estes Termos. A data no topo indica a última revisão. O uso continuado após mudanças
           significa que você as aceita.
         </Section>

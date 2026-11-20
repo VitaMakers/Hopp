@@ -145,6 +145,7 @@ export function page(
     theme: { ...baseTheme, ...parts.theme },
     premium: { ...PREMIUM_DEFAULTS, ...parts.premium },
     seo: { title: "", description: "" },
+    integrations: { metaPixel: "", tiktokPixel: "", googleAnalytics: "", clarity: "" },
   };
 }
 

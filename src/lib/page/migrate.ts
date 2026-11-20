@@ -63,6 +63,7 @@ export function applyTemplateKeepingProfile(current: PageDoc, next: PageDoc): Pa
     // empty address so the owner fills them in (nothing fake goes live).
     socials: ownSocials.length ? ownSocials : next.socials.map((s) => ({ ...s, url: isSampleSocial(s.url) ? "" : s.url })),
     seo: current.seo,
+    integrations: current.integrations,
   };
   return normalizeLegacyCover(merged);
 }

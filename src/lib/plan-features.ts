@@ -23,6 +23,7 @@ export const PLAN_FEATURES: PlanFeature[] = [
   { label: "Links curtos próprios", free: false, essencial: "Ilimitados", profissional: "Ilimitados" },
   { label: "Formulários próprios, com as respostas no painel", free: false, essencial: false, profissional: true },
   { label: "Domínio próprio (suamarca.com.br)", free: false, essencial: false, profissional: true },
+  { label: "Pixel do Meta e do TikTok, Google Analytics e Clarity", free: false, essencial: false, profissional: true },
   { label: "Selo verificado azul", free: false, essencial: false, profissional: true },
   { label: "Sem a marca Virtú.bio no rodapé", free: false, essencial: false, profissional: true },
 ];

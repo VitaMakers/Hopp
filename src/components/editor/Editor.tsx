@@ -10,6 +10,7 @@ import { APP_NAME, APP_TAGLINE } from "@/lib/env";
 import { showsBadge } from "@/lib/entitlements";
 import type { PageDoc } from "@/lib/page/schema";
 import { BlocksPanel } from "./BlocksPanel";
+import { IntegrationsPanel } from "./IntegrationsPanel";
 import { SeoPanel } from "./SeoPanel";
 import { ThemePanel } from "./ThemePanel";
 
@@ -376,6 +377,7 @@ export function Editor({
             <div className="flex flex-col gap-4">
               <h2 className="font-display text-[24px] font-bold tracking-[-0.02em]">Ajustes da página</h2>
               <SeoPanel doc={doc} onChange={setDoc} handle={handle} />
+              <IntegrationsPanel doc={doc} onChange={setDoc} plan={plan} />
               <a href={`/${handle}`} target="_blank" rel="noreferrer" className="text-sm font-semibold text-stone-800 underline underline-offset-4 lg:hidden">
                 Ver a página publicada
               </a>

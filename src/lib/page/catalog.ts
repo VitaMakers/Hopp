@@ -360,6 +360,7 @@ export function defaultPageDoc(name: string): PageDoc {
     theme: THEME_PRESETS[0].theme,
     premium: PREMIUM_DEFAULTS,
     seo: { title: "", description: "" },
+    integrations: { metaPixel: "", tiktokPixel: "", googleAnalytics: "", clarity: "" },
   };
 }
 

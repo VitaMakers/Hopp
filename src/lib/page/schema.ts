@@ -394,6 +394,13 @@ export const premiumFieldsSchema = z.object({
 
 export const PREMIUM_DEFAULTS = premiumFieldsSchema.parse({});
 
+// An account id from another service: letters, digits, hyphen and underscore.
+const integrationId = z
+  .string()
+  .max(40)
+  .regex(/^[A-Za-z0-9_-]*$/)
+  .default("");
+
 export const pageDocSchema = z.object({
   version: z.literal(1),
   profile: z.object({
@@ -471,6 +478,17 @@ export const pageDocSchema = z.object({
     title: z.string().max(70),
     description: z.string().max(160),
   }),
+  // The owner's own measurement accounts (Profissional plan). Only the ids are
+  // kept, and only characters an id can have, so nothing typed here can ever
+  // reach the page as code.
+  integrations: z
+    .object({
+      metaPixel: integrationId,
+      tiktokPixel: integrationId,
+      googleAnalytics: integrationId,
+      clarity: integrationId,
+    })
+    .default({ metaPixel: "", tiktokPixel: "", googleAnalytics: "", clarity: "" }),
 });
 
 export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number];
