@@ -110,7 +110,7 @@ export default async function HomePage() {
     .filter((x) => x.name)
     .sort((x, y) => y.total - x.total);
   const tapTotal = ranked.reduce((sum, x) => sum + x.total, 0);
-  const SLICE_COLORS = ["#2DD4BF", "#22B8F0", "#6D4AFF", "#3B82F6", "#4B4E5A"];
+  const SLICE_COLORS = ["#2DD4BF", "#22B8F0", "#6D4AFF", "#3B82F6", "#B9B6C9"];
   const slices = [...ranked.slice(0, 4), ...(ranked.length > 4 ? [{ name: "Outros botões", total: ranked.slice(4).reduce((sum, x) => sum + x.total, 0) }] : [])].map(
     (x, i) => ({ ...x, color: SLICE_COLORS[i], share: tapTotal ? x.total / tapTotal : 0 }),
   );
@@ -141,16 +141,16 @@ export default async function HomePage() {
   const axisMax = Math.max(4, Math.ceil(weekMax / 4) * 4);
   const ticks = [axisMax, (axisMax * 3) / 4, axisMax / 2, axisMax / 4, 0];
 
-  const panel = "rounded-[18px] bg-[#16171B]";
-  const tile = "rounded-[14px] bg-[#1F2026]";
-  const muted = "text-[#8E909B]";
+  const panel = "rounded-[18px] border border-[#E5E2DA] bg-white";
+  const tile = "rounded-[14px] bg-[#F6F5F1]";
+  const muted = "text-stone-600";
   const R = 54;
   const C = 2 * Math.PI * R;
   let offset = 0;
 
   return (
-    <div className="-mx-4 -mb-12 -mt-[4.5rem] min-h-screen bg-[#0D0E11] px-4 pb-12 pt-[5.5rem] text-white lg:-mx-10 lg:-mt-9 lg:px-10 lg:pt-9">
-      <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-5">
+    <div>
+      <div className="flex flex-col gap-5">
         <header className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="font-display text-[30px] font-bold leading-tight tracking-[-0.025em]">Início</h1>
@@ -160,7 +160,7 @@ export default async function HomePage() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <CopyLinkButton handle={profile.handle} host={host} />
-            <Link href="/dashboard/editor" className="inline-flex h-10 items-center rounded-[10px] bg-white px-[18px] text-sm font-semibold text-[#0D0E11] transition-colors hover:bg-[#E7E8EC]">
+            <Link href="/dashboard/editor" className="inline-flex h-10 items-center rounded-[10px] bg-stone-900 px-[18px] text-sm font-semibold text-white transition-colors hover:bg-stone-800">
               Editar página
             </Link>
           </div>
@@ -178,12 +178,12 @@ export default async function HomePage() {
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Link href="/dashboard/modelos" className="inline-flex h-10 items-center rounded-[10px] border border-white/15 px-4 text-sm font-semibold text-white transition-colors hover:border-white/40">
+                <Link href="/dashboard/modelos" className="inline-flex h-10 items-center rounded-[10px] border border-[#E5E2DA] px-4 text-sm font-semibold text-stone-900 transition-colors hover:border-stone-400">
                   Ver todos os modelos
                 </Link>
                 <a
                   href={`/dashboard/clientes/${profile.id}/assinar?plan=essencial`}
-                  className="inline-flex h-10 items-center rounded-[10px] bg-gradient-to-r from-[#2DD4BF] to-[#2F7BFF] px-4 text-sm font-semibold text-[#06121A] transition hover:brightness-110"
+                  className="inline-flex h-10 items-center rounded-[10px] bg-gradient-to-r from-[#2DD4BF] to-[#2F7BFF] px-4 text-sm font-semibold text-white transition hover:brightness-110"
                 >
                   Liberar por {formatBRL(PLAN_PRICE_BRL.essencial)}/mês
                 </a>
@@ -192,7 +192,7 @@ export default async function HomePage() {
             <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
               {showcase.map((m) => (
                 <Link key={m.id} href={`/dashboard/modelos?ver=${m.id}`} className="group block">
-                  <span className="block overflow-hidden rounded-xl border border-white/10 transition-colors group-hover:border-white/40">
+                  <span className="block overflow-hidden rounded-xl border border-[#E5E2DA] transition-colors group-hover:border-stone-400">
                     <ModelThumb doc={m.doc} width={180} height={296} />
                   </span>
                   <span className="mt-2 block text-sm font-semibold">{m.name}</span>
@@ -214,7 +214,7 @@ export default async function HomePage() {
                     <dd className="mt-1.5 text-[30px] font-semibold leading-none tracking-[-0.02em]">{n(views)}</dd>
                     <dd className={`mt-2 text-xs ${muted}`}>aberturas do link</dd>
                   </div>
-                  <div className="border-l border-white/10 pl-4">
+                  <div className="border-l border-[#E5E2DA] pl-4">
                     <dt className={`text-xs ${muted}`}>Crescimento</dt>
                     <dd className="mt-1.5 flex items-center gap-1.5 text-[30px] font-semibold leading-none tracking-[-0.02em]">
                       {growth === null ? "—" : `${Math.abs(growth)}%`}
@@ -235,7 +235,7 @@ export default async function HomePage() {
                     <dd className="mt-1.5 text-[30px] font-semibold leading-none tracking-[-0.02em]">{full ? n(clicks) : "—"}</dd>
                     <dd className={`mt-2 text-xs ${muted}`}>nos botões</dd>
                   </div>
-                  <div className="border-l border-white/10 pl-4">
+                  <div className="border-l border-[#E5E2DA] pl-4">
                     <dt className={`text-xs ${muted}`}>Aproveitamento</dt>
                     <dd className="mt-1.5 text-[30px] font-semibold leading-none tracking-[-0.02em]">{full && views ? `${rate}%` : "—"}</dd>
                     <dd className={`mt-2 text-xs ${muted}`}>{full ? "toques por visita" : "no plano Essencial"}</dd>
@@ -245,7 +245,7 @@ export default async function HomePage() {
                   <dt className={`text-xs ${muted}`}>Contatos novos</dt>
                   <dd className="mt-1.5 text-[30px] font-semibold leading-none tracking-[-0.02em]">{n(newContacts)}</dd>
                   <dd className="mt-2 text-xs">
-                    <Link href={responses ? "/dashboard/formularios" : "/dashboard/contacts"} className="font-medium text-[#5EE0CF] hover:underline">
+                    <Link href={responses ? "/dashboard/formularios" : "/dashboard/contacts"} className="font-medium text-blue-600 hover:underline">
                       {responses ? `${n(responses)} por formulário` : "Ver contatos"}
                     </Link>
                   </dd>
@@ -259,7 +259,7 @@ export default async function HomePage() {
                   <h2 id="visitas" className="text-[17px] font-semibold">Visitas por dia</h2>
                   <p className={`mt-1 text-xs ${muted}`}>Quantas vezes o seu link foi aberto em cada dia.</p>
                 </div>
-                <Link href="/dashboard/analytics" className="inline-flex h-9 items-center rounded-[10px] border border-white/15 px-3.5 text-[13px] font-medium text-white transition-colors hover:border-white/40">
+                <Link href="/dashboard/analytics" className="inline-flex h-9 items-center rounded-[10px] border border-[#E5E2DA] px-3.5 text-[13px] font-semibold text-stone-900 transition-colors hover:border-stone-400">
                   Ver estatísticas
                 </Link>
               </div>
@@ -273,12 +273,12 @@ export default async function HomePage() {
                   <ol className="relative grid h-[240px] min-w-0 flex-1 grid-cols-12 gap-1.5 sm:gap-3" aria-label={`Visitas em cada um dos últimos ${CHART_DAYS} dias`}>
                     <span aria-hidden className="pointer-events-none absolute inset-0 flex flex-col justify-between">
                       {ticks.map((t) => (
-                        <span key={t} className="block h-px bg-white/[0.06]" />
+                        <span key={t} className="block h-px bg-stone-900/[0.07]" />
                       ))}
                     </span>
                     {week.map((d) => (
                       <li key={d.key} title={`${d.label}: ${n(d.total)} ${d.total === 1 ? "visita" : "visitas"}`} className="relative flex justify-center">
-                        <span className="relative h-full w-full max-w-[22px] overflow-hidden rounded-t-[4px] bg-white/[0.07]">
+                        <span className="relative h-full w-full max-w-[22px] overflow-hidden rounded-t-[4px] bg-stone-900/[0.06]">
                           <span
                             className="absolute inset-x-0 bottom-0 rounded-t-[4px] bg-gradient-to-b from-[#2DD4BF] to-[#2F7BFF]"
                             style={{ height: `${(d.total / axisMax) * 100}%` }}
@@ -293,7 +293,7 @@ export default async function HomePage() {
                 </div>
                 <div className={`ml-7 mt-2.5 grid grid-cols-12 gap-1.5 text-center text-[10px] sm:gap-3 sm:text-[11px] ${muted}`} aria-hidden>
                   {week.map((d) => (
-                    <span key={d.key} className={d.today ? "font-semibold text-white" : ""}>
+                    <span key={d.key} className={d.today ? "font-semibold text-stone-900" : ""}>
                       {d.today ? (
                         "hoje"
                       ) : (
@@ -311,7 +311,7 @@ export default async function HomePage() {
             <section aria-labelledby="contatos" className={`${panel} p-4 sm:p-5`}>
               <div className="flex items-baseline justify-between gap-4">
                 <h2 id="contatos" className="text-[17px] font-semibold">Últimos contatos</h2>
-                <Link href={people.some((x) => x.via === "Captação") || !people.length ? "/dashboard/contacts" : "/dashboard/formularios"} className="text-[13px] font-medium text-[#5EE0CF] hover:underline">
+                <Link href={people.some((x) => x.via === "Captação") || !people.length ? "/dashboard/contacts" : "/dashboard/formularios"} className="text-[13px] font-medium text-blue-600 hover:underline">
                   Ver todos
                 </Link>
               </div>
@@ -321,7 +321,7 @@ export default async function HomePage() {
                     const digits = c.phone.replace(/\D/g, "");
                     return (
                       <li key={c.id} className={`${tile} flex flex-wrap items-center gap-x-3.5 gap-y-1 px-4 py-3`}>
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2DD4BF] to-[#2F7BFF] text-xs font-bold text-[#06121A]">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2DD4BF] to-[#2F7BFF] text-xs font-bold text-white">
                           {c.title.slice(0, 1).toUpperCase()}
                         </span>
                         <span className="min-w-0 flex-1 basis-[180px]">
@@ -332,7 +332,7 @@ export default async function HomePage() {
                           {c.via}, {new Date(c.at).toLocaleDateString("pt-BR", { day: "numeric", month: "short", timeZone: TIME_ZONE })}
                         </span>
                         {digits.length >= 10 ? (
-                          <a href={`https://wa.me/${digits.replace(/^(?!55)/, "55")}`} target="_blank" rel="noreferrer" className="text-[13px] font-medium text-[#5EE0CF] hover:underline">
+                          <a href={`https://wa.me/${digits.replace(/^(?!55)/, "55")}`} target="_blank" rel="noreferrer" className="text-[13px] font-medium text-blue-600 hover:underline">
                             Abrir conversa
                           </a>
                         ) : null}
@@ -355,7 +355,7 @@ export default async function HomePage() {
                 <>
                   <div className="relative mx-auto mt-4 h-[190px] w-[190px]">
                     <svg viewBox="0 0 140 140" className="h-full w-full -rotate-90" aria-hidden>
-                      <circle cx="70" cy="70" r={R} fill="none" stroke="#24262D" strokeWidth="14" />
+                      <circle cx="70" cy="70" r={R} fill="none" stroke="#ECEAE4" strokeWidth="14" />
                       {slices.map((sl) => {
                         const len = Math.max(0, sl.share * C - (slices.length > 1 ? 3 : 0));
                         const el = (
@@ -394,7 +394,7 @@ export default async function HomePage() {
               )}
             </section>
 
-            <section aria-label="Sua página" className="overflow-hidden rounded-[18px] bg-gradient-to-br from-[#1FB8C4] to-[#2466D9] p-5">
+            <section aria-label="Sua página" className="overflow-hidden rounded-[18px] bg-gradient-to-br from-[#1FB8C4] to-[#2466D9] p-5 text-white">
               <div className="flex items-center gap-4">
                 {doc && paid ? (
                   <span className="block shrink-0 overflow-hidden rounded-[14px] border-[3px] border-white/90">
@@ -423,21 +423,21 @@ export default async function HomePage() {
                 <p className={`mt-1 text-[13px] ${muted}`}>
                   {doneCount} de {steps.length} passos feitos
                 </p>
-                <span className="mt-3 block h-1.5 overflow-hidden rounded-[3px] bg-white/10">
+                <span className="mt-3 block h-1.5 overflow-hidden rounded-[3px] bg-[#EFEDE7]">
                   <span className="block h-full bg-gradient-to-r from-[#2DD4BF] to-[#2F7BFF]" style={{ width: `${(doneCount / steps.length) * 100}%` }} />
                 </span>
                 <ul className="mt-3">
                   {steps
                     .filter((st) => !st.done)
                     .map((st) => (
-                      <li key={st.label} className="flex items-start gap-2.5 border-t border-white/10 py-2.5 first:border-t-0">
-                        <span className="mt-0.5 h-[18px] w-[18px] shrink-0 rounded-full border-[1.5px] border-white/30" />
+                      <li key={st.label} className="flex items-start gap-2.5 border-t border-[#EFEDE7] py-2.5 first:border-t-0">
+                        <span className="mt-0.5 h-[18px] w-[18px] shrink-0 rounded-full border-[1.5px] border-[#B9B6C9]" />
                         <span className="flex-1">
                           <span className="block text-sm font-semibold">{st.label}</span>
                           {st.hint ? <span className={`block text-[13px] ${muted}`}>{st.hint}</span> : null}
                         </span>
                         {st.href ? (
-                          <Link href={st.href} className="text-[13px] font-medium text-[#5EE0CF] hover:underline">
+                          <Link href={st.href} className="text-[13px] font-medium text-blue-600 hover:underline">
                             Fazer
                           </Link>
                         ) : null}
