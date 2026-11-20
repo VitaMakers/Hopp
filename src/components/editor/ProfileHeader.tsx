@@ -289,6 +289,19 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
                         value={widthValue}
                         onChange={(coverWidth) => setProfile({ coverWidth, coverScale: zoomValue })}
                       />
+                      {profile.coverFormat === "original" ? (
+                        <p className="text-xs text-stone-600">No formato Original a altura acompanha a imagem. Para escolher a altura, use Horizontal, Vertical ou Tela cheia.</p>
+                      ) : (
+                        <CoverSlider
+                          id="cover-tall"
+                          label="Altura"
+                          hint="Deixa a capa mais baixa ou mais alta."
+                          min={40}
+                          max={160}
+                          value={profile.coverTall}
+                          onChange={(coverTall) => setProfile({ coverTall })}
+                        />
+                      )}
                       <div className="flex flex-col gap-1.5">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="text-[13px] font-medium text-stone-800">Espaço em volta:</span>
