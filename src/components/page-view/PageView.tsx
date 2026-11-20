@@ -827,7 +827,16 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
       );
       const embed = (
         <>
-          <iframe src={href ?? ""} title={block.title || "Agendamento"} className="h-[620px] w-full border-0 bg-white" loading="lazy" />
+          <iframe
+            src={href ?? ""}
+            title={block.title || "Agendamento"}
+            className="h-[620px] w-full border-0 bg-white"
+            loading="lazy"
+            // The embedded site keeps working (scripts, forms, its own login)
+            // but can only move the whole tab after a click from the visitor.
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
           <a href={href ?? "#"} target="_blank" rel="noopener noreferrer" onClick={() => href && click(href)} className="block px-4 py-3 text-center text-sm font-medium underline opacity-80">
             Não consegue ver a agenda? Abrir em nova aba
           </a>

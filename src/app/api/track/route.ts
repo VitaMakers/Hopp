@@ -48,7 +48,27 @@ function parseUA(ua: string): { device: string; os: string; browser: string } {
   return { device, os, browser };
 }
 
+// Crawlers and scripts are not visitors. Kept narrow on purpose: a real
+// phone must never be mistaken for one (e.g. "CUBOT" is a phone brand).
+const BOT_UA = /bot[\/;)]|crawler|spider|slurp|headlesschrome|lighthouse|pingdom|facebookexternalhit|^curl|^wget|python-requests|axios\/|node-fetch|go-http-client/i;
+
+// A browser on the page itself posts from the same host. Another site
+// posting here on a visitor's behalf arrives with a different Origin.
+function crossSite(request: Request): boolean {
+  const origin = request.headers.get("origin");
+  if (!origin) return false;
+  const host = (request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? "").toLowerCase();
+  try {
+    return new URL(origin).host.toLowerCase() !== host;
+  } catch {
+    return true;
+  }
+}
+
 export async function POST(request: Request) {
+  const agent = request.headers.get("user-agent") ?? "";
+  // Answer "ok" without recording, so nothing retries.
+  if (!agent || BOT_UA.test(agent) || crossSite(request)) return NextResponse.json({ ok: true });
   if (!rateLimit(`track:${clientIp(request)}`, 120, 60_000)) {
     return NextResponse.json({ ok: false }, { status: 429 });
   }

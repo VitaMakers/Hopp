@@ -182,7 +182,7 @@ export default async function AdminPage() {
             <Row label="Contas Stripe conectadas" value={num(connected)} />
           </ul>
           <p className="mt-4 text-xs text-stone-400">
-            A receita é uma estimativa (ainda não há cobrança de assinatura no app). Para receita real, dá para ligar o faturamento via Stripe.
+            A receita é uma estimativa: soma o preço do plano de cada cliente, inclusive os planos que você liberou à mão. O valor realmente cobrado está no Stripe.
           </p>
         </section>
       </div>

@@ -7,9 +7,10 @@ import { hasFullAnalytics } from "@/lib/entitlements";
 import { BLOCK_CATALOG, SOCIAL_LABELS, blockSummary } from "@/lib/page/catalog";
 import { pageDocSchema, type BlockType, type SocialPlatform } from "@/lib/page/schema";
 import { getOwner } from "../context";
+import { fetchAll } from "@/lib/supabase/fetch-all";
 
 const WINDOWS = [7, 30, 90] as const;
-// Enough for small pages; large accounts will need SQL aggregation instead.
+// Rows are read in pages of 1000; very large accounts will need SQL aggregation instead.
 const MAX_EVENTS = 50_000;
 
 export default async function AnalyticsPage({ searchParams }: { searchParams: Promise<{ days?: string }> }) {
@@ -31,18 +32,23 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   const windowStart = new Date(now.getTime() - days * 86_400_000);
   const prevStart = new Date(now.getTime() - 2 * days * 86_400_000);
   const [{ data: allEvents }, { data: page }, { data: links }] = await Promise.all([
-    supabase
-      .from("events")
-      .select("kind, block_id, short_link_id, target, referrer, visit_id, created_at")
-      .eq("owner_id", profile.id)
-      .gte("created_at", prevStart.toISOString())
-      .order("created_at", { ascending: false })
-      .limit(MAX_EVENTS),
+    fetchAll<EventRow>(
+      (from, to) =>
+        supabase
+          .from("events")
+          .select("kind, block_id, short_link_id, target, referrer, visit_id, created_at")
+          .eq("owner_id", profile.id)
+          .gte("created_at", prevStart.toISOString())
+          .order("created_at", { ascending: false })
+          .order("id")
+          .range(from, to),
+      MAX_EVENTS,
+    ),
     supabase.from("pages").select("draft").eq("owner_id", profile.id).maybeSingle(),
     supabase.from("short_links").select("id, code, title").eq("owner_id", profile.id),
   ]);
 
-  const events = (allEvents ?? []) as EventRow[];
+  const events = allEvents;
   const current = events.filter((e) => e.created_at >= windowStart.toISOString());
   const previous = events.filter((e) => e.created_at < windowStart.toISOString());
   const summary = summarize(current, days, now);
@@ -56,14 +62,19 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
 
   // Average time on page — a separate, error-tolerant query so a missing
   // duration_ms column (migration 0010 not run) never breaks the dashboard.
-  const { data: sessions } = await supabase
-    .from("events")
-    .select("duration_ms, created_at")
-    .eq("owner_id", profile.id)
-    .eq("kind", "session")
-    .gte("created_at", prevStart.toISOString())
-    .limit(5000);
-  const sessionRows = (sessions ?? []) as { duration_ms: number | null; created_at: string }[];
+  const { data: sessionRows } = await fetchAll<{ duration_ms: number | null; created_at: string }>(
+    (from, to) =>
+      supabase
+        .from("events")
+        .select("duration_ms, created_at")
+        .eq("owner_id", profile.id)
+        .eq("kind", "session")
+        .gte("created_at", prevStart.toISOString())
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(from, to),
+    MAX_EVENTS,
+  );
   const avgDuration = (fromIso: string, toIso?: string) => {
     const s = sessionRows.filter((r) => r.duration_ms != null && r.created_at >= fromIso && (!toIso || r.created_at < toIso));
     return s.length ? s.reduce((a, r) => a + (r.duration_ms ?? 0), 0) / s.length : 0;
@@ -80,18 +91,24 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   // Visitor location — a separate, error-tolerant query so missing country/city
   // columns (migration 0011 not run) never break the dashboard.
   const geoQuery = (columns: string) =>
-    supabase
-      .from("events")
-      .select(columns)
-      .eq("owner_id", profile.id)
-      .eq("kind", "page_view")
-      .gte("created_at", windowStart.toISOString())
-      .not("country", "is", null)
-      .limit(5000);
+    fetchAll<{ country: string | null; city: string | null; lat?: number | null; lon?: number | null }>(
+      (from, to) =>
+        supabase
+          .from("events")
+          .select(columns)
+          .eq("owner_id", profile.id)
+          .eq("kind", "page_view")
+          .gte("created_at", windowStart.toISOString())
+          .not("country", "is", null)
+          .order("created_at", { ascending: false })
+          .order("id")
+          .range(from, to),
+      MAX_EVENTS,
+    );
   // The position columns are newer (migration 0016): fall back without them.
   let { data: geoData, error: geoError } = await geoQuery("country, city, lat, lon");
   if (geoError) ({ data: geoData, error: geoError } = await geoQuery("country, city"));
-  const geoRows = (geoData ?? []) as unknown as { country: string | null; city: string | null; lat?: number | null; lon?: number | null }[];
+  const geoRows = geoData;
   // Each city with its visits and, when known, where it is.
   const cityAgg = new Map<string, { city: string; cc: string; count: number; lat: number; lon: number; located: number }>();
   for (const r of geoRows) {
@@ -125,20 +142,25 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
     .map(([cc, count]) => ({ cc, name: countryName(cc), count, box: COUNTRIES[cc]?.b ?? null }));
 
   // Device and campaign — error-tolerant (missing columns before migration 0012).
-  const { data: uaData } = await supabase
-    .from("events")
-    .select("device, os, browser, utm_source, utm_campaign")
-    .eq("owner_id", profile.id)
-    .eq("kind", "page_view")
-    .gte("created_at", windowStart.toISOString())
-    .limit(5000);
-  const uaRows = (uaData ?? []) as {
+  const { data: uaRows } = await fetchAll<{
     device: string | null;
     os?: string | null;
     browser: string | null;
     utm_source: string | null;
     utm_campaign: string | null;
-  }[];
+  }>(
+    (from, to) =>
+      supabase
+        .from("events")
+        .select("device, os, browser, utm_source, utm_campaign")
+        .eq("owner_id", profile.id)
+        .eq("kind", "page_view")
+        .gte("created_at", windowStart.toISOString())
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(from, to),
+    MAX_EVENTS,
+  );
   const byDevice = new Map<string, number>();
   const byOs = new Map<string, number>();
   const byBrowser = new Map<string, number>();
@@ -157,16 +179,22 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
 
   // Phone models and returning visitors come from newer columns (migration
   // 0017): each query stands alone, so the panel works before they exist.
-  const { data: modelData } = await supabase
-    .from("events")
-    .select("model")
-    .eq("owner_id", profile.id)
-    .eq("kind", "page_view")
-    .gte("created_at", windowStart.toISOString())
-    .not("model", "is", null)
-    .limit(5000);
+  const { data: modelData } = await fetchAll<{ model: string | null }>(
+    (from, to) =>
+      supabase
+        .from("events")
+        .select("model")
+        .eq("owner_id", profile.id)
+        .eq("kind", "page_view")
+        .gte("created_at", windowStart.toISOString())
+        .not("model", "is", null)
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(from, to),
+    MAX_EVENTS,
+  );
   const byModel = new Map<string, number>();
-  for (const r of (modelData ?? []) as unknown as { model: string | null }[]) {
+  for (const r of modelData) {
     if (r.model) byModel.set(modelName(r.model), (byModel.get(modelName(r.model)) ?? 0) + 1);
   }
   const models = [...byModel].sort((a, b) => b[1] - a[1]).slice(0, 6);
@@ -175,18 +203,23 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   // whatever window is selected above.
   const d30 = new Date(now.getTime() - 30 * 86_400_000).toISOString();
   const d60 = new Date(now.getTime() - 60 * 86_400_000).toISOString();
-  const { data: visitorData, error: visitorError } = await supabase
-    .from("events")
-    .select("kind, block_id, target, visitor_id, created_at, city, device, os, model")
-    .eq("owner_id", profile.id)
-    .gte("created_at", d60)
-    .not("visitor_id", "is", null)
-    .order("created_at", { ascending: false })
-    .limit(20000);
   type VisitorRow = { kind: string; block_id: string | null; target: string | null; visitor_id: string; created_at: string; city: string | null; device: string | null; os: string | null; model: string | null };
   type Visitor = { id: string; visits: number; visitsBefore: number; now: number; before: number; last: string; city: string; device: string; clicks: Map<string, number> };
+  const { data: visitorData, error: visitorError } = await fetchAll<VisitorRow>(
+    (from, to) =>
+      supabase
+        .from("events")
+        .select("kind, block_id, target, visitor_id, created_at, city, device, os, model")
+        .eq("owner_id", profile.id)
+        .gte("created_at", d60)
+        .not("visitor_id", "is", null)
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(from, to),
+    MAX_EVENTS,
+  );
   const visitorMap = new Map<string, Visitor>();
-  for (const e of (visitorData ?? []) as unknown as VisitorRow[]) {
+  for (const e of visitorData) {
     let v = visitorMap.get(e.visitor_id);
     if (!v) {
       v = { id: e.visitor_id, visits: 0, visitsBefore: 0, now: 0, before: 0, last: e.created_at, city: "", device: "", clicks: new Map() };
@@ -220,14 +253,19 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   // and this month regardless of the selected window.
   const monthAgoIso = new Date(now.getTime() - 30 * 86_400_000).toISOString();
   const weekAgoIso = new Date(now.getTime() - 7 * 86_400_000).toISOString();
-  const { data: linkClickData } = await supabase
-    .from("events")
-    .select("block_id, visit_id, created_at")
-    .eq("owner_id", profile.id)
-    .eq("kind", "block_click")
-    .gte("created_at", monthAgoIso)
-    .limit(20000);
-  const linkClicks = (linkClickData ?? []) as { block_id: string | null; visit_id: string | null; created_at: string }[];
+  const { data: linkClicks } = await fetchAll<{ block_id: string | null; visit_id: string | null; created_at: string }>(
+    (from, to) =>
+      supabase
+        .from("events")
+        .select("block_id, visit_id, created_at")
+        .eq("owner_id", profile.id)
+        .eq("kind", "block_click")
+        .gte("created_at", monthAgoIso)
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(from, to),
+    MAX_EVENTS,
+  );
 
   const doc = pageDocSchema.safeParse(page?.draft);
   const blockNames = new Map<string, string>();

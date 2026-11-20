@@ -18,6 +18,7 @@ export function isAdmin(email: string | null | undefined): boolean {
 export async function requireAdmin() {
   const { user } = await requireUser();
   if (!user) redirect("/login");
-  if (!isAdmin(user.email)) redirect("/dashboard");
+  // An address that was typed but never confirmed proves nothing.
+  if (!isAdmin(user.email) || !user.email_confirmed_at) redirect("/dashboard");
   return { user };
 }

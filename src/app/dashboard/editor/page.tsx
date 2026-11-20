@@ -3,6 +3,7 @@ import { normalizeLegacyCover } from "@/lib/page/migrate";
 import { pageDocSchema } from "@/lib/page/schema";
 import { Editor } from "@/components/editor/Editor";
 import { getOwner } from "../context";
+import { fetchAll } from "@/lib/supabase/fetch-all";
 
 export default async function EditorPage() {
   const { supabase, profile, clients } = await getOwner();
@@ -32,15 +33,22 @@ export default async function EditorPage() {
 
   // Per-block performance for the last 30 days, shown inline in the blocks list.
   const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
-  const { data: ev } = await supabase
-    .from("events")
-    .select("kind, block_id")
-    .eq("owner_id", profile.id)
-    .gte("created_at", since)
-    .limit(50000);
+  const { data: ev } = await fetchAll<{ kind: string; block_id: string | null }>(
+    (from, to) =>
+      supabase
+        .from("events")
+        .select("kind, block_id")
+        .eq("owner_id", profile.id)
+        .in("kind", ["page_view", "block_click"])
+        .gte("created_at", since)
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(from, to),
+    50_000,
+  );
   let views = 0;
   const clicks: Record<string, number> = {};
-  for (const e of (ev ?? []) as { kind: string; block_id: string | null }[]) {
+  for (const e of ev) {
     if (e.kind === "page_view") views += 1;
     else if (e.kind === "block_click" && e.block_id) clicks[e.block_id] = (clicks[e.block_id] ?? 0) + 1;
   }
