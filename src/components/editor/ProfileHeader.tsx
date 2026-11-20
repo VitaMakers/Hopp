@@ -211,7 +211,7 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
             <div className="flex flex-col gap-2 rounded-lg bg-stone-50 p-2.5">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium text-stone-700">Formato:</span>
-                {([["original", "Original"], ["horizontal", "Horizontal"], ["vertical", "Vertical"], ["full", "Tela cheia"]] as const).map(([v, l]) => (
+                {([["horizontal", "Horizontal"], ["vertical", "Vertical"]] as const).map(([v, l]) => (
                   <button
                     key={v}
                     type="button"
@@ -222,11 +222,22 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
                   </button>
                 ))}
               </div>
-              <p className="-mt-1 text-xs text-stone-500">
-                {profile.coverFormat === "original"
-                  ? "Original mostra a imagem inteira, na proporção em que foi feita, sem cortar."
-                  : "O formato vale igual no celular e no computador. Arraste a imagem (abaixo) para escolher a parte que aparece."}
-              </p>
+              <p className="-mt-1 text-xs text-stone-500">O formato vale igual no celular e no computador. Arraste a imagem (abaixo) para escolher a parte que aparece.</p>
+              <div className="max-w-[280px]">
+                <CoverSlider
+                  id="cover-tall"
+                  label="Altura"
+                  hint="Deixa a capa mais baixa ou mais alta."
+                  min={40}
+                  max={160}
+                  value={profile.coverTall}
+                  // Moving the bar on a page still in an older format (Original or
+                  // Tela cheia) brings it to Vertical, where the height applies.
+                  onChange={(coverTall) =>
+                    setProfile(profile.coverFormat === "horizontal" || profile.coverFormat === "vertical" ? { coverTall } : { coverTall, coverFormat: "vertical" })
+                  }
+                />
+              </div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium text-stone-700">Bordas:</span>
                 {([["true", "Arredondadas"], ["false", "Retas"]] as const).map(([v, l]) => (
@@ -278,19 +289,6 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
                         value={widthValue}
                         onChange={(coverWidth) => setProfile({ coverWidth, coverScale: zoomValue })}
                       />
-                      {profile.coverFormat === "original" ? (
-                        <p className="text-xs text-stone-600">No formato Original a altura acompanha a imagem. Para escolher a altura, use Horizontal, Vertical ou Tela cheia.</p>
-                      ) : (
-                        <CoverSlider
-                          id="cover-tall"
-                          label="Altura"
-                          hint="Deixa a capa mais baixa ou mais alta."
-                          min={40}
-                          max={160}
-                          value={profile.coverTall}
-                          onChange={(coverTall) => setProfile({ coverTall })}
-                        />
-                      )}
                       <div className="flex flex-col gap-1.5">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="text-[13px] font-medium text-stone-800">Espaço em volta:</span>
