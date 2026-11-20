@@ -15,7 +15,7 @@ const price = (name: string, fallback: number) => Number(process.env[name] ?? fa
 export const PLAN_PRICE_BRL: Record<Plan, number> = {
   free: 0,
   essencial: price("ESSENCIAL_PRICE_BRL", 9.9),
-  profissional: price("PROFISSIONAL_PRICE_BRL", 29.9),
+  profissional: price("PROFISSIONAL_PRICE_BRL", 19.9),
 };
 
 // Accepts the legacy "pro" value and anything unknown, always returning a tier.

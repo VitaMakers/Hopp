@@ -8,7 +8,7 @@ import { normalizePlan } from "@/lib/plans";
 // Two paid plans:
 // - Essencial (R$ 9,90): premium models, video, full statistics, unlimited
 //   short links.
-// - Profissional (R$ 29,90): everything in Essencial plus custom forms, the
+// - Profissional (R$ 19,90): everything in Essencial plus custom forms, the
 //   verified badge and a page without the Virtú.bio mark.
 export function isPaid(plan: string | null | undefined): boolean {
   return normalizePlan(plan) !== "free";
