@@ -8,6 +8,7 @@ import { formatBRL, PLAN_PRICE_BRL } from "@/lib/plans";
 import { siteOrigin } from "@/lib/request";
 import { getOwner } from "./context";
 import { CopyLinkButton } from "./CopyLinkButton";
+import { fetchAll } from "@/lib/supabase/fetch-all";
 
 const TIME_ZONE = "America/Sao_Paulo";
 const DAY = 86_400_000;
@@ -52,7 +53,10 @@ export default async function HomePage() {
     count(supabase.from("contacts").select("id", { count: "exact", head: true }).eq("owner_id", profile.id).gte("created_at", weekAgo)),
     count(supabase.from("form_responses").select("id", { count: "exact", head: true }).eq("owner_id", profile.id).gte("created_at", weekAgo)),
     count(events().eq("kind", "page_view")),
-    supabase.from("events").select("block_id").eq("owner_id", profile.id).eq("kind", "block_click").gte("created_at", weekAgo).limit(5000),
+    fetchAll<{ block_id: string | null }>(
+      (from, to) => supabase.from("events").select("block_id").eq("owner_id", profile.id).eq("kind", "block_click").gte("created_at", weekAgo).order("created_at", { ascending: false }).order("id").range(from, to),
+      20_000,
+    ),
     supabase.from("contacts").select("id, email, phone, created_at").eq("owner_id", profile.id).order("created_at", { ascending: false }).limit(3),
   ]);
 
@@ -63,7 +67,7 @@ export default async function HomePage() {
 
   // Most clicked buttons this week, named as in the editor.
   const byBlock = new Map<string, number>();
-  for (const row of (clickRows ?? []) as { block_id: string | null }[]) {
+  for (const row of clickRows) {
     if (row.block_id) byBlock.set(row.block_id, (byBlock.get(row.block_id) ?? 0) + 1);
   }
   const top = [...byBlock.entries()]

@@ -5,6 +5,7 @@ import { getOwner } from "../context";
 import { CopyLink } from "./CopyLink";
 import { DeleteFormButton } from "./DeleteFormButton";
 import { NewFormButton } from "./NewFormButton";
+import { fetchAll } from "@/lib/supabase/fetch-all";
 
 type FormRow = { id: string; code: string; config: { title?: string } | null; created_at: string };
 
@@ -54,8 +55,11 @@ export default async function FormulariosPage({ searchParams }: { searchParams: 
   const counts = new Map<string, number>();
   const last = new Map<string, string>();
   if (ids.length && allowed) {
-    const { data: resp } = await supabase.from("form_responses").select("form_id, created_at").in("form_id", ids).order("created_at", { ascending: false }).limit(5000);
-    for (const r of resp ?? []) {
+    const { data: resp } = await fetchAll<{ form_id: string | null; created_at: string }>(
+      (from, to) => supabase.from("form_responses").select("form_id, created_at").in("form_id", ids).order("created_at", { ascending: false }).order("id").range(from, to),
+      20_000,
+    );
+    for (const r of resp) {
       if (!r.form_id) continue;
       counts.set(r.form_id, (counts.get(r.form_id) ?? 0) + 1);
       if (!last.has(r.form_id)) last.set(r.form_id, r.created_at);

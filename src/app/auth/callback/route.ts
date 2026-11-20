@@ -7,7 +7,10 @@ export async function GET(request: NextRequest) {
   // Only same-site relative paths are honored, so the link can't bounce the
   // fresh session off to another origin.
   const next = request.nextUrl.searchParams.get("next");
-  const dest = next && next.startsWith("/") && !next.startsWith("//") ? next : "/onboarding";
+  // Browsers read "\\" as "/", so "/\\evil.com" would leave the site: after
+  // the syntax check, the resolved address must still be on this origin.
+  const looksLocal = !!next && next.startsWith("/") && !next.startsWith("//") && !/[\\\s]/.test(next);
+  const dest = looksLocal && new URL(next!, request.url).origin === request.nextUrl.origin ? next! : "/onboarding";
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
