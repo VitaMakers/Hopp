@@ -106,21 +106,31 @@ export function ThemePanel({ doc, onChange, onGoColors }: PanelProps) {
     // Premium models draw their own look; their parts (colors included) are
     // edited in Conteúdo, next to the page's content.
     return (
-      <Card title={`Modelo premium: ${PREMIUM_NAMES[design]}`}>
-        <p className="-mt-2 text-sm leading-relaxed text-stone-600">
-          Este modelo tem visual próprio. As cores e cada parte do modelo ficam em Conteúdo, junto do que aparece na página.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {onGoColors ? (
-            <button type="button" onClick={onGoColors} className="btn-primary">
-              Editar as cores
-            </button>
-          ) : null}
-          <Link href="/dashboard/modelos" className="rounded-lg border border-[#E5E2DA] px-4 py-2.5 text-sm font-semibold text-stone-900 hover:border-stone-400">
-            Trocar modelo
-          </Link>
-        </div>
-      </Card>
+      <div className="flex flex-col gap-4">
+        <Card title={`Modelo premium: ${PREMIUM_NAMES[design]}`}>
+          <p className="-mt-2 text-sm leading-relaxed text-stone-600">
+            Este modelo tem visual próprio. As cores e cada parte do modelo ficam em Conteúdo, junto do que aparece na página.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {onGoColors ? (
+              <button type="button" onClick={onGoColors} className="btn-primary">
+                Editar as cores
+              </button>
+            ) : null}
+            <Link href="/dashboard/modelos" className="rounded-lg border border-[#E5E2DA] px-4 py-2.5 text-sm font-semibold text-stone-900 hover:border-stone-400">
+              Trocar modelo
+            </Link>
+          </div>
+        </Card>
+        <Card title="Botões">
+          <p className="-mt-2 text-sm leading-relaxed text-stone-600">
+            Vale para os botões de link que você adiciona ao modelo (como o do WhatsApp). O formato de cada botão — Clássico, Destaque ou Cartão — fica em cada botão, na aba Conteúdo.
+          </p>
+          <Choice label="Formato do botão" value={doc.theme.buttonShape} options={SHAPE_LABELS} onChange={(buttonShape) => setTheme({ buttonShape })} />
+          <Choice label="Estilo do botão" value={doc.theme.buttonStyle} options={STYLE_LABELS} onChange={(buttonStyle) => setTheme({ buttonStyle })} />
+          <Toggle label="Sombra nos botões" checked={doc.theme.buttonShadow} onChange={(buttonShadow) => setTheme({ buttonShadow })} />
+        </Card>
+      </div>
     );
   }
   return (
