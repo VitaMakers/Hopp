@@ -1,16 +1,20 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useState, type FormEvent } from "react";
 import type { Block, PageDoc } from "@/lib/page/schema";
 import { SOCIAL_LABELS } from "@/lib/page/constants";
 import { spotifyEmbedUrl, youtubeEmbedUrl } from "@/lib/page/embed";
 import { imageSrc, linkHref, mapsDirectionsUrl, mapsEmbedUrl, socialHref, vCard, videoSrc, whatsappHref } from "@/lib/page/links";
-import { PremiumView } from "./PremiumView";
 import { SocialIcon } from "./SocialIcon";
 import { VerifiedCheck } from "./VerifiedCheck";
 import { startVisit, track, trackDuration } from "./track";
 import { AVATAR_RADII, buttonClass, themeVars } from "./theme";
 import { canUseVerified } from "@/lib/entitlements";
+
+// The premium designs are a large file. Pages that use one get it rendered on
+// the server as before; visitors of every other page no longer download it.
+const PremiumView = dynamic(() => import("./PremiumView").then((m) => m.PremiumView));
 
 type Props = {
   doc: PageDoc;
@@ -105,7 +109,7 @@ function PageViewInner({ doc, handle, plan, footer, still, onEdit }: Props) {
     const extraBlocks = blocks.filter((block) => !rendered.includes(block.type));
     return (
       <>
-        <PremiumView doc={doc} handle={handle} plan={plan} onEdit={onEdit} />
+        <PremiumView doc={doc} handle={handle} plan={plan} onEdit={onEdit} still={still} />
         {extraBlocks.length ? (
           <div
             style={{ ...themeVars(theme), ["--btn-bg"]: "#ffffff", ["--btn-text"]: "#111827" } as React.CSSProperties}
@@ -162,7 +166,7 @@ function Avatar({ doc, size }: { doc: PageDoc; size: string }) {
   const shape = AVATAR_RADII[theme.avatarShape];
   if (src) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={profile.name} className={`${size} ${shape} border-4 border-[var(--page-bg)] object-cover`} />;
+    return <img src={src} alt={profile.name} fetchPriority="high" decoding="async" className={`${size} ${shape} border-4 border-[var(--page-bg)] object-cover`} />;
   }
   return (
     <div className={`${size} ${shape} flex items-center justify-center bg-[var(--btn-bg)] text-3xl font-semibold text-[var(--btn-text)]`}>
@@ -191,7 +195,7 @@ function Logo({ doc, className = "mb-3 h-14 w-auto object-contain" }: { doc: Pag
   const src = imageSrc(doc.profile.logo);
   if (!src) return null;
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt={doc.profile.name} className={className} />;
+  return <img src={src} alt={doc.profile.name} decoding="async" className={className} />;
 }
 
 // A cover/hero slot: plays the cover video when there is one, otherwise shows
@@ -227,7 +231,7 @@ function RotatingImages({ images, seconds, className, style, alt }: { images: Co
   const active = Math.min(i, images.length - 1);
   const img = images[active];
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={img.src} alt={alt} className={className} style={{ ...style, objectPosition: `${img.x}% ${img.y}%` }} />;
+  return <img src={img.src} alt={alt} fetchPriority="high" decoding="async" className={className} style={{ ...style, objectPosition: `${img.x}% ${img.y}%` }} />;
 }
 
 // The cover of a simple-layout header: video(s) take priority, then image(s)
@@ -252,7 +256,7 @@ function CoverMedia({
   if (videos.length) return <RotatingVideos videos={videos} seconds={seconds} poster={images[0]?.src ?? fallback} className={className} style={style} alt={alt} />;
   if (images.length) return <RotatingImages images={images} seconds={seconds} className={className} style={style} alt={alt} />;
   // eslint-disable-next-line @next/next/no-img-element
-  return fallback ? <img src={fallback} alt={alt} className={className} style={style} /> : null;
+  return fallback ? <img src={fallback} alt={alt} fetchPriority="high" decoding="async" className={className} style={style} /> : null;
 }
 
 function Header({ doc, handle, still }: { doc: PageDoc; handle?: string; still?: boolean }) {
@@ -684,7 +688,7 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
           >
             {leftIcon ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={leftIcon} alt="" className={`h-14 w-14 shrink-0 rounded-[calc(var(--box-radius)*0.7)] ${icon ? "bg-white object-contain p-1.5" : "object-cover"}`} />
+              <img src={leftIcon} alt="" loading="lazy" decoding="async" className={`h-14 w-14 shrink-0 rounded-[calc(var(--box-radius)*0.7)] ${icon ? "bg-white object-contain p-1.5" : "object-cover"}`} />
             ) : null}
             <span className="flex min-w-0 flex-1 flex-col">
               {block.label ? (
@@ -712,7 +716,7 @@ function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?
         >
           {leftIcon ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={leftIcon} alt="" className="absolute left-2 top-1/2 h-9 w-9 -translate-y-1/2 rounded-[calc(var(--btn-radius)*0.8)] object-contain" />
+            <img src={leftIcon} alt="" loading="lazy" decoding="async" className="absolute left-2 top-1/2 h-9 w-9 -translate-y-1/2 rounded-[calc(var(--btn-radius)*0.8)] object-contain" />
           ) : null}
           {block.title || href}
         </a>
@@ -1231,7 +1235,7 @@ function FormBlock({
     <form onSubmit={onSubmit} className="flex w-full flex-col gap-2.5 text-left">
       {formLogo ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={formLogo} alt="" className="mx-auto mb-1 max-h-20 w-auto object-contain" />
+        <img src={formLogo} alt="" loading="lazy" decoding="async" className="mx-auto mb-1 max-h-20 w-auto object-contain" />
       ) : null}
       {block.title ? <p className="text-center font-semibold">{block.title}</p> : null}
       {block.intro ? <p className="text-center text-sm opacity-80">{block.intro}</p> : null}

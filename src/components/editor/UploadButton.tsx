@@ -7,10 +7,26 @@ import { createClient } from "@/lib/supabase/client";
 // the browser before upload, so uploads rarely fail and pages stay light.
 const MAX_INPUT_MB = 50; // reject truly huge files up front
 const MAX_OUTPUT_MB = 12; // after compression
-const MAX_DIM = 2000; // longest side, in pixels
+const MAX_DIM = 1600; // longest side, in pixels: sharp on any phone, light on mobile data
 
-// Downscale and re-encode an image. Keeps PNG (transparency) and skips vector
-// or animated formats; falls back to the original if it can't do better.
+const encode = (canvas: HTMLCanvasElement, type: string, quality?: number) =>
+  new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, quality));
+
+// Whether any pixel is see-through (a logo on a transparent background).
+function hasTransparency(ctx: CanvasRenderingContext2D, width: number, height: number): boolean {
+  try {
+    const data = ctx.getImageData(0, 0, width, height).data;
+    for (let i = 3; i < data.length; i += 4) if (data[i] < 250) return true;
+  } catch {
+    return true; // can't read the pixels: keep transparency to be safe
+  }
+  return false;
+}
+
+// Downscale and re-encode an image as WebP, which keeps transparency and is
+// a fraction of the size of a PNG or JPEG. Browsers that can't write WebP
+// get a JPEG instead (or a PNG, only when the image really is transparent).
+// Vector and animated formats pass through; so does anything we can't shrink.
 async function processImage(file: File): Promise<Blob> {
   const type = file.type;
   if (type === "image/svg+xml" || type === "image/gif") return file;
@@ -25,10 +41,12 @@ async function processImage(file: File): Promise<Blob> {
   const ctx = canvas.getContext("2d");
   if (!ctx) return file;
   ctx.drawImage(bitmap, 0, 0, width, height);
-  const outType = type === "image/png" ? "image/png" : "image/jpeg";
-  const blob = await new Promise<Blob | null>((resolve) =>
-    canvas.toBlob(resolve, outType, outType === "image/jpeg" ? 0.85 : undefined),
-  );
+
+  let blob = await encode(canvas, "image/webp", 0.82);
+  if (!blob || blob.type !== "image/webp") {
+    const keepAlpha = type !== "image/jpeg" && hasTransparency(ctx, width, height);
+    blob = await encode(canvas, keepAlpha ? "image/png" : "image/jpeg", keepAlpha ? undefined : 0.85);
+  }
   if (!blob) return file;
   // Only use the processed version if it's actually smaller.
   return blob.size < file.size ? blob : file;
@@ -62,13 +80,15 @@ export function useImageUpload(onUploaded: (url: string) => void) {
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) throw new Error("no-session");
       const mime = blob.type || file.type;
-      const ext = mime.includes("png")
+      const ext = mime.includes("webp")
+        ? "webp"
+        : mime.includes("png")
         ? "png"
         : mime.includes("jpeg") || mime.includes("jpg")
           ? "jpg"
           : (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
       const path = `${auth.user.id}/${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("uploads").upload(path, blob, { contentType: mime, upsert: true });
+      const { error: upErr } = await supabase.storage.from("uploads").upload(path, blob, { contentType: mime, upsert: true, cacheControl: "31536000" });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("uploads").getPublicUrl(path);
       onUploaded(data.publicUrl);
