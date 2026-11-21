@@ -27,6 +27,9 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
   const avatar = imageSrc(profile.avatarUrl);
   // Premium designs draw their own cover: only the cover photo applies there.
   const isPremium = !!doc.theme.premium;
+  // Two portrait-cover designs (Presença, Restaurante/Ecossistema) can show a
+  // video in that cover, so they get the image/video choice and a video upload.
+  const premiumVideoCover = isPremium && (doc.theme.premium === "spotlight" || doc.theme.premium === "ecosystem");
   // Always applied to the latest profile (see DocChange).
   const setProfile = (patch: Patch<PageDoc["profile"]>) => onChange((d) => ({ ...d, profile: applyPatch(d.profile, patch) }));
   const avatarUpload = useImageUpload((avatarUrl) => setProfile({ avatarUrl }));
@@ -193,6 +196,20 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
                 ? "Neste modelo, a foto de capa entra no topo. O enquadramento e as fotos que trocam sozinhas ficam em Partes do modelo, logo abaixo."
                 : "A capa aparece nos layouts com foto (escolha em Personalizar → Layout, mais abaixo)."}
             </p>
+            {premiumVideoCover ? (
+              <div className="flex gap-2">
+                {([["image", "Imagem"], ["video", "Vídeo"]] as const).map(([val, lbl]) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setProfile({ coverType: val })}
+                    className={`rounded-lg px-3 py-1.5 text-sm ring-1 ${profile.coverType === val ? "bg-stone-900 text-white ring-stone-900" : "text-stone-600 ring-stone-300"}`}
+                  >
+                    {lbl}
+                  </button>
+                ))}
+              </div>
+            ) : null}
             {isPremium ? null : (
             <div className="flex gap-2">
               {([["image", "Imagem"], ["carousel", "Carrossel"], ["video", "Vídeo"]] as const).map(([val, lbl]) => (
@@ -256,7 +273,24 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
             </div>
             )}
 
-            {isPremium || profile.coverType === "image" ? (
+            {premiumVideoCover && profile.coverType === "video" ? (
+              <div className="flex flex-col gap-2">
+                <p className="text-xs text-stone-500">O vídeo entra no lugar da foto de capa, sem som e em loop. Suba da sua biblioteca (fica leve) ou cole um link .mp4.</p>
+                {(profile.coverVideos.length ? profile.coverVideos : [""]).map((url, i) => (
+                  <div key={i} className="flex flex-col gap-2 rounded-lg bg-stone-50 p-2.5">
+                    {url ? (
+                      // eslint-disable-next-line jsx-a11y/media-has-caption
+                      <video src={url} muted playsInline preload="metadata" className="h-28 w-auto max-w-full rounded-md bg-black object-contain" />
+                    ) : null}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <VideoUploadButton label={url ? "Trocar vídeo" : "Enviar da biblioteca"} onUploaded={(v) => setProfile({ coverVideos: [v] })} />
+                      <span className="text-xs text-stone-400">ou</span>
+                      <input type="url" value={url} placeholder="colar link .mp4" onChange={(e) => setProfile({ coverVideos: [e.target.value] })} className="field min-w-[150px] flex-1" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : isPremium || profile.coverType === "image" ? (
               <>
                 <TextField label="Imagem da capa (link ou envie)" type="url" value={profile.coverUrl} placeholder="https://..." onChange={(coverUrl) => setProfile({ coverUrl })} />
                 <UploadButton label="Enviar capa" onUploaded={(coverUrl) => setProfile({ coverUrl })} />

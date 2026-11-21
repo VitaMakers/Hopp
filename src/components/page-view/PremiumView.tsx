@@ -331,6 +331,8 @@ function Authority({ doc, handle, plan }: Props) {
 function Spotlight({ doc, handle, plan }: Props) {
   const { profile, theme, premium } = doc;
   const cover = imageSrc(profile.coverUrl);
+  const still = useContext(StillContext);
+  const coverVideo = still ? null : videoSrc(profileVideo(profile));
   const site = linkHref(premium.siteUrl);
   const logo = imageSrc(profile.logo);
   const privacy = linkHref(premium.privacyUrl);
@@ -344,7 +346,10 @@ function Spotlight({ doc, handle, plan }: Props) {
       style={{ "--spotlight-bg": theme.background, "--spotlight-text": theme.text, "--spotlight-accent": theme.accent, "--spotlight-cover-x": `${premium.coverX}%` } as React.CSSProperties}
     >
       <header className="spotlight-hero">
-        {cover ? (
+        {coverVideo ? (
+          // eslint-disable-next-line jsx-a11y/media-has-caption
+          <video className="spotlight-portrait" src={coverVideo} poster={cover ?? undefined} autoPlay muted loop playsInline style={{ objectPosition: `${premium.coverX}% ${premium.coverY}%` }} />
+        ) : cover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img className="spotlight-portrait" src={cover} alt="" style={{ objectPosition: `${premium.coverX}% ${premium.coverY}%` }} />
         ) : null}
