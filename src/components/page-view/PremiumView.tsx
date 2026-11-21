@@ -14,7 +14,9 @@ import { VerifiedCheck } from "./VerifiedCheck";
 // The four Vita premium designs. Each one mirrors the markup of the
 // original template so src/app/premium.css styles it the same way.
 
-type Props = { doc: PageDoc; handle?: string; plan?: string; onEdit?: (target: string) => void };
+// `still`: a thumbnail of the page. Videos don't load or play there.
+type Props = { doc: PageDoc; handle?: string; plan?: string; onEdit?: (target: string) => void; still?: boolean };
+const StillContext = createContext(false);
 
 // In the editor, premium block links open the block; a tagged area (hero,
 // promo, etc.) opens its card in the Blocos tab, and anything else opens the
@@ -65,12 +67,14 @@ function coverStyle(height: number): React.CSSProperties | undefined {
 function HeroVideo({ videos, seconds, posX = 50, posY = 50, className }: { videos: string[]; seconds: number; posX?: number; posY?: number; className?: string }) {
   const clean = videos.map((v) => videoSrc(v)).filter((x): x is string => !!x);
   const [index, setIndex] = useState(0);
+  const still = useContext(StillContext);
   useEffect(() => {
-    if (clean.length <= 1) return;
+    if (still || clean.length <= 1) return;
     const timer = setInterval(() => setIndex((v) => (v + 1) % clean.length), Math.max(1, seconds) * 1000);
     return () => clearInterval(timer);
-  }, [clean.length, seconds]);
+  }, [clean.length, seconds, still]);
   if (!clean.length) return null;
+  if (still) return <video className={className} preload="none" muted playsInline />;
   const active = Math.min(index, clean.length - 1);
   return (
     <video
@@ -216,7 +220,7 @@ function PremiumCard({ block, handle }: { block: LinkBlock; handle?: string }) {
   );
 }
 
-export function PremiumView({ doc, handle, plan, onEdit }: Props) {
+export function PremiumView({ doc, handle, plan, onEdit, still = false }: Props) {
   const page = (() => {
     switch (doc.theme.premium) {
       case "authority":
@@ -269,7 +273,11 @@ export function PremiumView({ doc, handle, plan, onEdit }: Props) {
       </PremiumEditContext.Provider>
     );
   }
-  return <div className="vita-page min-h-full">{page}</div>;
+  return (
+    <StillContext.Provider value={still}>
+      <div className="vita-page min-h-full">{page}</div>
+    </StillContext.Provider>
+  );
 }
 
 function Authority({ doc, handle, plan }: Props) {
@@ -424,7 +432,8 @@ function profileVideo(profile: PageDoc["profile"]): string {
 function Ecosystem({ doc, handle, plan }: Props) {
   const { profile, theme, premium } = doc;
   const cover = imageSrc(profile.coverUrl);
-  const coverVideo = videoSrc(profileVideo(profile));
+  const still = useContext(StillContext);
+  const coverVideo = still ? null : videoSrc(profileVideo(profile));
   const logo = imageSrc(profile.logo);
   const stats = visible(doc, "stats")[0]?.items.slice(0, 3) ?? [];
   return (

@@ -113,5 +113,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   // Everything except build assets, so a client's domain is recognised on any
   // path; requests to the app's public pages return right away above.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  // Static files and the visit counter need neither a session nor a domain
+  // lookup, so they skip this function altogether.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/track|.*\\.(?:png|jpe?g|webp|avif|gif|svg|ico|mp4|webm|woff2?|ttf|css|js|map|txt|xml)$).*)"],
 };
