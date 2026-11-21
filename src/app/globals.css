@@ -218,3 +218,29 @@ body {
   .hero-cycle { animation: none; }
   .hero-cycle:first-child { opacity: 1; }
 }
+
+/* Login: the three models in the side panel. */
+.login-lean {
+  transform: rotateX(var(--lean-x, 0deg)) rotateY(var(--lean-y, 0deg));
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.login-float {
+  animation: login-float 7s ease-in-out infinite;
+}
+@keyframes login-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-float {
+    animation: none;
+  }
+  .login-lean {
+    transition: none;
+  }
+}

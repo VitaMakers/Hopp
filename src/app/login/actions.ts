@@ -16,7 +16,12 @@ function credentials(form: FormData) {
 export async function signIn(_: AuthState, form: FormData): Promise<AuthState> {
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(credentials(form));
-  if (error) return { error: "E-mail ou senha incorretos." };
+  if (error) {
+    if (error.code === "email_not_confirmed") {
+      return { error: "Falta confirmar o seu e-mail. Abra o link que enviamos quando você criou a conta; se não achar, crie a conta de novo com o mesmo e-mail para receber outro." };
+    }
+    return { error: "E-mail ou senha incorretos." };
+  }
   redirect("/dashboard");
 }
 

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 const CONTACT = "contato@vitamakers.com.br";
-const UPDATED = "24 de outubro de 2026";
+const UPDATED = "21 de novembro de 2026";
 
 export default function PrivacyPage() {
   return (
@@ -38,8 +38,11 @@ export default function PrivacyPage() {
               que você adiciona (textos, imagens, links).
             </li>
             <li>
-              <strong>De quem visita uma página:</strong> dados de navegação para estatísticas (visitas e cliques, de
-              forma agregada) e, quando você preenche um formulário de contato, o e-mail e/ou telefone que você informar.
+              <strong>De quem visita uma página:</strong> dados de navegação para as estatísticas do criador da página:
+              visitas e toques nos botões, de onde veio a visita, a cidade aproximada (pelo endereço de internet, sem
+              localização exata), o tipo e o modelo do aparelho, o navegador e um código anônimo que indica se aquele
+              navegador já esteve na página antes. Nada disso informa nome, e-mail ou telefone. Quando você preenche um
+              formulário, guardamos também o que você escreveu nele.
             </li>
             <li>
               <strong>Pagamentos:</strong> quando há assinatura ou venda, os dados de pagamento são tratados diretamente
@@ -57,6 +60,13 @@ export default function PrivacyPage() {
           Apenas com provedores que viabilizam o serviço, como operadores: Supabase (banco de dados e login), Vercel
           (hospedagem) e Stripe (pagamentos). Esses parceiros tratam os dados conforme suas próprias políticas e apenas
           para prestar o serviço.
+          <br />
+          <br />
+          <strong>Ferramentas ligadas pelo criador da página.</strong> O criador de uma página pode conectar a ela as
+          próprias contas de medição e anúncios: Pixel do Meta (Facebook e Instagram), Pixel do TikTok, Google Analytics
+          e Microsoft Clarity. Quando ele faz isso, essas empresas recebem dados da sua visita àquela página e podem
+          usar cookies próprios, conforme as políticas delas. A decisão de usar essas ferramentas, e a responsabilidade
+          por informar os visitantes, é do criador da página.
         </Section>
 
         <Section title="5. Contatos captados nas páginas">
@@ -73,8 +83,9 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="7. Cookies">
-          Usamos cookies essenciais para manter você conectado e para o funcionamento do serviço. Não usamos cookies de
-          publicidade de terceiros. Nas páginas publicadas, guardamos no navegador do visitante um código anônimo, que
+          Usamos cookies essenciais para manter você conectado e para o funcionamento do serviço. O {APP_NAME} em si
+          não usa cookies de publicidade. Páginas em que o criador conectou as ferramentas descritas na seção 4 podem
+          ter cookies dessas empresas. Nas páginas publicadas, guardamos no navegador do visitante um código anônimo, que
           serve apenas para as estatísticas do criador da página: saber se uma visita é nova ou de alguém que já esteve
           ali, de qual cidade e de que tipo de aparelho. Esse código não informa nome, e-mail nem telefone, e pode ser
           apagado a qualquer momento limpando os dados do navegador.

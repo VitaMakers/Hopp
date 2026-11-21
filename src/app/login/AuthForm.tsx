@@ -5,7 +5,7 @@ import { useActionState, useState } from "react";
 import { APP_NAME } from "@/lib/env";
 import { signIn, signUp, type AuthState } from "./actions";
 
-export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) {
+export function AuthForm({ initialMode, linkFailed = false }: { initialMode: "signin" | "signup"; linkFailed?: boolean }) {
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const [signInState, signInAction, signingIn] = useActionState<AuthState, FormData>(signIn, {});
   const [signUpState, signUpAction, signingUp] = useActionState<AuthState, FormData>(signUp, {});
@@ -34,6 +34,17 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
       <p className="mt-3 text-[15px] text-stone-600">
         {mode === "signin" ? "Entre na sua conta e continue de onde parou." : "Uma página com tudo o que você faz, pronta em minutos."}
       </p>
+
+      {linkFailed ? (
+        <div role="alert" className="mt-6 rounded-[12px] border border-amber-300 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900">
+          <strong className="font-semibold">Esse link não funcionou.</strong> Ele já foi usado, venceu, ou foi aberto em um navegador diferente
+          daquele em que você pediu. Abra o link no mesmo aparelho e navegador, ou{" "}
+          <Link href="/recuperar-senha" className="font-semibold underline underline-offset-2">
+            peça um novo
+          </Link>
+          .
+        </div>
+      ) : null}
 
       <form action={mode === "signin" ? signInAction : signUpAction} className="mt-8 flex flex-col gap-4">
         <label className="flex flex-col gap-1.5 text-sm font-medium text-stone-700">
