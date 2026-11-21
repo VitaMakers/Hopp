@@ -5,6 +5,7 @@ import { imageSrc } from "@/lib/page/links";
 import type { PageDoc, Theme } from "@/lib/page/schema";
 import { ListField, TextArea, TextField, Toggle } from "./fields";
 import { UploadButton } from "./UploadButton";
+import { VideoUploadButton } from "./VideoUploadButton";
 import { applyPatch, type DocChange, type Patch } from "./types";
 
 // Premium designs keep their content in doc.premium / doc.theme / doc.profile
@@ -72,8 +73,17 @@ export function getPremiumSections(design: Design): PremiumSection[] {
   }
 }
 
-// Parts each design can actually hide (it checks premium.hiddenParts).
+// Parts each design can actually hide — the page render checks
+// premium.hiddenParts for exactly these ids, so the "Visível" switch only
+// shows where turning a part off really removes it.
 const HIDEABLE: Record<string, string[]> = {
+  store: ["premium:promo", "premium:feature", "premium:size", "premium:nav"],
+  lookbook: ["premium:promo", "premium:feature", "premium:nav"],
+  mosaic: ["premium:promo", "premium:nav"],
+  dropz: ["premium:promo", "premium:nav"],
+  promo: ["premium:nav"],
+  menu: ["premium:nav"],
+  bar: ["premium:promo", "premium:nav"],
   bistro: ["premium:hero", "premium:feature", "premium:text", "premium:nav"],
 };
 
@@ -256,15 +266,24 @@ function HeroFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Pat
       {isVideo ? (
         <div className="flex flex-col gap-2">
           <p className="text-sm font-medium text-stone-700">Vídeos da capa</p>
-          <p className="-mt-1 text-xs text-stone-500">Cole o link de cada vídeo (.mp4). Com mais de um, eles vão trocando no tempo acima. Os vídeos tocam sem som e em loop.</p>
+          <p className="-mt-1 text-xs text-stone-500">Suba da sua biblioteca (o vídeo é encurtado e fica leve) ou cole um link .mp4. Com mais de um, eles vão trocando no tempo acima. Tocam sem som e em loop.</p>
           {videos.map((url, index) => (
-            <div key={index} className="flex items-end gap-2 rounded-lg bg-stone-50 p-2.5">
-              <div className="flex-1">
-                <TextField label={`Vídeo ${index + 1} (link .mp4)`} type="url" value={url} placeholder="https://... .mp4" onChange={(v) => setVideo(index, v)} />
+            <div key={index} className="flex flex-col gap-2 rounded-lg bg-stone-50 p-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-stone-700">Vídeo {index + 1}</span>
+                <button type="button" onClick={() => removeVideo(index)} className="text-xs text-red-500">
+                  Remover
+                </button>
               </div>
-              <button type="button" onClick={() => removeVideo(index)} className="pb-2.5 text-xs text-red-500">
-                Remover
-              </button>
+              {url ? (
+                // eslint-disable-next-line jsx-a11y/media-has-caption
+                <video src={url} muted playsInline preload="metadata" className="h-28 w-auto max-w-full rounded-md bg-black object-contain" />
+              ) : null}
+              <div className="flex flex-wrap items-center gap-2">
+                <VideoUploadButton label={url ? "Trocar vídeo" : "Enviar da biblioteca"} onUploaded={(v) => setVideo(index, v)} />
+                <span className="text-xs text-stone-400">ou</span>
+                <input type="url" value={url} placeholder="colar link .mp4" onChange={(e) => setVideo(index, e.target.value)} className="field min-w-[150px] flex-1" />
+              </div>
             </div>
           ))}
           {videos.length < 8 ? (

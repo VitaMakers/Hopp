@@ -800,6 +800,7 @@ function Store({ doc, handle, plan }: Props) {
   const brand = profile.name || APP_NAME;
   const products = visible(doc, "product");
   const whatsapp = whatsappHref(profile.floatingWhatsapp, "");
+  const isHidden = (sec: string) => premium.hiddenParts.includes(sec);
   return (
     <div
       className="vita-premium premium-store"
@@ -813,8 +814,8 @@ function Store({ doc, handle, plan }: Props) {
     >
       <div className="store-inner">
         <StoreHero slides={premium.heroSlides} brand={brand} verified={profile.verified} pill={premium.heroPill} pillUrl={premium.heroPillUrl} handle={handle} coverHeight={premium.coverHeight} seconds={premium.heroSeconds} videoOn={usesHeroVideo(premium)} videos={premium.heroVideos} posX={premium.heroPosX} posY={premium.heroPosY} />
-        <StorePromo premium={premium} brand={brand} handle={handle} />
-        {premium.featureTitle || premium.featureImageUrl ? <StoreFeature premium={premium} handle={handle} /> : null}
+        {!isHidden("premium:promo") ? <StorePromo premium={premium} brand={brand} handle={handle} /> : null}
+        {!isHidden("premium:feature") && (premium.featureTitle || premium.featureImageUrl) ? <StoreFeature premium={premium} handle={handle} /> : null}
         {products.length ? (
           <section className="store-grid" aria-label="Produtos">
             {products.map((block) => (
@@ -822,10 +823,10 @@ function Store({ doc, handle, plan }: Props) {
             ))}
           </section>
         ) : null}
-        {premium.sizes.length > 0 || premium.sizeTitle ? <StoreSize premium={premium} whatsapp={whatsapp} handle={handle} /> : null}
+        {!isHidden("premium:size") && (premium.sizes.length > 0 || premium.sizeTitle) ? <StoreSize premium={premium} whatsapp={whatsapp} handle={handle} /> : null}
         <footer className="store-footer" data-edit="premium:nav">
           <span className="store-footer-brand">{brand}</span>
-          {premium.navLinks.length ? (
+          {!isHidden("premium:nav") && premium.navLinks.length ? (
             <nav className="store-nav">
               {premium.navLinks.map((item, index) =>
                 item.label ? (
@@ -1200,6 +1201,7 @@ function Lookbook({ doc, handle, plan }: Props) {
   const feature = imageSrc(premium.featureImageUrl);
   const featureHref = linkHref(premium.featureUrl);
   const whatsapp = whatsappHref(profile.floatingWhatsapp, "");
+  const isHidden = (sec: string) => premium.hiddenParts.includes(sec);
   return (
     <div
       className="vita-premium premium-lookbook"
@@ -1252,7 +1254,7 @@ function Lookbook({ doc, handle, plan }: Props) {
       </header>
 
       <div className="look-body">
-        {premium.navLinks.length ? (
+        {!isHidden("premium:nav") && premium.navLinks.length ? (
           <nav className="look-chips" aria-label="Categorias">
             {premium.navLinks.map((item, index) =>
               item.label ? (
@@ -1290,9 +1292,9 @@ function Lookbook({ doc, handle, plan }: Props) {
           </section>
         ) : null}
 
-        <LookPromo premium={premium} handle={handle} />
+        {!isHidden("premium:promo") ? <LookPromo premium={premium} handle={handle} /> : null}
 
-        {feature || premium.featureTitle ? (
+        {!isHidden("premium:feature") && (feature || premium.featureTitle) ? (
           <a className="look-feature" href={featureHref ?? "#"} target="_blank" rel="noopener noreferrer" onClick={() => featureHref && track(handle, { kind: "block_click", blockId: "feature", target: featureHref })}>
             {feature ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -1389,6 +1391,7 @@ function Mosaic({ doc, handle, plan }: Props) {
   const headline = (premium.heading || "").split("\n").filter(Boolean);
   const products = visible(doc, "product");
   const whatsapp = whatsappHref(profile.floatingWhatsapp, "");
+  const isHidden = (sec: string) => premium.hiddenParts.includes(sec);
   return (
     <div
       className="vita-premium premium-mosaic"
@@ -1441,10 +1444,10 @@ function Mosaic({ doc, handle, plan }: Props) {
             })}
           </section>
         ) : null}
-        <LookPromo premium={premium} handle={handle} />
+        {!isHidden("premium:promo") ? <LookPromo premium={premium} handle={handle} /> : null}
         <footer className="mosaic-footer">
           <span className="mosaic-footer-brand">{brand}</span>
-          {premium.navLinks.length ? (
+          {!isHidden("premium:nav") && premium.navLinks.length ? (
             <nav className="mosaic-nav">
               {premium.navLinks.map((item, index) => (item.label ? <a key={index} href={linkHref(item.url) ?? "#"} target="_blank" rel="noopener noreferrer">{item.label}</a> : null))}
             </nav>
@@ -1472,6 +1475,7 @@ function Dropz({ doc, handle, plan }: Props) {
   const buyHref = linkHref(slide?.url || premium.siteUrl || premium.promoUrl);
   const products = visible(doc, "product");
   const whatsapp = whatsappHref(profile.floatingWhatsapp, "");
+  const isHidden = (sec: string) => premium.hiddenParts.includes(sec);
   return (
     <div
       className="vita-premium premium-dropz"
@@ -1527,7 +1531,7 @@ function Dropz({ doc, handle, plan }: Props) {
             </div>
           ) : null}
         </section>
-        {premium.promoCode || (premium.promoDiscount && premium.promoBadge) ? <LookPromo premium={premium} handle={handle} hideBenefits /> : null}
+        {!isHidden("premium:promo") && (premium.promoCode || (premium.promoDiscount && premium.promoBadge)) ? <LookPromo premium={premium} handle={handle} hideBenefits /> : null}
         {products.length ? (
           <section className="dropz-more">
             <h2>Você também vai gostar</h2>
@@ -1555,7 +1559,7 @@ function Dropz({ doc, handle, plan }: Props) {
         ) : null}
         <footer className="dropz-footer">
           <span className="dropz-footer-brand">{brand}</span>
-          {premium.navLinks.length ? (
+          {!isHidden("premium:nav") && premium.navLinks.length ? (
             <nav className="dropz-nav">
               {premium.navLinks.map((item, index) => (item.label ? <a key={index} href={linkHref(item.url) ?? "#"} target="_blank" rel="noopener noreferrer">{item.label}</a> : null))}
             </nav>
@@ -1587,6 +1591,7 @@ function Promo({ doc, handle, plan }: Props) {
     .map((social) => ({ social, href: socialHref(social) }))
     .filter((item): item is { social: (typeof doc.socials)[number]; href: string } => !!item.href);
   const whatsapp = whatsappHref(profile.floatingWhatsapp, "");
+  const isHidden = (sec: string) => premium.hiddenParts.includes(sec);
   return (
     <div
       className="vita-premium premium-promo"
@@ -1596,7 +1601,7 @@ function Promo({ doc, handle, plan }: Props) {
         {(premium.navLinks.length || brand) ? (
           <nav className="promo-nav">
             <span className="promo-logo">{brand}</span>
-            {premium.navLinks.length ? (
+            {!isHidden("premium:nav") && premium.navLinks.length ? (
               <div className="promo-nav-links">
                 {premium.navLinks.map((item, index) => (item.label ? <a key={index} href={linkHref(item.url) ?? "#"} target="_blank" rel="noopener noreferrer">{item.label}</a> : null))}
               </div>
@@ -1696,6 +1701,7 @@ function Menu({ doc, handle, plan }: Props) {
   const dishes = visible(doc, "product");
   const ctaHref = linkHref(premium.promoUrl || premium.siteUrl || slide?.url);
   const whatsapp = whatsappHref(profile.floatingWhatsapp, "");
+  const isHidden = (sec: string) => premium.hiddenParts.includes(sec);
   const socials = doc.socials
     .map((social) => ({ social, href: socialHref(social) }))
     .filter((item): item is { social: (typeof doc.socials)[number]; href: string } => !!item.href);
@@ -1754,7 +1760,7 @@ function Menu({ doc, handle, plan }: Props) {
         ) : null}
         <footer className="menu-footer">
           <span className="menu-footer-brand">{brand}</span>
-          {premium.navLinks.length ? (
+          {!isHidden("premium:nav") && premium.navLinks.length ? (
             <nav className="menu-nav">
               {premium.navLinks.map((item, index) => (item.label ? <a key={index} href={linkHref(item.url) ?? "#"} target="_blank" rel="noopener noreferrer">{item.label}</a> : null))}
             </nav>
@@ -2048,6 +2054,7 @@ function Bar({ doc, handle, plan }: Props) {
   const socials = doc.socials
     .map((social) => ({ social, href: socialHref(social) }))
     .filter((item): item is { social: (typeof doc.socials)[number]; href: string } => !!item.href);
+  const isHidden = (sec: string) => premium.hiddenParts.includes(sec);
   const arrow = <span className="bar-arrow" aria-hidden>↗</span>;
 
   return (
@@ -2087,14 +2094,14 @@ function Bar({ doc, handle, plan }: Props) {
       </header>
 
       {/* Orange banner */}
-      {premium.promoBadge ? (
+      {!isHidden("premium:promo") && premium.promoBadge ? (
         <a className="bar-banner" href={bannerHref ?? "#"} target="_blank" rel="noopener noreferrer" onClick={() => bannerHref && track(handle, { kind: "block_click", blockId: "banner", target: bannerHref })}>
           {premium.promoBadge} {arrow}
         </a>
       ) : null}
 
       {/* Numbered nav */}
-      {premium.navLinks.length ? (
+      {!isHidden("premium:nav") && premium.navLinks.length ? (
         <nav className="bar-nav" aria-label="Atalhos">
           {premium.navLinks.slice(0, 3).map((item, index) =>
             item.label ? (
