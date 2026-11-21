@@ -1,6 +1,15 @@
 import Link from "next/link";
+import { ModelThumb } from "@/components/page-view/ModelThumb";
 import { APP_NAME, APP_TAGLINE } from "@/lib/env";
+import type { PageDoc } from "@/lib/page/schema";
+import { TEMPLATES } from "@/lib/page/templates";
 import { AuthForm } from "./AuthForm";
+
+// The two premium models shown in the side panel.
+const SHOWN: [string, string, string][] = [
+  ["resto-menu", "Casa Noma", "Modelo Restaurante"],
+  ["bf-lookbook", "Loja Vibe", "Modelo Lookbook"],
+];
 
 // What the product does, in place of testimonials (there are none to quote yet).
 const NOTES: [string, string][] = [
@@ -18,6 +27,12 @@ export default async function LoginPage({
   // on the sign-up view.
   const initialMode: "signin" | "signup" = sp.criar !== undefined || sp.mode === "signup" ? "signup" : "signin";
 
+  // Real models, built here so the browser draws exactly what the server sent.
+  const models = SHOWN.flatMap(([id, name, label]) => {
+    const doc = TEMPLATES.find((t) => t.id === id)?.build(name) as PageDoc | undefined;
+    return doc ? [{ doc, label }] : [];
+  });
+
   return (
     <main className="flex min-h-screen bg-white">
       {/* Left: the form */}
@@ -32,26 +47,39 @@ export default async function LoginPage({
         </div>
       </div>
 
-      {/* Right: a framed photograph, with what the product does over it */}
+      {/* Right: two premium models, upright and whole, with the brand */}
       <div className="hidden flex-1 p-3 lg:block">
-        <div className="relative h-full min-h-[620px] overflow-hidden rounded-[28px] bg-[#0b1026]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/login-noite.webp" alt="" className="absolute inset-0 h-full w-full object-cover object-[60%_center]" />
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-[#060915]/55 to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-[#060915]/90 via-[#060915]/45 to-transparent" />
-          <div className="absolute left-7 top-7 flex items-center gap-2.5 text-white">
+        <div className="relative flex h-full min-h-[620px] flex-col overflow-hidden rounded-[28px] bg-[#080A1C] p-7 text-white">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_45%_at_50%_42%,rgba(58,85,245,0.55),transparent_70%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(40%_30%_at_78%_20%,rgba(139,92,246,0.35),transparent_70%)]" />
+
+          <div className="relative flex items-center gap-2.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/brand-mark.png" alt="" className="h-8 w-auto brightness-0 invert" />
             <span className="text-[22px] font-extrabold tracking-tight">{APP_NAME}</span>
           </div>
-          <p className="absolute inset-x-7 bottom-[150px] max-w-[440px] font-display text-[40px] font-semibold leading-[1.08] tracking-[-0.03em] text-white">
-            {APP_TAGLINE}
-          </p>
-          <div className="absolute inset-x-5 bottom-5 grid grid-cols-2 gap-3">
+
+          {/* The phones shrink with the window (layout and drawing together), so
+              both always fit whole above the text. */}
+          <div aria-hidden className="relative my-auto flex justify-center" style={{ height: "clamp(180px, calc(100vh - 430px), 490px)" }}>
+            <div className="flex origin-top items-start gap-6" style={{ transform: "scale(clamp(0.36, tan(atan2(calc(100vh - 430px), 490px)), 1))" }}>
+              {models.map((m, i) => (
+                <div key={m.label} className={i === 0 ? "mt-10" : ""}>
+                  <div className="overflow-hidden rounded-[34px] border-[7px] border-[#12142B] shadow-[0_40px_80px_-24px_rgba(0,0,0,0.85)] ring-1 ring-white/20">
+                    <ModelThumb doc={m.doc} width={204} height={420} />
+                  </div>
+                  <p className="mt-3 text-center text-[13px] font-medium text-white/75">{m.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <p className="relative max-w-[440px] font-display text-[32px] font-semibold leading-[1.1] tracking-[-0.03em]">{APP_TAGLINE}</p>
+          <div className="relative mt-5 grid grid-cols-2 gap-3">
             {NOTES.map(([title, text]) => (
-              <div key={title} className="rounded-[18px] border border-white/15 bg-[#0d1424]/70 p-4 text-white backdrop-blur-md">
+              <div key={title} className="rounded-[18px] border border-white/15 bg-white/[0.07] p-4 backdrop-blur-md">
                 <p className="text-sm font-semibold">{title}</p>
-                <p className="mt-1.5 text-[13px] leading-relaxed text-white/80">{text}</p>
+                <p className="mt-1.5 text-[13px] leading-relaxed text-white/75">{text}</p>
               </div>
             ))}
           </div>
