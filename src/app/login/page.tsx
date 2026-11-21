@@ -20,7 +20,7 @@ const NOTES: [string, string][] = [
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ criar?: string; mode?: string }>;
+  searchParams: Promise<{ criar?: string; mode?: string; erro?: string }>;
 }) {
   const sp = await searchParams;
   // The "Criar grátis" buttons link to /login?criar, so the page opens straight
@@ -35,7 +35,7 @@ export default async function LoginPage({
       {/* Left: the form */}
       <div className="flex w-full flex-col justify-center px-6 py-10 sm:px-12 lg:w-[46%]">
         <div className="mx-auto w-full max-w-sm">
-          <AuthForm initialMode={initialMode} />
+          <AuthForm initialMode={initialMode} linkFailed={sp.erro === "link"} />
           <p className="mt-6 text-center text-sm text-stone-600">
             <Link href="/precos" className="font-semibold text-stone-900 underline underline-offset-4">
               Ver planos e preços

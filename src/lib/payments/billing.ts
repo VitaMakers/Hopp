@@ -143,3 +143,9 @@ export async function createProductCheckout(input: {
   if (!session.url) throw new Error("Stripe não retornou a URL do checkout.");
   return session.url;
 }
+
+// Stripe's hosted page where the customer changes the card and sees invoices.
+export async function createPortalSession(customerId: string, returnUrl: string): Promise<string> {
+  const session = await client().billingPortal.sessions.create({ customer: customerId, return_url: returnUrl });
+  return session.url;
+}

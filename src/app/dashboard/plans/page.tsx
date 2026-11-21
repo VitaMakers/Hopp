@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PLAN_FEATURES, PLAN_LABEL, PLAN_ORDER, PLAN_PITCH, PLAN_PRICE_BRL } from "@/lib/plan-features";
 import { normalizePlan } from "@/lib/plans";
+import { createAdminClient } from "@/lib/supabase/server";
 import { getOwner } from "../context";
 import { switchPlan } from "./actions";
 import { CancelSubscriptionButton } from "../clientes/CancelSubscriptionButton";
@@ -8,11 +9,14 @@ import { CancelSubscriptionButton } from "../clientes/CancelSubscriptionButton";
 // Built from the same list as the public pricing page (src/lib/plan-features),
 // which mirrors what src/lib/entitlements enforces, so what is sold here is
 // exactly what the client gets.
-export default async function PlansPage({ searchParams }: { searchParams: Promise<{ trocar?: string; plano?: string }> }) {
-  const { profile } = await getOwner();
+export default async function PlansPage({ searchParams }: { searchParams: Promise<{ trocar?: string; plano?: string; erro?: string }> }) {
+  const { profile, accountId } = await getOwner();
+  // Only an account that has paid through Stripe has a payment page to open.
+  const { data: billing } = await createAdminClient().from("account_billing").select("stripe_customer_id").eq("account_id", accountId).maybeSingle();
+  const hasBilling = !!billing?.stripe_customer_id;
   const current = normalizePlan(profile.plan);
   const paidNow = current !== "free";
-  const { trocar, plano } = await searchParams;
+  const { trocar, plano, erro } = await searchParams;
   const switchTo = trocar ? normalizePlan(trocar) : null;
   const switched = plano ? normalizePlan(plano) : null;
   const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -124,6 +128,26 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
           );
         })}
       </div>
+
+      {erro === "portal" ? (
+        <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-800 ring-1 ring-red-200">
+          Não foi possível abrir a página de pagamento agora. Tente de novo em instantes.
+        </p>
+      ) : null}
+
+      {hasBilling ? (
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-5 ring-1 ring-stone-200">
+          <div className="min-w-0">
+            <h2 className="font-semibold">Pagamento e faturas</h2>
+            <p className="mt-0.5 text-sm text-stone-500">Troque o cartão, veja a próxima cobrança e baixe as faturas já pagas.</p>
+          </div>
+          {/* A route that redirects to Stripe: a plain link, not a client-side navigation. */}
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+          <a href="/dashboard/plans/portal" className="inline-flex h-10 shrink-0 items-center rounded-lg px-4 text-sm font-semibold ring-1 ring-stone-300 transition hover:ring-stone-900">
+            Abrir pagamento e faturas
+          </a>
+        </section>
+      ) : null}
 
       <p className="text-center text-xs text-stone-400">
         Pagamento seguro via Stripe. Ao cancelar, o plano continua até o fim do período já pago.

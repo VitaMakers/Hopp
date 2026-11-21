@@ -16,5 +16,7 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) return NextResponse.redirect(new URL(dest, request.url));
   }
-  return NextResponse.redirect(new URL("/login", request.url));
+  // The link was already used, expired, or was opened in a different browser
+  // from the one that asked for it: say so instead of a bare login screen.
+  return NextResponse.redirect(new URL("/login?erro=link", request.url));
 }

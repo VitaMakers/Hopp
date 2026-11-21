@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { cancelSubscriptionAtPeriodEnd } from "@/lib/payments/billing";
+import { rateLimit } from "@/lib/rate-limit";
 import { siteOrigin } from "@/lib/request";
 import { createAdminClient } from "@/lib/supabase/server";
 import { getOwner } from "../../../context";
@@ -28,6 +29,12 @@ export async function detachClient(clientId: string, _prev: DetachState, form: F
   const email = String(form.get("email") ?? "").trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Informe um e-mail válido do cliente." };
   if (email === (user.email ?? "").toLowerCase()) return { error: "Use o e-mail do cliente, não o seu." };
+
+  // Each transfer e-mails someone on the platform's behalf: a few per hour is
+  // plenty for real use and useless for sending invites in bulk.
+  if (!rateLimit(`detach:${accountId}`, 5, 3_600_000)) {
+    return { error: "Muitas transferências em pouco tempo. Tente de novo daqui a uma hora." };
+  }
 
   const admin = createAdminClient();
   const redirectTo = `${await siteOrigin()}/auth/confirmar`;
