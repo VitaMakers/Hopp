@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { APP_NAME, APP_TAGLINE } from "@/lib/env";
 import { AuthForm } from "./AuthForm";
 
 // What the product does, in place of testimonials (there are none to quote yet).
@@ -36,7 +37,16 @@ export default async function LoginPage({
         <div className="relative h-full min-h-[620px] overflow-hidden rounded-[28px] bg-[#0b1026]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/login-noite.webp" alt="" className="absolute inset-0 h-full w-full object-cover object-[60%_center]" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-[#060915]/85 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-[#060915]/55 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-[#060915]/90 via-[#060915]/45 to-transparent" />
+          <div className="absolute left-7 top-7 flex items-center gap-2.5 text-white">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand-mark.png" alt="" className="h-8 w-auto brightness-0 invert" />
+            <span className="text-[22px] font-extrabold tracking-tight">{APP_NAME}</span>
+          </div>
+          <p className="absolute inset-x-7 bottom-[150px] max-w-[440px] font-display text-[40px] font-semibold leading-[1.08] tracking-[-0.03em] text-white">
+            {APP_TAGLINE}
+          </p>
           <div className="absolute inset-x-5 bottom-5 grid grid-cols-2 gap-3">
             {NOTES.map(([title, text]) => (
               <div key={title} className="rounded-[18px] border border-white/15 bg-[#0d1424]/70 p-4 text-white backdrop-blur-md">
