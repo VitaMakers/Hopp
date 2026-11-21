@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { cancelSubscriptionAtPeriodEnd } from "@/lib/payments/billing";
+import { isAdmin } from "@/lib/admin";
 import { rateLimit } from "@/lib/rate-limit";
 import { siteOrigin } from "@/lib/request";
 import { createAdminClient } from "@/lib/supabase/server";
@@ -75,10 +76,18 @@ export async function detachClient(clientId: string, _prev: DetachState, form: F
 
   // The payout account stays with whoever connected it: the new owner
   // connects their own to keep selling.
-  const { error } = await admin.from("profiles").update({ account_id: userId, stripe_account_id: null }).eq("id", clientId).eq("account_id", accountId);
+  // A page that was free of charge because it lived in the platform owner's
+  // account goes back to Grátis when it leaves: the new owner subscribes.
+  const courtesyEnds = isAdmin(user.email) && !current?.stripe_subscription_id;
+  const { error } = await admin
+    .from("profiles")
+    .update({ account_id: userId, stripe_account_id: null, ...(courtesyEnds ? { plan: "free" } : {}) })
+    .eq("id", clientId)
+    .eq("account_id", accountId);
   if (error) return { error: "Não foi possível transferir o cliente." };
 
   revalidatePath("/dashboard/clientes");
+  if (courtesyEnds) revalidatePath(`/${client.handle}`);
   return { ok: true, email, mode, billing };
 }
 

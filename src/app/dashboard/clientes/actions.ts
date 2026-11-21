@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { isAdmin } from "@/lib/admin";
 import { detachDomain } from "@/lib/domains";
 import { handleError, normalizeHandle } from "@/lib/handles";
 import { defaultPageDoc } from "@/lib/page/catalog";
@@ -63,6 +64,12 @@ export async function addClient(_: AddClientState, form: FormData): Promise<AddC
   }
 
   (await cookies()).set(CLIENT_COOKIE, profile.id, COOKIE_OPTS);
+  // Pages of the platform owner's own account are a courtesy: every feature
+  // on, nothing charged, for as long as they stay in that account.
+  if (isAdmin(user.email)) {
+    await createAdminClient().from("profiles").update({ plan: "profissional" }).eq("id", profile.id);
+    redirect("/dashboard/editor");
+  }
   if (paidPlan) redirect(`/dashboard/clientes/${profile.id}/assinar?plan=${paidPlan}`);
   redirect("/dashboard/editor");
 }

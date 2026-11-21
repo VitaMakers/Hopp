@@ -29,9 +29,11 @@ export default async function AdminPage() {
     recent,
   ] = await Promise.all([
     admin.from("profiles").select("*", { count: "exact", head: true }),
-    admin.from("profiles").select("*", { count: "exact", head: true }).eq("plan", "free"),
-    admin.from("profiles").select("*", { count: "exact", head: true }).eq("plan", "essencial"),
-    admin.from("profiles").select("*", { count: "exact", head: true }).in("plan", ["pro", "profissional"]),
+    admin.from("profiles").select("*", { count: "exact", head: true }).eq("plan", "free").neq("account_id", me.id),
+    // The owner's own pages have every feature without paying: they are not
+    // paying customers and bring no revenue.
+    admin.from("profiles").select("*", { count: "exact", head: true }).eq("plan", "essencial").neq("account_id", me.id),
+    admin.from("profiles").select("*", { count: "exact", head: true }).in("plan", ["pro", "profissional"]).neq("account_id", me.id),
     admin.from("profiles").select("*", { count: "exact", head: true }).not("stripe_account_id", "is", null),
     admin.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", since30),
     admin.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", since60).lt("created_at", since30),
@@ -51,7 +53,10 @@ export default async function AdminPage() {
   const new30 = newClients30.count ?? 0;
   const newPrev = newClientsPrev30.count ?? 0;
   const mrr = essN * PLAN_PRICE_BRL.essencial + proN * PLAN_PRICE_BRL.profissional;
-  const conv = total ? Math.round((paying / total) * 100) : 0;
+  // Pages of this (the owner's) account: everything unlocked, nothing charged.
+  const courtesy = Math.max(0, total - freeN - essN - proN);
+  const outside = total - courtesy;
+  const conv = outside ? Math.round((paying / outside) * 100) : 0;
   const byPlan: { key: Plan; count: number }[] = [
     { key: "free", count: freeN },
     { key: "essencial", count: essN },
@@ -83,7 +88,7 @@ export default async function AdminPage() {
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Card label="Clientes" value={num(total)} sub={`${num(new30)} novos em 30 dias`} delta={delta} />
-        <Card label="Pagantes" value={num(paying)} sub={`${conv}% dos clientes`} />
+        <Card label="Pagantes" value={num(paying)} sub={courtesy ? `${conv}% dos clientes de fora da sua conta` : `${conv}% dos clientes`} />
         <Card label="Receita mensal estimada" value={brl(mrr)} sub="Essencial + Profissional · estimativa" />
         <Card label="Páginas publicadas" value={num(publishedPages.count ?? 0)} sub={`${num(connected)} com Stripe conectado`} />
       </div>
@@ -110,7 +115,27 @@ export default async function AdminPage() {
               </li>
             );
           })}
+          {courtesy ? (
+            <li className="flex items-center gap-3">
+              <span className="w-44 shrink-0">
+                Sua conta
+                <span className="ml-2 text-xs text-stone-400">sem cobrança</span>
+              </span>
+              <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-stone-100">
+                <span className="block h-full rounded-full bg-stone-900" style={{ width: `${total ? Math.round((courtesy / total) * 100) : 0}%` }} />
+              </span>
+              <span className="w-24 text-right tabular-nums">
+                <span className="font-semibold">{num(courtesy)}</span>
+                <span className="ml-1.5 text-xs text-stone-400">{total ? Math.round((courtesy / total) * 100) : 0}%</span>
+              </span>
+            </li>
+          ) : null}
         </ul>
+        {courtesy ? (
+          <p className="mt-3 text-xs text-stone-500">
+            As páginas criadas na sua conta têm todos os recursos liberados e não entram em pagantes nem na receita. Se uma delas for transferida para outra conta, volta ao Grátis.
+          </p>
+        ) : null}
       </section>
 
       <section className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
@@ -156,7 +181,7 @@ export default async function AdminPage() {
                     <td className="hidden py-2.5 text-right tabular-nums text-stone-500 sm:table-cell">{p.created_at.slice(8, 10)}/{p.created_at.slice(5, 7)}/{p.created_at.slice(0, 4)}</td>
                     <td className="py-2.5 pl-3 text-right">
                       {p.account_id === me.id ? (
-                        <span className="text-xs text-stone-400">Você</span>
+                        <span className="text-xs text-stone-400">Sua conta</span>
                       ) : (
                         <DeleteAccountButton
                           accountId={p.account_id}
