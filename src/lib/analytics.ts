@@ -63,11 +63,17 @@ export function referrerName(referrer: string | null): string {
 
 // Groups raw events into the numbers the analytics screen shows. `days`
 // fixes the window so every day appears, including days with no traffic.
+// The calendar day of an instant in Brasília time, as YYYY-MM-DD. The whole
+// dashboard counts days this way, so an evening visit stays on its own day.
+const DAY_FORMAT = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" });
+export function localDay(date: Date | string): string {
+  return DAY_FORMAT.format(typeof date === "string" ? new Date(date) : date);
+}
+
 export function summarize(events: EventRow[], days: number, now = new Date()): Summary {
   const daily = new Map<string, { views: number; clicks: number }>();
   for (let i = days - 1; i >= 0; i--) {
-    const day = new Date(now.getTime() - i * 86_400_000).toISOString().slice(0, 10);
-    daily.set(day, { views: 0, clicks: 0 });
+    daily.set(localDay(new Date(now.getTime() - i * 86_400_000)), { views: 0, clicks: 0 });
   }
   const byBlock = new Map<string, number>();
   const bySocial = new Map<string, number>();
@@ -82,7 +88,9 @@ export function summarize(events: EventRow[], days: number, now = new Date()): S
   const viewIds = new Set<string>();
   const clickedIds = new Set<string>();
   for (const event of events) {
-    const bucket = daily.get(event.created_at.slice(0, 10));
+    // Time-on-page records ride in the same table; they are not clicks.
+    if (event.kind === "session") continue;
+    const bucket = daily.get(localDay(event.created_at));
     if (event.kind === "page_view") {
       views++;
       if (bucket) bucket.views++;

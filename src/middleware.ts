@@ -54,7 +54,7 @@ async function handleForDomain(domain: string): Promise<string | null> {
 
 // What a visitor on a client's domain may reach besides the page itself.
 function isSharedPath(path: string): boolean {
-  return path.startsWith("/_next") || path.startsWith("/api/track") || path.startsWith("/api/form") || path.startsWith("/api/buy") || path.startsWith("/l/") || path.startsWith("/f/") || /\.[a-z0-9]+$/i.test(path);
+  return path.startsWith("/_next") || path.startsWith("/api/track") || path.startsWith("/api/form") || path.startsWith("/api/subscribe") || path.startsWith("/api/buy") || path.startsWith("/l/") || path.startsWith("/f/") || /\.[a-z0-9]+$/i.test(path);
 }
 
 export async function middleware(request: NextRequest) {
@@ -62,6 +62,11 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   if (host && !isAppHost(host)) {
+    // On a client's domain only the public endpoints take writes; nothing
+    // else (logins, password resets, dashboard actions) can be posted there.
+    if (request.method !== "GET" && request.method !== "HEAD" && !path.startsWith("/api/")) {
+      return new NextResponse(null, { status: 405 });
+    }
     if (isSharedPath(path)) return NextResponse.next();
     const handle = await handleForDomain(host.replace(/^www\./, ""));
     // Unknown domain, or anything that isn't the page: back to the app.
