@@ -1,14 +1,15 @@
 import Link from "next/link";
-import { ModelThumb } from "@/components/page-view/ModelThumb";
 import { APP_NAME, APP_TAGLINE } from "@/lib/env";
 import type { PageDoc } from "@/lib/page/schema";
 import { TEMPLATES } from "@/lib/page/templates";
 import { AuthForm } from "./AuthForm";
+import { Showcase } from "./Showcase";
 
-// The two premium models shown in the side panel.
+// The premium models shown in the side panel: left, middle, right.
 const SHOWN: [string, string, string][] = [
-  ["resto-menu", "Casa Noma", "Modelo Restaurante"],
-  ["bf-lookbook", "Loja Vibe", "Modelo Lookbook"],
+  ["resto-menu", "Casa Noma", "Restaurante"],
+  ["presenca", "Marina Alves", "Presença"],
+  ["bf-lookbook", "Loja Vibe", "Lookbook"],
 ];
 
 // What the product does, in place of testimonials (there are none to quote yet).
@@ -59,19 +60,10 @@ export default async function LoginPage({
             <span className="text-[22px] font-extrabold tracking-tight">{APP_NAME}</span>
           </div>
 
-          {/* The phones shrink with the window (layout and drawing together), so
-              both always fit whole above the text. */}
-          <div aria-hidden className="relative my-auto flex justify-center" style={{ height: "clamp(180px, calc(100vh - 430px), 490px)" }}>
-            <div className="flex origin-top items-start gap-6" style={{ transform: "scale(clamp(0.36, tan(atan2(calc(100vh - 430px), 490px)), 1))" }}>
-              {models.map((m, i) => (
-                <div key={m.label} className={i === 0 ? "mt-10" : ""}>
-                  <div className="overflow-hidden rounded-[34px] border-[7px] border-[#12142B] shadow-[0_40px_80px_-24px_rgba(0,0,0,0.85)] ring-1 ring-white/20">
-                    <ModelThumb doc={m.doc} width={204} height={420} />
-                  </div>
-                  <p className="mt-3 text-center text-[13px] font-medium text-white/75">{m.label}</p>
-                </div>
-              ))}
-            </div>
+          {/* The stage keeps a height that follows the window, so the models
+              always fit whole above the text. */}
+          <div aria-hidden className="relative my-auto" style={{ height: "clamp(180px, calc(100vh - 430px), 490px)" }}>
+            <Showcase models={models} />
           </div>
 
           <p className="relative max-w-[440px] font-display text-[32px] font-semibold leading-[1.1] tracking-[-0.03em]">{APP_TAGLINE}</p>
