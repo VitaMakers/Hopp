@@ -118,7 +118,7 @@ function PageViewInner({ doc, handle, plan, footer, still, onEdit }: Props) {
             <div className="mx-auto flex w-full max-w-[520px] flex-col gap-3">
               {extraBlocks.map((block) => (
                 <EditWrap key={block.id} onEdit={onEdit} target={block.id}>
-                  <BlockView block={block} doc={doc} handle={handle} />
+                  <BlockView block={block} doc={doc} handle={handle} editing={!!onEdit} />
                 </EditWrap>
               ))}
             </div>
@@ -135,7 +135,7 @@ function PageViewInner({ doc, handle, plan, footer, still, onEdit }: Props) {
       <div className={`${headerHasContent(doc) ? "mt-7" : "mt-4"} flex w-full flex-col gap-3.5`}>
         {blocks.map((block) => (
           <EditWrap key={block.id} onEdit={onEdit} target={block.id}>
-            <BlockView block={block} doc={doc} handle={handle} />
+            <BlockView block={block} doc={doc} handle={handle} editing={!!onEdit} />
           </EditWrap>
         ))}
       </div>
@@ -629,13 +629,17 @@ function ScheduleReveal({
   );
 }
 
-function BlockView({ block, doc, handle }: { block: Block; doc: PageDoc; handle?: string }) {
+function BlockView({ block, doc, handle, editing = false }: { block: Block; doc: PageDoc; handle?: string; editing?: boolean }) {
   const btn = buttonClass(doc.theme);
   const click = (target: string) => track(handle, { kind: "block_click", blockId: block.id, target });
   switch (block.type) {
     case "link": {
-      const href = linkHref(block.url);
-      if (!href) return <Placeholder handle={handle} className={btn}>{block.title || "Link sem endereço"}</Placeholder>;
+      const realHref = linkHref(block.url);
+      // On the live page an address-less link is just a placeholder. In the
+      // editor we still show the chosen format (not clickable) so changing
+      // "Clássico / Destaque / Cartão" is visible before a link is typed.
+      if (!realHref && !editing) return <Placeholder handle={handle} className={btn}>{block.title || "Link sem endereço"}</Placeholder>;
+      const href = realHref ?? "#";
       const thumb = imageSrc(block.imageUrl);
       // Optional icon shown next to the button text (a logo like iFood/WhatsApp).
       // Shown whole (object-contain) so it is never cropped. Falls back to the
