@@ -8,6 +8,7 @@ import { imageSrc } from "@/lib/page/links";
 import { SOCIAL_PLATFORMS, type PageDoc, type SocialPlatform } from "@/lib/page/schema";
 import { TextArea, TextField, Toggle } from "./fields";
 import { UploadButton, useImageUpload } from "./UploadButton";
+import { VideoUploadButton } from "./VideoUploadButton";
 import { applyPatch, type DocChange, type Patch } from "./types";
 
 function initials(name: string) {
@@ -353,15 +354,24 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
               </>
             ) : (
               <>
-                <p className="text-xs text-stone-500">Vídeos que tocam sem som, em loop. Com 2+, vão trocando. Cole o link .mp4.</p>
+                <p className="text-xs text-stone-500">Vídeos que tocam sem som, em loop. Suba da sua biblioteca (o vídeo é encurtado e fica leve) ou cole um link .mp4. Com 2+, vão trocando.</p>
                 {profile.coverVideos.map((url, i) => (
-                  <div key={i} className="flex items-end gap-2 rounded-lg bg-stone-50 p-2.5">
-                    <div className="flex-1">
-                      <TextField label={`Vídeo ${i + 1} (.mp4)`} type="url" value={url} placeholder="https://... .mp4" onChange={(v) => setProfile({ coverVideos: profile.coverVideos.map((x, j) => (j === i ? v : x)) })} />
+                  <div key={i} className="flex flex-col gap-2 rounded-lg bg-stone-50 p-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-stone-700">Vídeo {i + 1}</span>
+                      <button type="button" onClick={() => setProfile({ coverVideos: profile.coverVideos.filter((_, j) => j !== i) })} className="text-xs text-red-500">
+                        Remover
+                      </button>
                     </div>
-                    <button type="button" onClick={() => setProfile({ coverVideos: profile.coverVideos.filter((_, j) => j !== i) })} className="pb-2.5 text-xs text-red-500">
-                      Remover
-                    </button>
+                    {url ? (
+                      // eslint-disable-next-line jsx-a11y/media-has-caption
+                      <video src={url} muted playsInline preload="metadata" className="h-28 w-auto max-w-full rounded-md bg-black object-contain" />
+                    ) : null}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <VideoUploadButton label={url ? "Trocar vídeo" : "Enviar da biblioteca"} onUploaded={(v) => setProfile({ coverVideos: profile.coverVideos.map((x, j) => (j === i ? v : x)) })} />
+                      <span className="text-xs text-stone-400">ou</span>
+                      <input type="url" value={url} placeholder="colar link .mp4" onChange={(e) => setProfile({ coverVideos: profile.coverVideos.map((x, j) => (j === i ? e.target.value : x)) })} className="field min-w-[150px] flex-1" />
+                    </div>
                   </div>
                 ))}
                 {profile.coverVideos.length < 8 ? (
