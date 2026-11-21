@@ -26,23 +26,23 @@ export async function POST(req: Request) {
 
   // Refresh a client's public page right away when its plan changes (badge,
   // footer brand, premium design).
-  const refresh = (rows: { handle: string | null }[] | null) => {
-    for (const row of rows ?? []) if (row.handle) revalidatePath(`/${row.handle}`);
+  // A failed write must fail the request, so Stripe sends the event again.
+  const refresh = ({ data, error }: { data: { handle: string | null }[] | null; error: unknown }) => {
+    if (error) throw error;
+    for (const row of data ?? []) if (row.handle) revalidatePath(`/${row.handle}`);
   };
 
   try {
-    if (event.type === "checkout.session.completed") {
+    if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
       const session = event.data.object as Stripe.Checkout.Session;
+      // A checkout can complete before the money arrives (boleto and other
+      // delayed methods): the plan only starts once it is actually paid.
+      const paid = session.payment_status === "paid" || session.payment_status === "no_payment_required";
       const clientId = session.metadata?.client_id;
       const plan = normalizePlan(session.metadata?.plan);
       const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id ?? null;
-      if (clientId && plan !== "free" && subscriptionId) {
-        const { data } = await admin
-          .from("profiles")
-          .update({ plan, stripe_subscription_id: subscriptionId })
-          .eq("id", clientId)
-          .select("handle");
-        refresh(data);
+      if (paid && clientId && plan !== "free" && subscriptionId) {
+        refresh(await admin.from("profiles").update({ plan, stripe_subscription_id: subscriptionId }).eq("id", clientId).select("handle"));
       }
     } else if (event.type === "customer.subscription.deleted") {
       const sub = event.data.object as Stripe.Subscription;
@@ -50,13 +50,14 @@ export async function POST(req: Request) {
       if (clientId) {
         // Only the client's current subscription can drop it to Grátis; an old
         // or duplicate subscription ending must not downgrade a paying client.
-        const { data } = await admin
-          .from("profiles")
-          .update({ plan: "free", stripe_subscription_id: null })
-          .eq("id", clientId)
-          .eq("stripe_subscription_id", sub.id)
-          .select("handle");
-        refresh(data);
+        refresh(
+          await admin
+            .from("profiles")
+            .update({ plan: "free", stripe_subscription_id: null })
+            .eq("id", clientId)
+            .eq("stripe_subscription_id", sub.id)
+            .select("handle"),
+        );
       }
     } else if (event.type === "customer.subscription.updated") {
       const sub = event.data.object as Stripe.Subscription;
@@ -68,21 +69,23 @@ export async function POST(req: Request) {
         const ended = ["unpaid", "canceled", "incomplete_expired"].includes(sub.status);
         const live = ["active", "trialing", "past_due"].includes(sub.status);
         if (ended) {
-          const { data } = await admin
-            .from("profiles")
-            .update({ plan: "free", stripe_subscription_id: null })
-            .eq("id", clientId)
-            .eq("stripe_subscription_id", sub.id)
-            .select("handle");
-          refresh(data);
+          refresh(
+            await admin
+              .from("profiles")
+              .update({ plan: "free", stripe_subscription_id: null })
+              .eq("id", clientId)
+              .eq("stripe_subscription_id", sub.id)
+              .select("handle"),
+          );
         } else if (live) {
-          const { data } = await admin
-            .from("profiles")
-            .update({ plan })
-            .eq("id", clientId)
-            .eq("stripe_subscription_id", sub.id)
-            .select("handle");
-          refresh(data);
+          refresh(
+            await admin
+              .from("profiles")
+              .update({ plan })
+              .eq("id", clientId)
+              .eq("stripe_subscription_id", sub.id)
+              .select("handle"),
+          );
         }
       }
     }

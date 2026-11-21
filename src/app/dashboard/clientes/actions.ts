@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { detachDomain } from "@/lib/domains";
 import { handleError, normalizeHandle } from "@/lib/handles";
 import { defaultPageDoc } from "@/lib/page/catalog";
 import { cancelSubscriptionAtPeriodEnd, cancelSubscriptionNow } from "@/lib/payments/billing";
@@ -93,7 +94,7 @@ export async function deleteClient(
   const admin = createAdminClient();
 
   // Stop any billing tied to this client before removing it.
-  const { data } = await admin.from("profiles").select("stripe_subscription_id").eq("id", clientId).maybeSingle();
+  const { data } = await admin.from("profiles").select("stripe_subscription_id, custom_domain").eq("id", clientId).maybeSingle();
   if (data?.stripe_subscription_id) {
     try {
       await cancelSubscriptionNow(data.stripe_subscription_id);
@@ -106,6 +107,8 @@ export async function deleteClient(
   // Scoped to this account as defense in depth on top of the ownership check.
   const { error } = await admin.from("profiles").delete().eq("id", clientId).eq("account_id", accountId);
   if (error) return { error: "Não foi possível excluir o cliente. Tente de novo." };
+  // Free the client's own domain, so it can be used again elsewhere.
+  if (data?.custom_domain) await detachDomain(data.custom_domain).catch(() => {});
 
   // Forget the selection if it pointed at the client just deleted.
   const cookieStore = await cookies();

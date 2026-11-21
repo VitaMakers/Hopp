@@ -6,6 +6,7 @@ import { detachDomain } from "@/lib/domains";
 import { cancelSubscriptionNow } from "@/lib/payments/billing";
 import { PLANS } from "@/lib/plans";
 import { createAdminClient } from "@/lib/supabase/server";
+import { removeAccountUploads } from "@/lib/uploads";
 
 // Platform owner sets any client's plan manually. Uses the service role, which
 // is the only role allowed to change a plan (the billing trigger blocks others).
@@ -52,6 +53,7 @@ export async function deleteClientAccount(accountId: string, typed: string): Pro
   const { error } = await admin.auth.admin.deleteUser(accountId);
   if (error) return { error: "Não foi possível excluir a conta. Tente de novo." };
 
+  await removeAccountUploads(accountId);
   for (const p of profiles) {
     if (p.custom_domain) await detachDomain(p.custom_domain).catch(() => {});
     revalidatePath(`/${p.handle}`);

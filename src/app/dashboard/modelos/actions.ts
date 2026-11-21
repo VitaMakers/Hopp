@@ -26,7 +26,8 @@ export async function applyModel(clientId: string, templateId: string): Promise<
   let next;
   if (templateId === "blank") {
     const blank = defaultPageDoc(keepName);
-    next = { ...blank, seo: current.seo };
+    // A new design never drops what isn't design: SEO, pixels and the brand choice.
+    next = { ...blank, seo: current.seo, integrations: current.integrations, hideBrand: current.hideBrand };
   } else {
     const template = TEMPLATES.find((t) => t.id === templateId);
     if (!template) return { error: "Modelo não encontrado." };
