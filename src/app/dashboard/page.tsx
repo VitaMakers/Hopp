@@ -40,7 +40,7 @@ export default async function HomePage() {
   const events = () => supabase.from("events").select("id", { count: "exact", head: true }).eq("owner_id", profile.id);
 
   const [{ data: page }, { data: viewRows }, viewsBefore, clicks, contacts, responses, everViewed, { data: clickRows }, { data: latest }, { data: latestResponses }] = await Promise.all([
-    supabase.from("pages").select("draft, published_at").eq("owner_id", profile.id).maybeSingle(),
+    supabase.from("pages").select("draft, published, published_at").eq("owner_id", profile.id).maybeSingle(),
     fetchAll<{ created_at: string }>(
       (from, to) => supabase.from("events").select("created_at").eq("owner_id", profile.id).eq("kind", "page_view").gte("created_at", chartAgo).order("created_at", { ascending: false }).order("id").range(from, to),
       50_000,
@@ -91,7 +91,9 @@ export default async function HomePage() {
     .sort((a, b) => (a.at < b.at ? 1 : -1))
     .slice(0, 4);
 
-  const parsed = pageDocSchema.safeParse(page?.draft);
+  // This screen is about the page people are visiting: the published one. An
+  // unpublished draft only stands in while nothing has gone live yet.
+  const parsed = pageDocSchema.safeParse(page?.published ?? page?.draft);
   const doc: PageDoc | null = parsed.success ? parsed.data : null;
   const publishedAt = page?.published_at ? new Date(page.published_at) : null;
   const newContacts = contacts + responses;
