@@ -15,7 +15,7 @@ import { VerifiedCheck } from "./VerifiedCheck";
 // original template so src/app/premium.css styles it the same way.
 
 // `still`: a thumbnail of the page. Videos don't load or play there.
-type Props = { doc: PageDoc; handle?: string; plan?: string; onEdit?: (target: string) => void; still?: boolean };
+type Props = { doc: PageDoc; handle?: string; plan?: string; onEdit?: (target: string) => void; still?: boolean; extra?: React.ReactNode };
 const StillContext = createContext(false);
 
 // In the editor, premium block links open the block; a tagged area (hero,
@@ -220,37 +220,37 @@ function PremiumCard({ block, handle }: { block: LinkBlock; handle?: string }) {
   );
 }
 
-export function PremiumView({ doc, handle, plan, onEdit, still = false }: Props) {
+export function PremiumView({ doc, handle, plan, onEdit, still = false, extra }: Props) {
   const page = (() => {
     switch (doc.theme.premium) {
       case "authority":
-        return <Authority doc={doc} handle={handle} plan={plan} />;
+        return <Authority doc={doc} handle={handle} plan={plan} extra={extra} />;
       case "spotlight":
-        return <Spotlight doc={doc} handle={handle} plan={plan} />;
+        return <Spotlight doc={doc} handle={handle} plan={plan} extra={extra} />;
       case "ecosystem":
-        return <Ecosystem doc={doc} handle={handle} plan={plan} />;
+        return <Ecosystem doc={doc} handle={handle} plan={plan} extra={extra} />;
       case "catalog":
-        return <Catalog doc={doc} handle={handle} plan={plan} />;
+        return <Catalog doc={doc} handle={handle} plan={plan} extra={extra} />;
       case "experience":
-        return <Experience doc={doc} handle={handle} plan={plan} />;
+        return <Experience doc={doc} handle={handle} plan={plan} extra={extra} />;
       case "store":
-        return <Store doc={doc} handle={handle} plan={plan} />;
+        return <Store doc={doc} handle={handle} plan={plan} extra={extra} />;
       case "lookbook":
-        return <Lookbook doc={doc} handle={handle} plan={plan} />;
+        return <Lookbook doc={doc} handle={handle} plan={plan} extra={extra} />;
       case "mosaic":
-        return <Mosaic doc={doc} handle={handle} plan={plan} />;
+        return <Mosaic doc={doc} handle={handle} plan={plan} extra={extra} />;
       case "dropz":
-        return <Dropz doc={doc} handle={handle} plan={plan} />;
+        return <Dropz doc={doc} handle={handle} plan={plan} extra={extra} />;
       case "promo":
-        return <Promo doc={doc} handle={handle} plan={plan} />;
+        return <Promo doc={doc} handle={handle} plan={plan} extra={extra} />;
       case "menu":
-        return <Menu doc={doc} handle={handle} plan={plan} />;
+        return <Menu doc={doc} handle={handle} plan={plan} extra={extra} />;
       case "bistro":
-        return <Bistro doc={doc} handle={handle} plan={plan} />;
+        return <Bistro doc={doc} handle={handle} plan={plan} extra={extra} />;
       case "bar":
-        return <Bar doc={doc} handle={handle} plan={plan} />;
+        return <Bar doc={doc} handle={handle} plan={plan} extra={extra} />;
       case "casa":
-        return <Casa doc={doc} handle={handle} plan={plan} />;
+        return <Casa doc={doc} handle={handle} plan={plan} extra={extra} />;
       default:
         return null;
     }
@@ -280,7 +280,7 @@ export function PremiumView({ doc, handle, plan, onEdit, still = false }: Props)
   );
 }
 
-function Authority({ doc, handle, plan }: Props) {
+function Authority({ doc, handle, plan, extra }: Props) {
   const { profile, theme, premium } = doc;
   return (
     <div
@@ -318,6 +318,7 @@ function Authority({ doc, handle, plan }: Props) {
           );
         })}
       </div>
+      {extra}
       <footer className="premium-footer">
         <strong>{premium.footer || profile.name || APP_NAME}</strong>
         <p>
@@ -328,9 +329,11 @@ function Authority({ doc, handle, plan }: Props) {
   );
 }
 
-function Spotlight({ doc, handle, plan }: Props) {
+function Spotlight({ doc, handle, plan, extra }: Props) {
   const { profile, theme, premium } = doc;
   const cover = imageSrc(profile.coverUrl);
+  const still = useContext(StillContext);
+  const coverVideo = still ? null : videoSrc(profileVideo(profile));
   const site = linkHref(premium.siteUrl);
   const logo = imageSrc(profile.logo);
   const privacy = linkHref(premium.privacyUrl);
@@ -344,7 +347,10 @@ function Spotlight({ doc, handle, plan }: Props) {
       style={{ "--spotlight-bg": theme.background, "--spotlight-text": theme.text, "--spotlight-accent": theme.accent, "--spotlight-cover-x": `${premium.coverX}%` } as React.CSSProperties}
     >
       <header className="spotlight-hero">
-        {cover ? (
+        {coverVideo ? (
+          // eslint-disable-next-line jsx-a11y/media-has-caption
+          <video className="spotlight-portrait" src={coverVideo} poster={cover ?? undefined} autoPlay muted loop playsInline style={{ objectPosition: `${premium.coverX}% ${premium.coverY}%` }} />
+        ) : cover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img className="spotlight-portrait" src={cover} alt="" style={{ objectPosition: `${premium.coverX}% ${premium.coverY}%` }} />
         ) : null}
@@ -410,6 +416,7 @@ function Spotlight({ doc, handle, plan }: Props) {
           );
         })}
       </div>
+      {extra}
       <footer className="spotlight-footer">
         <p>
           © {year} {footerOwner(plan, profile.name, handle)}. Todos os direitos reservados.
@@ -429,7 +436,7 @@ function profileVideo(profile: PageDoc["profile"]): string {
   return profile.coverVideo || (profile.coverType === "video" ? (profile.coverVideos.find(Boolean) ?? "") : "");
 }
 
-function Ecosystem({ doc, handle, plan }: Props) {
+function Ecosystem({ doc, handle, plan, extra }: Props) {
   const { profile, theme, premium } = doc;
   const cover = imageSrc(profile.coverUrl);
   const still = useContext(StillContext);
@@ -530,6 +537,7 @@ function Ecosystem({ doc, handle, plan }: Props) {
           ) : null}
           {premium.about ? <p>{premium.about}</p> : null}
         </section>
+        {extra}
         <footer className="ecosystem-footer">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           {premium.header !== "none" && logo ? <img src={logo} alt={profile.name} /> : <strong>{profile.name || APP_NAME}</strong>}
@@ -542,7 +550,7 @@ function Ecosystem({ doc, handle, plan }: Props) {
   );
 }
 
-function Experience({ doc, handle }: Props) {
+function Experience({ doc, handle, extra }: Props) {
   const { profile, theme, premium } = doc;
   const [mode, setMode] = useState<"a" | "b">("a");
   const cover = imageSrc(profile.coverUrl);
@@ -635,6 +643,7 @@ function Experience({ doc, handle }: Props) {
           return <ExpBlock key={row.id} block={row} handle={handle} accent={theme.accent} />;
         })}
       </div>
+      {extra}
     </div>
   );
 }
@@ -696,7 +705,7 @@ function ExpItem({ block, handle, href, className, children }: { block: LinkBloc
   );
 }
 
-function Catalog({ doc, handle, plan }: Props) {
+function Catalog({ doc, handle, plan, extra }: Props) {
   const { profile, theme, premium } = doc;
   const lines = (premium.heading || "Conheça meus produtos").split("\n").filter(Boolean).slice(0, 6);
   const whatsapp = whatsappHref(profile.floatingWhatsapp, "");
@@ -750,6 +759,7 @@ function Catalog({ doc, handle, plan }: Props) {
             );
           })}
         </section>
+        {extra}
         <footer className="catalog-footer">
           {whatsapp || email ? (
             <p>
@@ -795,7 +805,7 @@ function Catalog({ doc, handle, plan }: Props) {
 type PremiumFields = PageDoc["premium"];
 type HeroSlide = PremiumFields["heroSlides"][number];
 
-function Store({ doc, handle, plan }: Props) {
+function Store({ doc, handle, plan, extra }: Props) {
   const { profile, theme, premium } = doc;
   const brand = profile.name || APP_NAME;
   const products = visible(doc, "product");
@@ -824,6 +834,7 @@ function Store({ doc, handle, plan }: Props) {
           </section>
         ) : null}
         {!isHidden("premium:size") && (premium.sizes.length > 0 || premium.sizeTitle) ? <StoreSize premium={premium} whatsapp={whatsapp} handle={handle} /> : null}
+        {extra}
         <footer className="store-footer" data-edit="premium:nav">
           <span className="store-footer-brand">{brand}</span>
           {!isHidden("premium:nav") && premium.navLinks.length ? (
@@ -1189,7 +1200,7 @@ function StoreSize({ premium, whatsapp, handle }: { premium: PremiumFields; what
 }
 
 /* ---------- Lookbook (editorial fashion drop) ---------- */
-function Lookbook({ doc, handle, plan }: Props) {
+function Lookbook({ doc, handle, plan, extra }: Props) {
   const { profile, theme, premium } = doc;
   const brand = profile.name || APP_NAME;
   const slide = premium.heroSlides[0];
@@ -1309,6 +1320,7 @@ function Lookbook({ doc, handle, plan }: Props) {
           </a>
         ) : null}
 
+        {extra}
         <footer className="look-footer">
           <span className="look-footer-brand">{brand}</span>
           <small>© {footerOwner(plan, profile.name, handle)} · {year}</small>
@@ -1385,7 +1397,7 @@ function LookPromo({ premium, handle, hideBenefits }: { premium: PremiumFields; 
 }
 
 /* ---------- Mosaic (magazine / marketplace grid) ---------- */
-function Mosaic({ doc, handle, plan }: Props) {
+function Mosaic({ doc, handle, plan, extra }: Props) {
   const { profile, theme, premium } = doc;
   const brand = profile.name || APP_NAME;
   const headline = (premium.heading || "").split("\n").filter(Boolean);
@@ -1445,6 +1457,7 @@ function Mosaic({ doc, handle, plan }: Props) {
           </section>
         ) : null}
         {!isHidden("premium:promo") ? <LookPromo premium={premium} handle={handle} /> : null}
+        {extra}
         <footer className="mosaic-footer">
           <span className="mosaic-footer-brand">{brand}</span>
           {!isHidden("premium:nav") && premium.navLinks.length ? (
@@ -1465,7 +1478,7 @@ function Mosaic({ doc, handle, plan }: Props) {
 }
 
 /* ---------- Dropz (single-product drop) ---------- */
-function Dropz({ doc, handle, plan }: Props) {
+function Dropz({ doc, handle, plan, extra }: Props) {
   const { profile, theme, premium } = doc;
   const brand = profile.name || APP_NAME;
   const slide = premium.heroSlides[0];
@@ -1557,6 +1570,7 @@ function Dropz({ doc, handle, plan }: Props) {
             </div>
           </section>
         ) : null}
+        {extra}
         <footer className="dropz-footer">
           <span className="dropz-footer-brand">{brand}</span>
           {!isHidden("premium:nav") && premium.navLinks.length ? (
@@ -1577,7 +1591,7 @@ function Dropz({ doc, handle, plan }: Props) {
 }
 
 /* ---------- Promo (Black Friday banner) ---------- */
-function Promo({ doc, handle, plan }: Props) {
+function Promo({ doc, handle, plan, extra }: Props) {
   const { profile, theme, premium } = doc;
   const brand = profile.name || APP_NAME;
   const slide = premium.heroSlides[0];
@@ -1675,6 +1689,7 @@ function Promo({ doc, handle, plan }: Props) {
           </nav>
         ) : null}
 
+        {extra}
         <footer className="promo-footer">
           <span className="promo-footer-brand">{brand}</span>
           <small>© {footerOwner(plan, profile.name, handle)} · {year}</small>
@@ -1690,7 +1705,7 @@ function Promo({ doc, handle, plan }: Props) {
 }
 
 /* ---------- Menu (restaurant / cardápio) ---------- */
-function Menu({ doc, handle, plan }: Props) {
+function Menu({ doc, handle, plan, extra }: Props) {
   const { profile, theme, premium } = doc;
   const brand = profile.name || APP_NAME;
   const slide = premium.heroSlides[0];
@@ -1758,6 +1773,7 @@ function Menu({ doc, handle, plan }: Props) {
             ))}
           </nav>
         ) : null}
+        {extra}
         <footer className="menu-footer">
           <span className="menu-footer-brand">{brand}</span>
           {!isHidden("premium:nav") && premium.navLinks.length ? (
@@ -1852,7 +1868,7 @@ function RotatingHeroImages({ images, seconds, alt }: { images: string[]; second
   );
 }
 
-function Bistro({ doc, handle, plan }: Props) {
+function Bistro({ doc, handle, plan, extra }: Props) {
   const { profile, theme, premium } = doc;
   const brand = profile.name || APP_NAME;
   const slide = premium.heroSlides[0];
@@ -1999,6 +2015,7 @@ function Bistro({ doc, handle, plan }: Props) {
       ) : null}
 
       {/* 6. Footer (cream) */}
+      {extra}
       <footer className="bistro-band bistro-cream bistro-foot">
         <Signature />
         {premium.promoNote ? <p className="bistro-foot-hours">{premium.promoNote}</p> : null}
@@ -2038,7 +2055,7 @@ function barDot(text: string) {
   );
 }
 
-function Bar({ doc, handle, plan }: Props) {
+function Bar({ doc, handle, plan, extra }: Props) {
   const { profile, theme, premium } = doc;
   const brand = profile.name || APP_NAME;
   const logo = imageSrc(profile.logo);
@@ -2209,6 +2226,7 @@ function Bar({ doc, handle, plan }: Props) {
       ) : null}
 
       {/* Footer */}
+      {extra}
       <footer className="bar-footer">
         <span>{brand} © {year}</span>
         {showsBadge(plan) ? <span className="bar-footer-made">Feito com {APP_NAME}</span> : null}
@@ -2295,7 +2313,7 @@ function CasaHero({ slides, brand, credential, verified, coverHeight, seconds, v
   );
 }
 
-function Casa({ doc, handle, plan }: Props) {
+function Casa({ doc, handle, plan, extra }: Props) {
   const { profile, theme, premium } = doc;
   const brand = profile.name || APP_NAME;
   const links = visible(doc, "link");
@@ -2335,6 +2353,7 @@ function Casa({ doc, handle, plan }: Props) {
         ) : null}
         {showsBadge(plan) ? <small className="casa-made">Feito com {APP_NAME}</small> : null}
       </div>
+      {extra}
     </div>
   );
 }

@@ -102,30 +102,26 @@ function PageViewInner({ doc, handle, plan, footer, still, onEdit }: Props) {
   if (theme.premium) {
     // Each premium design renders a specific set of block types inside its own
     // layout. Any block the user adds whose type this design does NOT render
-    // (e.g. a button/link on a restaurant model) is shown below the design,
-    // styled with the page's colors — so adding any block always works and is
-    // never dropped or double-rendered.
+    // (e.g. a button/link on a restaurant model) is drawn inside the model,
+    // just above the footer, with its chosen format — so adding any block
+    // always works and is never dropped or double-rendered.
     const rendered = PREMIUM_RENDERS[theme.premium] ?? ["link", "product", "stats"];
     const extraBlocks = blocks.filter((block) => !rendered.includes(block.type));
-    return (
-      <>
-        <PremiumView doc={doc} handle={handle} plan={plan} onEdit={onEdit} still={still} />
-        {extraBlocks.length ? (
-          <div
-            style={{ ...themeVars(theme), ["--btn-bg"]: "#ffffff", ["--btn-text"]: "#111827" } as React.CSSProperties}
-            className="bg-[var(--page-bg)] px-5 pb-10 pt-2 text-[var(--page-text)]"
-          >
-            <div className="mx-auto flex w-full max-w-[520px] flex-col gap-3">
-              {extraBlocks.map((block) => (
-                <EditWrap key={block.id} onEdit={onEdit} target={block.id}>
-                  <BlockView block={block} doc={doc} handle={handle} editing={!!onEdit} />
-                </EditWrap>
-              ))}
-            </div>
-          </div>
-        ) : null}
-      </>
-    );
+    const extra = extraBlocks.length ? (
+      <div
+        style={{ ...themeVars(theme), ["--btn-bg"]: "#ffffff", ["--btn-text"]: "#111827" } as React.CSSProperties}
+        className="px-5 pb-6 pt-3 text-[var(--page-text)]"
+      >
+        <div className="mx-auto flex w-full max-w-[520px] flex-col gap-3">
+          {extraBlocks.map((block) => (
+            <EditWrap key={block.id} onEdit={onEdit} target={block.id}>
+              <BlockView block={block} doc={doc} handle={handle} editing={!!onEdit} />
+            </EditWrap>
+          ))}
+        </div>
+      </div>
+    ) : null;
+    return <PremiumView doc={doc} handle={handle} plan={plan} onEdit={onEdit} still={still} extra={extra} />;
   }
 
   const content = (
