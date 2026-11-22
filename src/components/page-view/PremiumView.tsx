@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { APP_NAME } from "@/lib/env";
-import { showsBadge } from "@/lib/entitlements";
+import { canHideBrand, showsBadge } from "@/lib/entitlements";
 import type { Block, PageDoc } from "@/lib/page/schema";
 import { SOCIAL_LABELS } from "@/lib/page/constants";
 import { youtubeEmbedUrl } from "@/lib/page/embed";
@@ -26,6 +26,13 @@ const PremiumEditContext = createContext<((target: string) => void) | null>(null
 
 // The footer credit. Profissional keeps its own brand; every other plan
 // carries the Virtú.bio name (same rule as the badge).
+// Whether the model footer credit (owner name + copyright) is hidden. Only
+// a plan that may drop branding can hide it, so the Virtú.bio credit always
+// stays on the free and Essencial plans.
+function footerHidden(doc: PageDoc, plan?: string): boolean {
+  return canHideBrand(plan) && doc.premium.hideFooter;
+}
+
 function footerOwner(plan: string | undefined, name: string, handle?: string): string {
   if (showsBadge(plan)) return APP_NAME;
   return name.trim() || handle || APP_NAME;
@@ -339,10 +346,14 @@ function Authority({ doc, handle, plan, extra }: Props) {
       {extra}
       <footer className="premium-footer">
         <PremiumSocials doc={doc} handle={handle} />
-        <strong>{premium.footer || profile.name || APP_NAME}</strong>
-        <p>
-          {footerOwner(plan, profile.name, handle)} · © {year}. Todos os direitos reservados.
-        </p>
+        {!footerHidden(doc, plan) ? (
+          <>
+            <strong>{premium.footer || profile.name || APP_NAME}</strong>
+            <p>
+              {footerOwner(plan, profile.name, handle)} · © {year}. Todos os direitos reservados.
+            </p>
+          </>
+        ) : null}
       </footer>
     </div>
   );
@@ -437,9 +448,11 @@ function Spotlight({ doc, handle, plan, extra }: Props) {
       </div>
       {extra}
       <footer className="spotlight-footer">
-        <p>
-          © {year} {footerOwner(plan, profile.name, handle)}. Todos os direitos reservados.
-        </p>
+        {!footerHidden(doc, plan) ? (
+          <p>
+            © {year} {footerOwner(plan, profile.name, handle)}. Todos os direitos reservados.
+          </p>
+        ) : null}
         <nav aria-label="Informações legais">
           {privacy ? <a href={privacy}>Política de Privacidade</a> : null}
           {terms ? <a href={terms}>Termos e Condições de Uso</a> : null}
@@ -560,10 +573,12 @@ function Ecosystem({ doc, handle, plan, extra }: Props) {
         <footer className="ecosystem-footer">
           <PremiumSocials doc={doc} handle={handle} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          {premium.header !== "none" && logo ? <img src={logo} alt={profile.name} /> : <strong>{profile.name || APP_NAME}</strong>}
-          <p>
-            © {year} {footerOwner(plan, profile.name, handle)}. Todos os direitos reservados.
-          </p>
+          {footerHidden(doc, plan) ? null : premium.header !== "none" && logo ? <img src={logo} alt={profile.name} /> : <strong>{profile.name || APP_NAME}</strong>}
+          {!footerHidden(doc, plan) ? (
+            <p>
+              © {year} {footerOwner(plan, profile.name, handle)}. Todos os direitos reservados.
+            </p>
+          ) : null}
         </footer>
       </div>
     </div>
@@ -801,9 +816,11 @@ function Catalog({ doc, handle, plan, extra }: Props) {
               ) : null}
             </p>
           ) : null}
-          <p>
-            © {footerOwner(plan, profile.name, handle)} · Todos os direitos reservados · {year}
-          </p>
+          {!footerHidden(doc, plan) ? (
+            <p>
+              © {footerOwner(plan, profile.name, handle)} · Todos os direitos reservados · {year}
+            </p>
+          ) : null}
           {whatsapp ? <p>{premium.contactLabel || "Fale comigo"}</p> : null}
         </footer>
       </div>
@@ -859,7 +876,7 @@ function Store({ doc, handle, plan, extra }: Props) {
         {extra}
         <footer className="store-footer" data-edit="premium:nav">
           <PremiumSocials doc={doc} handle={handle} />
-          <span className="store-footer-brand">{brand}</span>
+          {!footerHidden(doc, plan) ? <span className="store-footer-brand">{brand}</span> : null}
           {!isHidden("premium:nav") && premium.navLinks.length ? (
             <nav className="store-nav">
               {premium.navLinks.map((item, index) =>
@@ -871,7 +888,7 @@ function Store({ doc, handle, plan, extra }: Props) {
               )}
             </nav>
           ) : null}
-          <small>© {footerOwner(plan, profile.name, handle)} · {year}</small>
+          {!footerHidden(doc, plan) ? <small>© {footerOwner(plan, profile.name, handle)} · {year}</small> : null}
         </footer>
       </div>
     </div>
@@ -1346,8 +1363,8 @@ function Lookbook({ doc, handle, plan, extra }: Props) {
         {extra}
         <footer className="look-footer">
           <PremiumSocials doc={doc} handle={handle} />
-          <span className="look-footer-brand">{brand}</span>
-          <small>© {footerOwner(plan, profile.name, handle)} · {year}</small>
+          {!footerHidden(doc, plan) ? <span className="look-footer-brand">{brand}</span> : null}
+          {!footerHidden(doc, plan) ? <small>© {footerOwner(plan, profile.name, handle)} · {year}</small> : null}
         </footer>
       </div>
 
@@ -1484,13 +1501,13 @@ function Mosaic({ doc, handle, plan, extra }: Props) {
         {extra}
         <footer className="mosaic-footer">
           <PremiumSocials doc={doc} handle={handle} />
-          <span className="mosaic-footer-brand">{brand}</span>
+          {!footerHidden(doc, plan) ? <span className="mosaic-footer-brand">{brand}</span> : null}
           {!isHidden("premium:nav") && premium.navLinks.length ? (
             <nav className="mosaic-nav">
               {premium.navLinks.map((item, index) => (item.label ? <a key={index} href={linkHref(item.url) ?? "#"} target="_blank" rel="noopener noreferrer">{item.label}</a> : null))}
             </nav>
           ) : null}
-          <small>© {footerOwner(plan, profile.name, handle)} · {year}</small>
+          {!footerHidden(doc, plan) ? <small>© {footerOwner(plan, profile.name, handle)} · {year}</small> : null}
         </footer>
       </div>
       {whatsapp ? (
@@ -1598,13 +1615,13 @@ function Dropz({ doc, handle, plan, extra }: Props) {
         {extra}
         <footer className="dropz-footer">
           <PremiumSocials doc={doc} handle={handle} />
-          <span className="dropz-footer-brand">{brand}</span>
+          {!footerHidden(doc, plan) ? <span className="dropz-footer-brand">{brand}</span> : null}
           {!isHidden("premium:nav") && premium.navLinks.length ? (
             <nav className="dropz-nav">
               {premium.navLinks.map((item, index) => (item.label ? <a key={index} href={linkHref(item.url) ?? "#"} target="_blank" rel="noopener noreferrer">{item.label}</a> : null))}
             </nav>
           ) : null}
-          <small>© {footerOwner(plan, profile.name, handle)} · {year}</small>
+          {!footerHidden(doc, plan) ? <small>© {footerOwner(plan, profile.name, handle)} · {year}</small> : null}
         </footer>
       </div>
       {whatsapp ? (
@@ -1717,8 +1734,8 @@ function Promo({ doc, handle, plan, extra }: Props) {
 
         {extra}
         <footer className="promo-footer">
-          <span className="promo-footer-brand">{brand}</span>
-          <small>© {footerOwner(plan, profile.name, handle)} · {year}</small>
+          {!footerHidden(doc, plan) ? <span className="promo-footer-brand">{brand}</span> : null}
+          {!footerHidden(doc, plan) ? <small>© {footerOwner(plan, profile.name, handle)} · {year}</small> : null}
         </footer>
       </div>
       {whatsapp ? (
@@ -1801,13 +1818,13 @@ function Menu({ doc, handle, plan, extra }: Props) {
         ) : null}
         {extra}
         <footer className="menu-footer">
-          <span className="menu-footer-brand">{brand}</span>
+          {!footerHidden(doc, plan) ? <span className="menu-footer-brand">{brand}</span> : null}
           {!isHidden("premium:nav") && premium.navLinks.length ? (
             <nav className="menu-nav">
               {premium.navLinks.map((item, index) => (item.label ? <a key={index} href={linkHref(item.url) ?? "#"} target="_blank" rel="noopener noreferrer">{item.label}</a> : null))}
             </nav>
           ) : null}
-          <small>© {footerOwner(plan, profile.name, handle)} · {year}</small>
+          {!footerHidden(doc, plan) ? <small>© {footerOwner(plan, profile.name, handle)} · {year}</small> : null}
         </footer>
       </div>
       {whatsapp ? (
@@ -2254,7 +2271,7 @@ function Bar({ doc, handle, plan, extra }: Props) {
       {/* Footer */}
       {extra}
       <footer className="bar-footer">
-        <span>{brand} © {year}</span>
+        {!footerHidden(doc, plan) ? <span>{brand} © {year}</span> : null}
         {showsBadge(plan) ? <span className="bar-footer-made">Feito com {APP_NAME}</span> : null}
       </footer>
     </div>

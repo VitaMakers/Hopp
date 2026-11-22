@@ -123,7 +123,7 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
       <h2 className="hidden font-display text-[24px] font-bold tracking-[-0.02em] lg:block">Conteúdo</h2>
       <ProfileHeader doc={doc} onChange={onChange} plan={plan} />
 
-      {doc.theme.premium ? <PremiumSectionsEditor doc={doc} onChange={onChange} focus={focus} onActive={onActive} /> : null}
+      {doc.theme.premium ? <PremiumSectionsEditor doc={doc} onChange={onChange} focus={focus} onActive={onActive} plan={plan} /> : null}
 
       <div className="mt-2 flex items-center justify-between">
         <h2 className="text-[15px] font-semibold">Blocos</h2>
