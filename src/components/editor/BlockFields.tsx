@@ -191,6 +191,13 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
             {block.display === "banner" ? (
               <Toggle label="Escurecer a imagem (fade para o texto ficar legível)" checked={block.bannerShade} onChange={(bannerShade) => onChange({ ...block, bannerShade })} />
             ) : null}
+            {block.display === "banner" && block.imageUrl ? (
+              <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+                Posição da imagem (cima/baixo)
+                <input type="range" min={0} max={100} value={block.imagePosY} onChange={(e) => onChange({ ...block, imagePosY: Number(e.target.value) })} />
+                <span className="text-xs font-normal text-stone-500">Arraste para escolher qual parte da imagem aparece no banner.</span>
+              </label>
+            ) : null}
 
             <div className="mt-1 border-t border-stone-100 pt-3">
               <TextField
