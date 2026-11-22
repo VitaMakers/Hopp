@@ -194,7 +194,7 @@ function PremiumBanner({ block, handle }: { block: LinkBlock; handle?: string })
     >
       {thumb ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={thumb} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        <img src={thumb} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: `50% ${block.imagePosY}%` }} loading="lazy" />
       ) : null}
       {block.bannerShade ? <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/5" /> : null}
       <span className="relative flex flex-col items-start gap-2">
@@ -2060,7 +2060,7 @@ function Bistro({ doc, handle, plan, extra }: Props) {
       {/* 6. Footer (cream) */}
       {extra}
       <footer className="bistro-band bistro-cream bistro-foot">
-        <Signature />
+        {!footerHidden(doc, plan) ? <Signature /> : null}
         {premium.promoNote ? <p className="bistro-foot-hours">{premium.promoNote}</p> : null}
         {socials.length ? (
           <nav className="bistro-socials" aria-label="Redes sociais">
