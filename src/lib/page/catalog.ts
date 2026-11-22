@@ -43,6 +43,7 @@ export function createBlock(type: BlockType): Block {
         buttonColor: "",
         icon: "",
         bannerShade: true,
+        imagePosY: 50,
       };
     case "heading":
       return { ...base, type, text: "Nova seção", style: "plain" };

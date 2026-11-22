@@ -62,6 +62,8 @@ export const linkBlockSchema = z.object({
   // "Destaque" banner: darken the background image so the text reads well.
   // On by default; the owner can turn it off to show the image clean.
   bannerShade: z.boolean().default(true),
+  // Vertical framing of the banner background image (0 = top, 100 = bottom).
+  imagePosY: z.number().min(0).max(100).default(50),
 });
 
 export const headingBlockSchema = z.object({

@@ -99,6 +99,7 @@ function link(fields: Partial<Extract<Block, { type: "link" }>> & { title: strin
     buttonColor: "",
     icon: "",
     bannerShade: true,
+    imagePosY: 50,
     ...fields,
   };
 }
