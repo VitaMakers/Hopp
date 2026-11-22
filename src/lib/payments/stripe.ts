@@ -6,7 +6,9 @@ import type { PaymentProvider } from "./index";
 // Stripe Connect: each creator gets an Express account and is paid directly;
 // the platform can take an application fee per sale.
 export function createStripeProvider(): PaymentProvider {
-  const stripe = new Stripe(stripeSecretKey());
+  // Fail fast instead of hanging ~80s if Stripe is slow, and retry transient
+  // network errors automatically so a blip doesn't surface as a hard failure.
+  const stripe = new Stripe(stripeSecretKey(), { timeout: 20000, maxNetworkRetries: 2 });
   return {
     name: "stripe",
     async createConnectedAccount({ email, ownerId }) {
