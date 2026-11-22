@@ -30,6 +30,24 @@ function footerOwner(plan: string | undefined, name: string, handle?: string): s
   if (showsBadge(plan)) return APP_NAME;
   return name.trim() || handle || APP_NAME;
 }
+
+// A row of the owner's social icons, in the page's own colour. Designs that
+// don't draw their socials anywhere else put this in the footer.
+function PremiumSocials({ doc, handle }: { doc: PageDoc; handle?: string }) {
+  const socials = doc.socials
+    .map((social) => ({ social, href: socialHref(social) }))
+    .filter((item): item is { social: (typeof doc.socials)[number]; href: string } => !!item.href);
+  if (!socials.length) return null;
+  return (
+    <nav className="premium-socials" aria-label="Redes sociais">
+      {socials.map(({ social, href }) => (
+        <a key={`${social.platform}-${href}`} href={href} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[social.platform]} onClick={() => track(handle, { kind: "social_click", target: social.platform })}>
+          <SocialIcon platform={social.platform} />
+        </a>
+      ))}
+    </nav>
+  );
+}
 type LinkBlock = Extract<Block, { type: "link" }>;
 type ProductBlock = Extract<Block, { type: "product" }>;
 
@@ -320,6 +338,7 @@ function Authority({ doc, handle, plan, extra }: Props) {
       </div>
       {extra}
       <footer className="premium-footer">
+        <PremiumSocials doc={doc} handle={handle} />
         <strong>{premium.footer || profile.name || APP_NAME}</strong>
         <p>
           {footerOwner(plan, profile.name, handle)} · © {year}. Todos os direitos reservados.
@@ -539,6 +558,7 @@ function Ecosystem({ doc, handle, plan, extra }: Props) {
         </section>
         {extra}
         <footer className="ecosystem-footer">
+          <PremiumSocials doc={doc} handle={handle} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           {premium.header !== "none" && logo ? <img src={logo} alt={profile.name} /> : <strong>{profile.name || APP_NAME}</strong>}
           <p>
@@ -643,6 +663,7 @@ function Experience({ doc, handle, extra }: Props) {
           return <ExpBlock key={row.id} block={row} handle={handle} accent={theme.accent} />;
         })}
       </div>
+      <PremiumSocials doc={doc} handle={handle} />
       {extra}
     </div>
   );
@@ -761,6 +782,7 @@ function Catalog({ doc, handle, plan, extra }: Props) {
         </section>
         {extra}
         <footer className="catalog-footer">
+          <PremiumSocials doc={doc} handle={handle} />
           {whatsapp || email ? (
             <p>
               {whatsapp ? (
@@ -836,6 +858,7 @@ function Store({ doc, handle, plan, extra }: Props) {
         {!isHidden("premium:size") && (premium.sizes.length > 0 || premium.sizeTitle) ? <StoreSize premium={premium} whatsapp={whatsapp} handle={handle} /> : null}
         {extra}
         <footer className="store-footer" data-edit="premium:nav">
+          <PremiumSocials doc={doc} handle={handle} />
           <span className="store-footer-brand">{brand}</span>
           {!isHidden("premium:nav") && premium.navLinks.length ? (
             <nav className="store-nav">
@@ -1322,6 +1345,7 @@ function Lookbook({ doc, handle, plan, extra }: Props) {
 
         {extra}
         <footer className="look-footer">
+          <PremiumSocials doc={doc} handle={handle} />
           <span className="look-footer-brand">{brand}</span>
           <small>© {footerOwner(plan, profile.name, handle)} · {year}</small>
         </footer>
@@ -1459,6 +1483,7 @@ function Mosaic({ doc, handle, plan, extra }: Props) {
         {!isHidden("premium:promo") ? <LookPromo premium={premium} handle={handle} /> : null}
         {extra}
         <footer className="mosaic-footer">
+          <PremiumSocials doc={doc} handle={handle} />
           <span className="mosaic-footer-brand">{brand}</span>
           {!isHidden("premium:nav") && premium.navLinks.length ? (
             <nav className="mosaic-nav">
@@ -1572,6 +1597,7 @@ function Dropz({ doc, handle, plan, extra }: Props) {
         ) : null}
         {extra}
         <footer className="dropz-footer">
+          <PremiumSocials doc={doc} handle={handle} />
           <span className="dropz-footer-brand">{brand}</span>
           {!isHidden("premium:nav") && premium.navLinks.length ? (
             <nav className="dropz-nav">
