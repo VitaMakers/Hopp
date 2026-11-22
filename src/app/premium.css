@@ -1158,3 +1158,19 @@
 .casa-socials a { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 999px; border: 1px solid var(--casa-accent, #7a1f2b); color: var(--casa-accent, #7a1f2b); }
 .casa-socials svg { width: 18px; height: 18px; }
 .casa-made { text-align: center; margin-top: 18px; font-size: 11px; color: color-mix(in srgb, var(--casa-text, #2a2320) 45%, transparent); }
+
+/* Social icons row for premium designs that don't draw socials elsewhere. */
+.premium-socials {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px;
+  margin: 2px 0 4px;
+}
+.premium-socials a {
+  color: inherit;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+.premium-socials a:hover { opacity: 1; }
+.premium-socials svg { width: 22px; height: 22px; }

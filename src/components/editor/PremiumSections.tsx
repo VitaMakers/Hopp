@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { imageSrc } from "@/lib/page/links";
 import type { PageDoc, Theme } from "@/lib/page/schema";
+import { canHideBrand } from "@/lib/entitlements";
 import { ListField, TextArea, TextField, Toggle } from "./fields";
 import { UploadButton } from "./UploadButton";
 import { VideoUploadButton } from "./VideoUploadButton";
@@ -396,8 +397,9 @@ function SizeFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Pat
   );
 }
 
-function NavFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Patch<PageDoc["premium"]>) => void }) {
+function NavFields({ doc, setPremium, plan }: { doc: PageDoc; setPremium: (patch: Patch<PageDoc["premium"]>) => void; plan?: string }) {
   const nav = doc.premium.navLinks;
+  const canHideFooter = canHideBrand(plan);
   const setNav = (index: number, patch: Partial<(typeof nav)[number]>) =>
     setPremium({ navLinks: nav.map((item, i) => (i === index ? { ...item, ...patch } : item)) });
   return (
@@ -420,6 +422,20 @@ function NavFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Patc
           + Adicionar link
         </button>
       ) : null}
+      <div className="mt-1 border-t border-stone-100 pt-3">
+        {canHideFooter ? (
+          <label className="flex items-center justify-between gap-4">
+            <span className="text-sm font-medium text-stone-800">Mostrar o nome e o © no rodapé</span>
+            <span className="relative inline-flex shrink-0">
+              <input type="checkbox" role="switch" className="peer sr-only" checked={!doc.premium.hideFooter} onChange={(e) => setPremium({ hideFooter: !e.target.checked })} />
+              <span className="h-6 w-11 rounded-full bg-stone-300 transition-colors peer-checked:bg-stone-900" />
+              <span className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
+            </span>
+          </label>
+        ) : (
+          <p className="text-xs text-stone-500">Esconder o nome/© do rodapé é do plano Profissional.</p>
+        )}
+      </div>
     </div>
   );
 }
@@ -518,7 +534,7 @@ function TextSection({ doc, onChange, setPremium }: { doc: PageDoc; onChange: Do
 
 // Renders the editing controls for one premium section. Reuses exactly the
 // fields that used to live in the Aparência tab, so behavior is unchanged.
-export function PremiumSectionBody({ id, doc, onChange }: { id: string; doc: PageDoc; onChange: DocChange }) {
+export function PremiumSectionBody({ id, doc, onChange, plan }: { id: string; doc: PageDoc; onChange: DocChange; plan?: string }) {
   const design = doc.theme.premium as Design;
   const setTheme = (patch: Patch<Theme>) => onChange((d) => ({ ...d, theme: applyPatch(d.theme, patch) }));
   const setPremium = (patch: Patch<PageDoc["premium"]>) => onChange((d) => ({ ...d, premium: applyPatch(d.premium, patch) }));
@@ -535,7 +551,7 @@ export function PremiumSectionBody({ id, doc, onChange }: { id: string; doc: Pag
     case "premium:size":
       return <SizeFields doc={doc} setPremium={setPremium} />;
     case "premium:nav":
-      return <NavFields doc={doc} setPremium={setPremium} />;
+      return <NavFields doc={doc} setPremium={setPremium} plan={plan} />;
     case "premium:cover":
       return <CoverPosition doc={doc} setPremium={setPremium} />;
     case "premium:text":
@@ -588,6 +604,7 @@ function PremiumSectionCard({
   onToggleOpen,
   doc,
   onChange,
+  plan,
 }: {
   id: string;
   label: string;
@@ -596,6 +613,7 @@ function PremiumSectionCard({
   onToggleOpen: () => void;
   doc: PageDoc;
   onChange: DocChange;
+  plan?: string;
 }) {
   const parts = doc.premium.hiddenParts;
   const hidden = parts.includes(id);
@@ -649,7 +667,7 @@ function PremiumSectionCard({
       </div>
       {open ? (
         <div className="border-t border-stone-100 p-4">
-          <PremiumSectionBody id={id} doc={doc} onChange={onChange} />
+          <PremiumSectionBody id={id} doc={doc} onChange={onChange} plan={plan} />
         </div>
       ) : null}
     </div>
@@ -664,11 +682,13 @@ export function PremiumSectionsEditor({
   onChange,
   focus,
   onActive,
+  plan,
 }: {
   doc: PageDoc;
   onChange: DocChange;
   focus?: { id: string; n: number } | null;
   onActive?: (id: string | null) => void;
+  plan?: string;
 }) {
   const design = doc.theme.premium as Design;
   const sections = getPremiumSections(design);
@@ -717,6 +737,7 @@ export function PremiumSectionsEditor({
           onToggleOpen={() => setOpenId(openId === section.id ? null : section.id)}
           doc={doc}
           onChange={onChange}
+          plan={plan}
         />
       ))}
     </div>
