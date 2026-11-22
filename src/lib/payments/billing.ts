@@ -5,7 +5,9 @@ import { stripeSecretKey, stripeWebhookSecret } from "@/lib/env";
 // Platform subscriptions: the agency pays a recurring price per paid client.
 // Separate from Connect (src/lib/payments/stripe.ts), which pays creators.
 function client() {
-  return new Stripe(stripeSecretKey());
+  // Fail fast instead of hanging ~80s if Stripe is slow, and retry transient
+  // network errors automatically so a blip doesn't surface as a hard failure.
+  return new Stripe(stripeSecretKey(), { timeout: 20000, maxNetworkRetries: 2 });
 }
 
 // One Stripe customer per account, so every paid client shares one card/invoice.

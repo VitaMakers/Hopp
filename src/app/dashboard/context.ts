@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { requireUser } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 // Which client the dashboard is currently editing. An account can manage
 // several; this cookie remembers the chosen one across requests.
@@ -20,8 +20,28 @@ export type Client = {
 // and writes go through `profile`, so switching the cookie switches the whole
 // panel to another client without touching any downstream query.
 export const getOwner = cache(async () => {
-  const { supabase, user } = await requireUser();
-  if (!user) redirect("/login");
+  const supabase = await createClient();
+  // Verify the session locally (asymmetric JWT) instead of a network round-trip
+  // to the Auth server on every dashboard navigation. The middleware already
+  // refreshed the cookie, so the claims read here are current and
+  // signature-verified. On any verification hiccup (e.g. a JWKS fetch blip) we
+  // fall back to the authoritative network check, so nobody is logged out by
+  // mistake.
+  let userId: string | undefined;
+  let userEmail = "";
+  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
+  if (claimsData?.claims?.sub) {
+    userId = claimsData.claims.sub;
+    userEmail = claimsData.claims.email ?? "";
+  } else if (claimsError) {
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.getUser();
+    userId = authUser?.id;
+    userEmail = authUser?.email ?? "";
+  }
+  if (!userId) redirect("/login");
+  const user = { id: userId, email: userEmail };
 
   const { data: clients } = await supabase
     .from("profiles")
