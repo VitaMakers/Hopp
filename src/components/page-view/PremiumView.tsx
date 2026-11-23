@@ -2115,7 +2115,8 @@ function Bar({ doc, handle, plan, extra }: Props) {
   const heroHasImage = heroSlides.some((s) => imageSrc(s.imageUrl || profile.coverUrl));
   const bannerHref = linkHref(premium.promoUrl);
   const cards = visible(doc, "product");
-  const statement = (premium.quote || "").split("\n").filter(Boolean);
+  const statement = (premium.quote || "").split("\n").map((s) => s.trim()).filter(Boolean);
+  const aboutText = (premium.about || "").trim();
   const moodImg = imageSrc(premium.featureImageUrl);
   const infoHref = linkHref(premium.heroPillUrl || premium.siteUrl);
   const ctaHref = linkHref(premium.siteUrl || premium.promoUrl);
@@ -2232,7 +2233,7 @@ function Bar({ doc, handle, plan, extra }: Props) {
       ) : null}
 
       {/* Statement */}
-      {statement.length || premium.about ? (
+      {statement.length || aboutText ? (
         <section className="bar-statement">
           {statement.length ? (
             <p className="bar-statement-big">
@@ -2243,7 +2244,7 @@ function Bar({ doc, handle, plan, extra }: Props) {
               ))}
             </p>
           ) : null}
-          {premium.about ? <p className="bar-statement-sub">{premium.about}</p> : null}
+          {aboutText ? <p className="bar-statement-sub">{aboutText}</p> : null}
         </section>
       ) : null}
 
