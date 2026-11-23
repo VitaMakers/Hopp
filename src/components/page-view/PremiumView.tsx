@@ -2102,9 +2102,17 @@ function Bar({ doc, handle, plan, extra }: Props) {
   const { profile, theme, premium } = doc;
   const brand = profile.name || APP_NAME;
   const logo = imageSrc(profile.logo);
-  const slide = premium.heroSlides[0];
-  const heroImg = imageSrc(slide?.imageUrl || profile.coverUrl);
-  const heroLines = (slide?.headline || "").split("\n").filter(Boolean);
+  const heroVideo = usesHeroVideo(premium);
+  const heroSlides = premium.heroSlides.length ? premium.heroSlides : [{ imageUrl: profile.coverUrl, headline: "" }];
+  const [heroIdx, setHeroIdx] = useState(0);
+  useEffect(() => {
+    if (heroVideo || heroSlides.length <= 1) return;
+    const timer = setInterval(() => setHeroIdx((v) => (v + 1) % heroSlides.length), Math.max(1, premium.heroSeconds) * 1000);
+    return () => clearInterval(timer);
+  }, [heroVideo, heroSlides.length, premium.heroSeconds]);
+  const heroActive = Math.min(heroIdx, heroSlides.length - 1);
+  const heroLines = (heroSlides[heroActive]?.headline || heroSlides[0]?.headline || "").split("\n").filter(Boolean);
+  const heroHasImage = heroSlides.some((s) => imageSrc(s.imageUrl || profile.coverUrl));
   const bannerHref = linkHref(premium.promoUrl);
   const cards = visible(doc, "product");
   const statement = (premium.quote || "").split("\n").filter(Boolean);
@@ -2136,11 +2144,23 @@ function Bar({ doc, handle, plan, extra }: Props) {
 
       {/* Hero */}
       <header className="bar-hero" style={coverStyle(premium.coverHeight)}>
-        {usesHeroVideo(premium) ? (
+        {heroVideo ? (
           <HeroVideo videos={premium.heroVideos} seconds={premium.heroSeconds} posX={premium.heroPosX} posY={premium.heroPosY} className="bar-hero-img object-cover" />
-        ) : heroImg ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img className="bar-hero-img" src={heroImg} alt={brand} style={heroImgStyle(premium)} />
+        ) : heroHasImage ? (
+          heroSlides.map((s, idx) => {
+            const img = imageSrc(s.imageUrl || profile.coverUrl);
+            return img ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={idx}
+                className="bar-hero-img"
+                src={img}
+                alt={brand}
+                loading={idx === 0 ? "eager" : "lazy"}
+                style={{ ...heroImgStyle(premium), opacity: idx === heroActive ? 1 : 0, transition: "opacity 0.9s ease" }}
+              />
+            ) : null;
+          })
         ) : (
           <div className="bar-hero-img bar-ph" />
         )}
