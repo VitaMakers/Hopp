@@ -27,6 +27,10 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
   const avatar = imageSrc(profile.avatarUrl);
   // Premium designs draw their own cover: only the cover photo applies there.
   const isPremium = !!doc.theme.premium;
+  // Designs whose cover is edited in their own "Capa / topo" part (heroSlides):
+  // for these, the separate "Capa" card at the top is redundant, so it's hidden.
+  const designHasOwnCover =
+    isPremium && ["bar", "bistro", "casa", "store", "lookbook", "mosaic", "dropz", "promo", "menu"].includes(doc.theme.premium);
   // Two portrait-cover designs (Presença, Restaurante/Ecossistema) can show a
   // video in that cover, so they get the image/video choice and a video upload.
   const premiumVideoCover = isPremium && (doc.theme.premium === "spotlight" || doc.theme.premium === "ecosystem");
@@ -81,21 +85,23 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
             Editar
           </button>
         </div>
-        <div className="hidden items-center gap-3 rounded-[14px] border border-[#E5E2DA] bg-white p-3.5 lg:flex">
-          <span className="h-11 w-11 shrink-0 overflow-hidden rounded-[9px] bg-[#F3F2EE]">
-            {cover ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={cover} alt="" className="h-full w-full object-cover" />
-            ) : null}
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-[15px] font-semibold">Capa</span>
-            <span className="block truncate text-[13px] text-stone-600">{coverLabel}</span>
-          </span>
-          <button type="button" onClick={() => setEditing("capa")} className={editButton}>
-            Editar
-          </button>
-        </div>
+        {!designHasOwnCover ? (
+          <div className="hidden items-center gap-3 rounded-[14px] border border-[#E5E2DA] bg-white p-3.5 lg:flex">
+            <span className="h-11 w-11 shrink-0 overflow-hidden rounded-[9px] bg-[#F3F2EE]">
+              {cover ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={cover} alt="" className="h-full w-full object-cover" />
+              ) : null}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-semibold">Capa</span>
+              <span className="block truncate text-[13px] text-stone-600">{coverLabel}</span>
+            </span>
+            <button type="button" onClick={() => setEditing("capa")} className={editButton}>
+              Editar
+            </button>
+          </div>
+        ) : null}
       </div>
     );
   }
