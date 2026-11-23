@@ -2222,7 +2222,7 @@ function Bar({ doc, handle, plan, extra }: Props) {
       ) : null}
 
       {/* Mood image */}
-      {moodImg || premium.featureLabel ? (
+      {!isHidden("premium:feature") && (moodImg || premium.featureLabel) ? (
         <section className="bar-mood">
           {moodImg ? (
             // eslint-disable-next-line @next/next/no-img-element

@@ -84,7 +84,7 @@ const HIDEABLE: Record<string, string[]> = {
   dropz: ["premium:promo", "premium:nav"],
   promo: ["premium:nav"],
   menu: ["premium:nav"],
-  bar: ["premium:promo", "premium:nav"],
+  bar: ["premium:promo", "premium:nav", "premium:feature"],
   bistro: ["premium:hero", "premium:feature", "premium:text", "premium:nav"],
 };
 
@@ -99,6 +99,8 @@ export function premiumSectionSummary(id: string, doc: PageDoc): string {
         ? `Vídeo · ${p.heroVideos.filter(Boolean).length}`
         : `${p.heroSlides.length} ${p.heroSlides.length === 1 ? "slide" : "slides"}`;
     case "premium:promo":
+      // The Bar shows only the orange bar text, so its summary skips the discount.
+      if (doc.theme.premium === "bar") return p.promoBadge || "Tarja laranja";
       return [p.promoBadge, p.promoDiscount].filter(Boolean).join(" · ") || "Cupom e desconto";
     case "premium:feature":
       return p.featureTitle || p.featureLabel || "Novidade";
@@ -210,8 +212,12 @@ function CoverPosition({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: 
   );
 }
 
-function HeroFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Patch<PageDoc["premium"]>) => void }) {
+function HeroFields({ doc, setPremium, design }: { doc: PageDoc; setPremium: (patch: Patch<PageDoc["premium"]>) => void; design?: Design }) {
   const p = doc.premium;
+  // The Bar cover only draws the photo and its title — it has no corner badge
+  // and no product/price card over the image. Hide those fields here so the
+  // editor shows only what this model actually uses.
+  const simpleCover = design === "bar";
   const slides = p.heroSlides;
   const setSlide = (index: number, patch: Partial<(typeof slides)[number]>) =>
     setPremium((cur) => ({ heroSlides: cur.heroSlides.map((slide, i) => (i === index ? { ...slide, ...patch } : slide)) }));
@@ -259,10 +265,12 @@ function HeroFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Pat
           </span>
         </label>
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <TextField label="Texto do selo (canto superior)" value={p.heroPill} maxLength={40} onChange={(heroPill) => setPremium({ heroPill })} />
-        <TextField label="Link do selo" type="url" value={p.heroPillUrl} maxLength={2000} onChange={(heroPillUrl) => setPremium({ heroPillUrl })} />
-      </div>
+      {simpleCover ? null : (
+        <div className="grid grid-cols-2 gap-3">
+          <TextField label="Texto do selo (canto superior)" value={p.heroPill} maxLength={40} onChange={(heroPill) => setPremium({ heroPill })} />
+          <TextField label="Link do selo" type="url" value={p.heroPillUrl} maxLength={2000} onChange={(heroPillUrl) => setPremium({ heroPillUrl })} />
+        </div>
+      )}
 
       {isVideo ? (
         <div className="flex flex-col gap-2">
@@ -308,13 +316,17 @@ function HeroFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Pat
           <TextField label="Imagem (link)" type="url" value={slide.imageUrl} placeholder="https://..." onChange={(imageUrl) => setSlide(index, { imageUrl })} />
           <UploadButton label="Enviar imagem" onUploaded={(imageUrl) => setSlide(index, { imageUrl })} />
           <TextField label="Título (use Enter para quebrar a linha)" value={slide.headline} maxLength={80} onChange={(headline) => setSlide(index, { headline })} />
-          <div className="grid grid-cols-2 gap-2">
-            <TextField label="Rótulo do produto" value={slide.productLabel} maxLength={20} onChange={(productLabel) => setSlide(index, { productLabel })} />
-            <TextField label="Nome do produto" value={slide.productName} maxLength={60} onChange={(productName) => setSlide(index, { productName })} />
-            <TextField label="Preço de (riscado)" value={slide.priceFrom} maxLength={20} onChange={(priceFrom) => setSlide(index, { priceFrom })} />
-            <TextField label="Preço por" value={slide.price} maxLength={20} onChange={(price) => setSlide(index, { price })} />
-          </div>
-          <TextField label="Link do produto" type="url" value={slide.url} maxLength={2000} onChange={(url) => setSlide(index, { url })} />
+          {simpleCover ? null : (
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                <TextField label="Rótulo do produto" value={slide.productLabel} maxLength={20} onChange={(productLabel) => setSlide(index, { productLabel })} />
+                <TextField label="Nome do produto" value={slide.productName} maxLength={60} onChange={(productName) => setSlide(index, { productName })} />
+                <TextField label="Preço de (riscado)" value={slide.priceFrom} maxLength={20} onChange={(priceFrom) => setSlide(index, { priceFrom })} />
+                <TextField label="Preço por" value={slide.price} maxLength={20} onChange={(price) => setSlide(index, { price })} />
+              </div>
+              <TextField label="Link do produto" type="url" value={slide.url} maxLength={2000} onChange={(url) => setSlide(index, { url })} />
+            </>
+          )}
         </div>
       ))}
       {!isVideo && slides.length < 6 ? (
@@ -348,8 +360,20 @@ function PositionControls({ doc, setPremium }: { doc: PageDoc; setPremium: (patc
 }
 
 // Comma-separated list <-> string[] helper.
-function PromoFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Patch<PageDoc["premium"]>) => void }) {
+function PromoFields({ doc, setPremium, design }: { doc: PageDoc; setPremium: (patch: Patch<PageDoc["premium"]>) => void; design?: Design }) {
   const p = doc.premium;
+  // The Bar draws only the orange bar (tarja) and the orange button + its link.
+  // It has no discount, coupon code, benefits list, or separate note here (the
+  // hours are edited in "Textos do bar"), so those fields are hidden for it.
+  if (design === "bar") {
+    return (
+      <div className="flex flex-col gap-3">
+        <TextField label="Tarja laranja (ex.: NOVIDADE — CONHEÇA O MENU AUTORAL)" value={p.promoBadge} maxLength={80} onChange={(promoBadge) => setPremium({ promoBadge })} />
+        <TextField label="Texto do botão laranja (embaixo)" value={p.promoButton} maxLength={30} onChange={(promoButton) => setPremium({ promoButton })} />
+        <TextField label="Link da tarja e do botão" type="url" value={p.promoUrl} maxLength={2000} onChange={(promoUrl) => setPremium({ promoUrl })} />
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col gap-3">
       <div className="grid grid-cols-2 gap-3">
@@ -365,19 +389,30 @@ function PromoFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Pa
   );
 }
 
-function FeatureFields({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Patch<PageDoc["premium"]>) => void }) {
+function FeatureFields({ doc, setPremium, design }: { doc: PageDoc; setPremium: (patch: Patch<PageDoc["premium"]>) => void; design?: Design }) {
   const p = doc.premium;
+  // The Bar only draws the ambience photo and its label here — no title, link,
+  // tags or colors. Show just those two fields for this model.
+  const photoOnly = design === "bar";
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-2 gap-3">
-        <TextField label="Rótulo" value={p.featureLabel} maxLength={30} onChange={(featureLabel) => setPremium({ featureLabel })} />
-        <TextField label="Título" value={p.featureTitle} maxLength={40} onChange={(featureTitle) => setPremium({ featureTitle })} />
-      </div>
+      {photoOnly ? (
+        <TextField label="Rótulo sobre a foto (ex.: BOA COMIDA)" value={p.featureLabel} maxLength={30} onChange={(featureLabel) => setPremium({ featureLabel })} />
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          <TextField label="Rótulo" value={p.featureLabel} maxLength={30} onChange={(featureLabel) => setPremium({ featureLabel })} />
+          <TextField label="Título" value={p.featureTitle} maxLength={40} onChange={(featureTitle) => setPremium({ featureTitle })} />
+        </div>
+      )}
       <TextField label="Imagem (link)" type="url" value={p.featureImageUrl} placeholder="https://..." onChange={(featureImageUrl) => setPremium({ featureImageUrl })} />
       <UploadButton label="Enviar imagem" onUploaded={(featureImageUrl) => setPremium({ featureImageUrl })} />
-      <TextField label="Link" type="url" value={p.featureUrl} maxLength={2000} onChange={(featureUrl) => setPremium({ featureUrl })} />
-      <ListField label="Etiquetas (separe por vírgula, até 5)" value={p.featureTags} max={5} itemMax={20} onChange={(featureTags) => setPremium({ featureTags })} />
-      <ListField label="Cores em destaque (hex, separe por vírgula)" value={p.featureColors} max={8} itemMax={20} onChange={(featureColors) => setPremium({ featureColors })} />
+      {photoOnly ? null : (
+        <>
+          <TextField label="Link" type="url" value={p.featureUrl} maxLength={2000} onChange={(featureUrl) => setPremium({ featureUrl })} />
+          <ListField label="Etiquetas (separe por vírgula, até 5)" value={p.featureTags} max={5} itemMax={20} onChange={(featureTags) => setPremium({ featureTags })} />
+          <ListField label="Cores em destaque (hex, separe por vírgula)" value={p.featureColors} max={8} itemMax={20} onChange={(featureColors) => setPremium({ featureColors })} />
+        </>
+      )}
     </div>
   );
 }
@@ -543,11 +578,11 @@ export function PremiumSectionBody({ id, doc, onChange, plan }: { id: string; do
     case "premium:colors":
       return <ColorInputs doc={doc} setTheme={setTheme} />;
     case "premium:hero":
-      return <HeroFields doc={doc} setPremium={setPremium} />;
+      return <HeroFields doc={doc} setPremium={setPremium} design={design} />;
     case "premium:promo":
-      return <PromoFields doc={doc} setPremium={setPremium} />;
+      return <PromoFields doc={doc} setPremium={setPremium} design={design} />;
     case "premium:feature":
-      return <FeatureFields doc={doc} setPremium={setPremium} />;
+      return <FeatureFields doc={doc} setPremium={setPremium} design={design} />;
     case "premium:size":
       return <SizeFields doc={doc} setPremium={setPremium} />;
     case "premium:nav":
