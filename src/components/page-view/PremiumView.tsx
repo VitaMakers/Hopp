@@ -2104,7 +2104,7 @@ function Bar({ doc, handle, plan, extra }: Props) {
   const logo = imageSrc(profile.logo);
   const slide = premium.heroSlides[0];
   const heroImg = imageSrc(slide?.imageUrl || profile.coverUrl);
-  const heroLines = (slide?.headline || "A noite começa à mesa.").split("\n").filter(Boolean);
+  const heroLines = (slide?.headline || "").split("\n").filter(Boolean);
   const bannerHref = linkHref(premium.promoUrl);
   const cards = visible(doc, "product");
   const statement = (premium.quote || "").split("\n").filter(Boolean);
@@ -2144,15 +2144,19 @@ function Bar({ doc, handle, plan, extra }: Props) {
         ) : (
           <div className="bar-hero-img bar-ph" />
         )}
-        <div className="bar-hero-shade" />
-        <div className="bar-hero-copy">
-          {premium.tagline ? <span className="bar-eyebrow">{premium.tagline}</span> : null}
-          <h1 className="bar-hero-title">
-            {heroLines.map((line, index) => (
-              <span key={index}>{index === heroLines.length - 1 ? barDot(line) : line}</span>
-            ))}
-          </h1>
-        </div>
+        {heroLines.length || premium.tagline ? <div className="bar-hero-shade" /> : null}
+        {heroLines.length || premium.tagline ? (
+          <div className="bar-hero-copy">
+            {premium.tagline ? <span className="bar-eyebrow">{premium.tagline}</span> : null}
+            {heroLines.length ? (
+              <h1 className="bar-hero-title">
+                {heroLines.map((line, index) => (
+                  <span key={index}>{index === heroLines.length - 1 ? barDot(line) : line}</span>
+                ))}
+              </h1>
+            ) : null}
+          </div>
+        ) : null}
       </header>
 
       {/* Orange banner */}
@@ -2237,6 +2241,10 @@ function Bar({ doc, handle, plan, extra }: Props) {
         </section>
       ) : null}
 
+      {/* Extra blocks (link buttons added in Blocos) sit in the content, above
+          the closing contact/reserve/footer block. */}
+      {extra}
+
       {/* Info + socials */}
       <section className="bar-info">
         <div className="bar-info-text">
@@ -2271,7 +2279,6 @@ function Bar({ doc, handle, plan, extra }: Props) {
       ) : null}
 
       {/* Footer */}
-      {extra}
       <footer className="bar-footer">
         {!footerHidden(doc, plan) ? <span>{brand} © {year}</span> : null}
         {showsBadge(plan) ? <span className="bar-footer-made">Feito com {APP_NAME}</span> : null}
