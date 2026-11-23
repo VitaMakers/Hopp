@@ -110,11 +110,14 @@ export function UploadButton({ onUploaded, label = "Enviar imagem" }: { onUpload
         type="button"
         onClick={open}
         disabled={busy}
-        className="inline-flex h-9 items-center gap-2 self-start rounded-[9px] border border-[#E5E2DA] bg-white px-3.5 text-[13px] font-semibold text-stone-900 transition-colors hover:border-stone-400 hover:bg-[#F3F2EE] disabled:opacity-60"
+        className="group inline-flex h-10 items-center gap-2.5 self-start rounded-xl border border-dashed border-stone-300 bg-stone-50 px-4 text-[13px] font-semibold text-stone-700 transition-all hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 disabled:opacity-60"
       >
-        <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-stone-600" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-          <path d="M12 16V4M7 9l5-5 5 5M5 20h14" />
-        </svg>
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white text-stone-500 ring-1 ring-stone-200 transition-colors group-hover:bg-blue-500 group-hover:text-white group-hover:ring-blue-500">
+          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M12 13v8M8 17l4-4 4 4" />
+            <path d="M20 16.5A4.5 4.5 0 0 0 17 8h-1.26A7 7 0 1 0 4 14.5" />
+          </svg>
+        </span>
         {busy ? "Enviando..." : label}
       </button>
       <input ref={inputRef} type="file" accept="image/*" className="sr-only" onChange={handle} />
