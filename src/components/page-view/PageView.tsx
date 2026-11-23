@@ -110,7 +110,7 @@ function PageViewInner({ doc, handle, plan, footer, still, onEdit }: Props) {
     const extra = extraBlocks.length ? (
       <div
         style={{ ...themeVars(theme), ["--btn-bg"]: "#ffffff", ["--btn-text"]: "#111827" } as React.CSSProperties}
-        className="px-5 pb-6 pt-3 text-[var(--page-text)]"
+        className="px-5 pb-6 pt-2 text-[var(--page-text)]"
       >
         <div className="mx-auto flex w-full max-w-[520px] flex-col gap-3">
           {extraBlocks.map((block) => (

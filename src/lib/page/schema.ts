@@ -353,6 +353,8 @@ export const premiumFieldsSchema = z.object({
   heroPosY: z.number().int().min(0).max(100).default(50),
   // Hide the brand name text on the cover (e.g. when a logo is enough).
   hideName: z.boolean().default(false),
+  // Bar cover: keep the bottom corners of the cover square instead of rounded.
+  heroSquareBottom: z.boolean().default(false),
   // Section ids (premium:*) the owner turned off, hidden from the page.
   hiddenParts: z.array(z.string().max(40)).max(30).default([]),
   // Profissional can hide the model footer (the owner name + copyright line).

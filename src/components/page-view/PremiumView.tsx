@@ -2144,7 +2144,10 @@ function Bar({ doc, handle, plan, extra }: Props) {
       ) : null}
 
       {/* Hero */}
-      <header className="bar-hero" style={coverStyle(premium.coverHeight)}>
+      <header
+        className="bar-hero"
+        style={{ ...coverStyle(premium.coverHeight), borderRadius: premium.heroSquareBottom ? "0" : "0 0 22px 22px" }}
+      >
         {heroVideo ? (
           <HeroVideo videos={premium.heroVideos} seconds={premium.heroSeconds} posX={premium.heroPosX} posY={premium.heroPosY} className="bar-hero-img object-cover" />
         ) : heroHasImage ? (
