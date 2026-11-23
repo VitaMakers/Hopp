@@ -2123,14 +2123,16 @@ function Bar({ doc, handle, plan, extra }: Props) {
       style={{ "--bar-bg": theme.background, "--bar-text": theme.text, "--bar-accent": theme.accent } as React.CSSProperties}
     >
       {/* Top bar */}
-      <div className="bar-top">
-        {logo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img className="bar-top-logo" src={logo} alt={brand} />
-        ) : (
-          <span className="bar-wordmark">{brand}</span>
-        )}
-      </div>
+      {!premium.hideName ? (
+        <div className="bar-top">
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="bar-top-logo" src={logo} alt={brand} />
+          ) : (
+            <span className="bar-wordmark">{brand}</span>
+          )}
+        </div>
+      ) : null}
 
       {/* Hero */}
       <header className="bar-hero" style={coverStyle(premium.coverHeight)}>
@@ -2222,7 +2224,7 @@ function Bar({ doc, handle, plan, extra }: Props) {
       ) : null}
 
       {/* Mood image */}
-      {moodImg || premium.featureLabel ? (
+      {!isHidden("premium:feature") && (moodImg || premium.featureLabel) ? (
         <section className="bar-mood">
           {moodImg ? (
             // eslint-disable-next-line @next/next/no-img-element
