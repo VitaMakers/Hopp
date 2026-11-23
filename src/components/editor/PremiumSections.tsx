@@ -539,6 +539,7 @@ function TextSection({ doc, onChange, setPremium }: { doc: PageDoc; onChange: Do
   if (design === "bar") {
     return (
       <div className="flex flex-col gap-3">
+        <Toggle label="Mostrar o nome/logo no topo" checked={!p.hideName} onChange={(on) => setPremium({ hideName: !on })} />
         <TextField label="Texto acima do título da capa (ex.: COZINHA AUTORAL + BAR)" value={p.tagline} maxLength={120} onChange={(tagline) => setPremium({ tagline })} />
         <TextField label="Seção — rótulo (ex.: ESCOLHA SUA EXPERIÊNCIA)" value={p.sectionTitle} maxLength={60} onChange={(sectionTitle) => setPremium({ sectionTitle })} />
         <TextField label="Seção — título (ex.: EXPLORE OS SABORES.)" value={p.heading} maxLength={240} onChange={(heading) => setPremium({ heading })} />
