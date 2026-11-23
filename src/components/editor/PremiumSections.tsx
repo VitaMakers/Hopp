@@ -86,6 +86,7 @@ const HIDEABLE: Record<string, string[]> = {
   menu: ["premium:nav"],
   bar: ["premium:hero", "premium:promo", "premium:nav", "premium:feature", "premium:text"],
   bistro: ["premium:hero", "premium:feature", "premium:text", "premium:nav"],
+  casa: ["premium:hero", "premium:text"],
 };
 
 // A short line shown under the card title while it is collapsed.
