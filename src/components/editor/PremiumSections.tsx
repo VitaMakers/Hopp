@@ -84,7 +84,7 @@ const HIDEABLE: Record<string, string[]> = {
   dropz: ["premium:promo", "premium:nav"],
   promo: ["premium:nav"],
   menu: ["premium:nav"],
-  bar: ["premium:promo", "premium:nav", "premium:feature"],
+  bar: ["premium:hero", "premium:promo", "premium:nav", "premium:feature", "premium:text"],
   bistro: ["premium:hero", "premium:feature", "premium:text", "premium:nav"],
 };
 
@@ -677,10 +677,16 @@ function PremiumSectionCard({
           {summary ? <span className="block truncate text-xs text-stone-500">{summary}</span> : null}
         </button>
         {canHide ? (
-          <label className="flex items-center gap-1 text-xs text-stone-500">
-            <input type="checkbox" checked={!hidden} onChange={toggleVisible} />
-            Visível
-          </label>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={!hidden}
+            aria-label="Mostrar na página"
+            onClick={toggleVisible}
+            className={`flex h-[22px] w-[38px] shrink-0 items-center rounded-full p-0.5 transition-colors ${!hidden ? "justify-end bg-stone-900" : "justify-start bg-[#D9D6CE]"}`}
+          >
+            <span className="h-[18px] w-[18px] rounded-full bg-white" />
+          </button>
         ) : null}
         <button
           type="button"

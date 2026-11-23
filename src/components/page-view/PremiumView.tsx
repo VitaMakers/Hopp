@@ -2144,6 +2144,7 @@ function Bar({ doc, handle, plan, extra }: Props) {
       ) : null}
 
       {/* Hero */}
+      {!isHidden("premium:hero") ? (
       <header
         className="bar-hero"
         style={{ ...coverStyle(premium.coverHeight), borderRadius: premium.heroSquareBottom ? "0" : "0 0 22px 22px" }}
@@ -2171,7 +2172,7 @@ function Bar({ doc, handle, plan, extra }: Props) {
         {heroLines.length || premium.tagline ? <div className="bar-hero-shade" /> : null}
         {heroLines.length || premium.tagline ? (
           <div className="bar-hero-copy">
-            {premium.tagline ? <span className="bar-eyebrow">{premium.tagline}</span> : null}
+            {!isHidden("premium:text") && premium.tagline ? <span className="bar-eyebrow">{premium.tagline}</span> : null}
             {heroLines.length ? (
               <h1 className="bar-hero-title">
                 {heroLines.map((line, index) => (
@@ -2182,6 +2183,7 @@ function Bar({ doc, handle, plan, extra }: Props) {
           </div>
         ) : null}
       </header>
+      ) : null}
 
       {/* Orange banner */}
       {!isHidden("premium:promo") && premium.promoBadge ? (
@@ -2207,8 +2209,8 @@ function Bar({ doc, handle, plan, extra }: Props) {
       {/* Experience */}
       {(premium.sectionTitle || premium.heading || cards.length) ? (
         <section className="bar-section">
-          {premium.sectionTitle ? <span className="bar-eyebrow bar-eyebrow-accent">{premium.sectionTitle}</span> : null}
-          {premium.heading ? <h2 className="bar-h2">{barDot(premium.heading)}</h2> : null}
+          {!isHidden("premium:text") && premium.sectionTitle ? <span className="bar-eyebrow bar-eyebrow-accent">{premium.sectionTitle}</span> : null}
+          {!isHidden("premium:text") && premium.heading ? <h2 className="bar-h2">{barDot(premium.heading)}</h2> : null}
           {cards.length ? (
             <div className="bar-cards">
               {cards.map((block) => {
@@ -2236,7 +2238,7 @@ function Bar({ doc, handle, plan, extra }: Props) {
       ) : null}
 
       {/* Statement */}
-      {statement.length || aboutText ? (
+      {!isHidden("premium:text") && (statement.length || aboutText) ? (
         <section className="bar-statement">
           {statement.length ? (
             <p className="bar-statement-big">
@@ -2272,7 +2274,7 @@ function Bar({ doc, handle, plan, extra }: Props) {
       {/* Info + socials */}
       <section className="bar-info">
         <div className="bar-info-text">
-          {premium.siteLabel ? (
+          {!isHidden("premium:text") && premium.siteLabel ? (
             infoHref ? (
               <a className="bar-info-title" href={infoHref} target="_blank" rel="noopener noreferrer">
                 {premium.siteLabel} {arrow}
@@ -2281,8 +2283,8 @@ function Bar({ doc, handle, plan, extra }: Props) {
               <span className="bar-info-title">{premium.siteLabel}</span>
             )
           ) : null}
-          {premium.credential ? <p className="bar-info-line">{premium.credential}</p> : null}
-          {premium.promoNote ? <p className="bar-info-line">{premium.promoNote}</p> : null}
+          {!isHidden("premium:text") && premium.credential ? <p className="bar-info-line">{premium.credential}</p> : null}
+          {!isHidden("premium:text") && premium.promoNote ? <p className="bar-info-line">{premium.promoNote}</p> : null}
         </div>
         {socials.length ? (
           <nav className="bar-socials" aria-label="Redes sociais">
