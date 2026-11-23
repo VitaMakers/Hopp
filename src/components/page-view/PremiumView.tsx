@@ -2398,14 +2398,17 @@ function Casa({ doc, handle, plan, extra }: Props) {
   const socials = doc.socials
     .map((social) => ({ social, href: socialHref(social) }))
     .filter((item): item is { social: (typeof doc.socials)[number]; href: string } => !!item.href);
+  const isHidden = (sec: string) => premium.hiddenParts.includes(sec);
   return (
     <div
       className="vita-premium premium-casa"
       style={{ "--casa-bg": theme.background, "--casa-text": theme.text, "--casa-accent": theme.accent } as React.CSSProperties}
     >
-      <CasaHero slides={premium.heroSlides} brand={brand} credential={premium.credential} verified={profile.verified} coverHeight={premium.coverHeight} seconds={premium.heroSeconds} videoOn={usesHeroVideo(premium)} videos={premium.heroVideos} posX={premium.heroPosX} posY={premium.heroPosY} />
+      {!isHidden("premium:hero") ? (
+        <CasaHero slides={premium.heroSlides} brand={brand} credential={premium.credential} verified={profile.verified} coverHeight={premium.coverHeight} seconds={premium.heroSeconds} videoOn={usesHeroVideo(premium)} videos={premium.heroVideos} posX={premium.heroPosX} posY={premium.heroPosY} />
+      ) : null}
       <div className="casa-body">
-        {premium.heading ? <h1 className="casa-heading">{premium.heading}</h1> : null}
+        {!isHidden("premium:text") && premium.heading ? <h1 className="casa-heading">{premium.heading}</h1> : null}
         {links.length ? (
           <nav className="casa-links" aria-label="Atalhos">
             {links.map((block: LinkBlock) => (
@@ -2419,7 +2422,7 @@ function Casa({ doc, handle, plan, extra }: Props) {
             ))}
           </nav>
         ) : null}
-        {premium.promoNote ? <p className="casa-hours">{premium.promoNote}</p> : null}
+        {!isHidden("premium:text") && premium.promoNote ? <p className="casa-hours">{premium.promoNote}</p> : null}
         {socials.length ? (
           <nav className="casa-socials" aria-label="Redes sociais">
             {socials.map(({ social, href }) => (
