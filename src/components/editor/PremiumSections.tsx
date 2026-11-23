@@ -265,7 +265,9 @@ function HeroFields({ doc, setPremium, design }: { doc: PageDoc; setPremium: (pa
           </span>
         </label>
       </div>
-      {simpleCover ? null : (
+      {simpleCover ? (
+        <Toggle label="Cantos de baixo da capa arredondados" checked={!p.heroSquareBottom} onChange={(on) => setPremium({ heroSquareBottom: !on })} />
+      ) : (
         <div className="grid grid-cols-2 gap-3">
           <TextField label="Texto do selo (canto superior)" value={p.heroPill} maxLength={40} onChange={(heroPill) => setPremium({ heroPill })} />
           <TextField label="Link do selo" type="url" value={p.heroPillUrl} maxLength={2000} onChange={(heroPillUrl) => setPremium({ heroPillUrl })} />
