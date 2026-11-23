@@ -2241,6 +2241,10 @@ function Bar({ doc, handle, plan, extra }: Props) {
         </section>
       ) : null}
 
+      {/* Extra blocks (link buttons added in Blocos) sit in the content, above
+          the closing contact/reserve/footer block. */}
+      {extra}
+
       {/* Info + socials */}
       <section className="bar-info">
         <div className="bar-info-text">
@@ -2275,7 +2279,6 @@ function Bar({ doc, handle, plan, extra }: Props) {
       ) : null}
 
       {/* Footer */}
-      {extra}
       <footer className="bar-footer">
         {!footerHidden(doc, plan) ? <span>{brand} © {year}</span> : null}
         {showsBadge(plan) ? <span className="bar-footer-made">Feito com {APP_NAME}</span> : null}
