@@ -144,7 +144,7 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
                 )}
               </label>
             ) : null}
-            {block.display !== "button" || premium ? (
+            {block.display !== "button" ? (
               <label className="flex items-center gap-2 text-sm font-medium text-stone-700">
                 Cor da etiqueta
                 <input
@@ -164,11 +164,11 @@ function blockBody({ block, premium, onChange }: { block: Block; premium: string
           </Fieldset>
           <Fieldset title="Conteúdo">
             <TextField label={block.display === "button" ? "Texto do botão" : "Título"} value={block.title} maxLength={120} onChange={(title) => onChange({ ...block, title })} />
+            {block.display !== "button" ? (
+              <TextField label="Etiqueta (ex.: CURSOS)" value={block.label} maxLength={40} onChange={(label) => onChange({ ...block, label })} />
+            ) : null}
             {block.display !== "button" || premium ? (
-              <>
-                <TextField label="Etiqueta (ex.: CURSOS)" value={block.label} maxLength={40} onChange={(label) => onChange({ ...block, label })} />
-                <TextField label="Subtítulo" value={block.subtitle} maxLength={200} onChange={(subtitle) => onChange({ ...block, subtitle })} />
-              </>
+              <TextField label="Subtítulo" value={block.subtitle} maxLength={200} onChange={(subtitle) => onChange({ ...block, subtitle })} />
             ) : null}
             {block.display === "banner" || premium ? (
               <TextField label="Texto do botão do banner" value={block.buttonText} maxLength={40} placeholder="Saiba mais" onChange={(buttonText) => onChange({ ...block, buttonText })} />
