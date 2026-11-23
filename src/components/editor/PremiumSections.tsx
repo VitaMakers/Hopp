@@ -729,7 +729,9 @@ export function PremiumSectionsEditor({
   plan?: string;
 }) {
   const design = doc.theme.premium as Design;
-  const sections = getPremiumSections(design);
+  // "Cores do modelo" is shown as its own card next to the profile (see
+  // PremiumColorsCard / BlocksPanel), so it's excluded from this list.
+  const sections = getPremiumSections(design).filter((s) => s.id !== "premium:colors");
   const [openId, setOpenId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -779,5 +781,23 @@ export function PremiumSectionsEditor({
         />
       ))}
     </div>
+  );
+}
+
+// "Cores do modelo" as its own collapsible card, shown next to the profile
+// (BlocksPanel) instead of inside the "Partes do modelo" list.
+export function PremiumColorsCard({ doc, onChange, plan }: { doc: PageDoc; onChange: DocChange; plan?: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <PremiumSectionCard
+      id="premium:colors"
+      label="Cores do modelo"
+      summary={premiumSectionSummary("premium:colors", doc)}
+      open={open}
+      onToggleOpen={() => setOpen((v) => !v)}
+      doc={doc}
+      onChange={onChange}
+      plan={plan}
+    />
   );
 }

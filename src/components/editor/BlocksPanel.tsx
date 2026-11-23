@@ -25,7 +25,7 @@ import type { Block, BlockType, PageDoc } from "@/lib/page/schema";
 import { BlockFields } from "./BlockFields";
 import { ProfileHeader } from "./ProfileHeader";
 import { BlockIcon } from "./BlockIcon";
-import { PremiumSectionsEditor } from "./PremiumSections";
+import { PremiumColorsCard, PremiumSectionsEditor } from "./PremiumSections";
 import type { BlockChange, DocChange } from "./types";
 
 type BlockStats = { views: number; clicks: Record<string, number> };
@@ -122,6 +122,8 @@ export function BlocksPanel({ doc, onChange, focus, stats, plan = "", onActive }
     <div className="flex flex-col gap-3.5">
       <h2 className="hidden font-display text-[24px] font-bold tracking-[-0.02em] lg:block">Conteúdo</h2>
       <ProfileHeader doc={doc} onChange={onChange} plan={plan} />
+
+      {doc.theme.premium ? <PremiumColorsCard doc={doc} onChange={onChange} plan={plan} /> : null}
 
       {doc.theme.premium ? <PremiumSectionsEditor doc={doc} onChange={onChange} focus={focus} onActive={onActive} plan={plan} /> : null}
 
