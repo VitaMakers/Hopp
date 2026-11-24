@@ -68,8 +68,17 @@ export function getPremiumSections(design: Design): PremiumSection[] {
         { id: "premium:nav", label: "Atalhos / rodapé" },
         { id: "premium:promo", label: "Cartão de oferta" },
       ];
+    case "menu":
+      // Menu draws only a cover, the dish list (product blocks), a reserve
+      // button and the footer links — it has no feature/size cards.
+      return [
+        COLORS,
+        { id: "premium:hero", label: "Capa / topo" },
+        { id: "premium:promo", label: "Tarja e botão de reserva" },
+        { id: "premium:nav", label: "Rodapé (links)" },
+      ];
     default:
-      // store, lookbook, mosaic, dropz, promo, menu
+      // store, lookbook, mosaic, dropz, promo
       return [COLORS, ...STORE_SECTIONS];
   }
 }
@@ -83,7 +92,7 @@ const HIDEABLE: Record<string, string[]> = {
   mosaic: ["premium:promo", "premium:nav"],
   dropz: ["premium:promo", "premium:nav"],
   promo: ["premium:nav"],
-  menu: ["premium:nav"],
+  menu: ["premium:hero", "premium:promo", "premium:nav"],
   bar: ["premium:hero", "premium:promo", "premium:nav", "premium:feature", "premium:text"],
   bistro: ["premium:hero", "premium:feature", "premium:text", "premium:nav"],
   casa: ["premium:hero", "premium:text"],

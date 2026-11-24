@@ -1768,6 +1768,7 @@ function Menu({ doc, handle, plan, extra }: Props) {
       className="vita-premium premium-menu"
       style={{ "--menu-bg": theme.background, "--menu-text": theme.text, "--menu-accent": theme.accent } as React.CSSProperties}
     >
+      {!isHidden("premium:hero") ? (
       <header className="menu-hero" style={coverStyle(premium.coverHeight)}>
         {usesHeroVideo(premium) ? (
           <HeroVideo videos={premium.heroVideos} seconds={premium.heroSeconds} posX={premium.heroPosX} posY={premium.heroPosY} className="menu-hero-img object-cover" />
@@ -1791,6 +1792,7 @@ function Menu({ doc, handle, plan, extra }: Props) {
           {headline.length ? <p className="menu-tagline">{headline.join(" ")}</p> : null}
         </div>
       </header>
+      ) : null}
 
       <div className="menu-inner">
         {profile.bio ? <p className="menu-intro">{profile.bio}</p> : null}
@@ -1802,7 +1804,7 @@ function Menu({ doc, handle, plan, extra }: Props) {
             ))}
           </section>
         ) : null}
-        {ctaHref || premium.promoButton ? (
+        {!isHidden("premium:promo") && (ctaHref || premium.promoButton) ? (
           <a className="menu-cta" href={ctaHref ?? "#"} target="_blank" rel="noopener noreferrer" onClick={() => ctaHref && track(handle, { kind: "block_click", blockId: "cta", target: ctaHref })}>
             {premium.promoButton || "Reservar mesa"}
           </a>
