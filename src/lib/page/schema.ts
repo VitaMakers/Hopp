@@ -357,6 +357,10 @@ export const premiumFieldsSchema = z.object({
   heroSquareBottom: z.boolean().default(false),
   // Section ids (premium:*) the owner turned off, hidden from the page.
   hiddenParts: z.array(z.string().max(40)).max(30).default([]),
+  // Custom order of the model's parts (premium:* ids). Empty = the model's
+  // own default layout (so existing pages are never changed); once the owner
+  // drags a part, this holds the chosen order and the page follows it.
+  partOrder: z.array(z.string().max(40)).max(30).default([]),
   // Profissional can hide the model footer (the owner name + copyright line).
   hideFooter: z.boolean().default(false),
   heroSlides: z
