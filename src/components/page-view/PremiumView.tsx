@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, Fragment, useContext, useEffect, useState } from "react";
 import { APP_NAME } from "@/lib/env";
 import { canHideBrand, showsBadge } from "@/lib/entitlements";
 import type { Block, PageDoc } from "@/lib/page/schema";
@@ -2100,6 +2100,7 @@ function barDot(text: string) {
   );
 }
 
+const BAR_PARTS = ["premium:hero", "premium:promo", "premium:nav", "premium:text", "premium:feature"];
 function Bar({ doc, handle, plan, extra }: Props) {
   const { profile, theme, premium } = doc;
   const brand = profile.name || APP_NAME;
@@ -2128,25 +2129,7 @@ function Bar({ doc, handle, plan, extra }: Props) {
   const isHidden = (sec: string) => premium.hiddenParts.includes(sec);
   const arrow = <span className="bar-arrow" aria-hidden>↗</span>;
 
-  return (
-    <div
-      className="vita-premium premium-bar"
-      style={{ "--bar-bg": theme.background, "--bar-text": theme.text, "--bar-accent": theme.accent } as React.CSSProperties}
-    >
-      {/* Top bar */}
-      {!premium.hideName ? (
-        <div className="bar-top">
-          {logo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img className="bar-top-logo" src={logo} alt={brand} />
-          ) : (
-            <span className="bar-wordmark">{brand}</span>
-          )}
-        </div>
-      ) : null}
-
-      {/* Hero */}
-      {!isHidden("premium:hero") ? (
+  const heroNode = !isHidden("premium:hero") ? (
       <header
         className="bar-hero"
         style={{ ...coverStyle(premium.coverHeight), borderRadius: premium.heroSquareBottom ? "0" : "0 0 22px 22px" }}
@@ -2185,126 +2168,184 @@ function Bar({ doc, handle, plan, extra }: Props) {
           </div>
         ) : null}
       </header>
-      ) : null}
+  ) : null;
 
-      {/* Orange banner */}
-      {!isHidden("premium:promo") && premium.promoBadge ? (
-        <a className="bar-banner" href={bannerHref ?? "#"} target="_blank" rel="noopener noreferrer" onClick={() => bannerHref && track(handle, { kind: "block_click", blockId: "banner", target: bannerHref })}>
-          {premium.promoBadge} {arrow}
-        </a>
-      ) : null}
+  const bannerNode = !isHidden("premium:promo") && premium.promoBadge ? (
+    <a className="bar-banner" href={bannerHref ?? "#"} target="_blank" rel="noopener noreferrer" onClick={() => bannerHref && track(handle, { kind: "block_click", blockId: "banner", target: bannerHref })}>
+      {premium.promoBadge} {arrow}
+    </a>
+  ) : null;
 
-      {/* Numbered nav */}
-      {!isHidden("premium:nav") && premium.navLinks.length ? (
-        <nav className="bar-nav" aria-label="Atalhos">
-          {premium.navLinks.slice(0, 3).map((item, index) =>
-            item.label ? (
-              <a key={index} href={linkHref(item.url) ?? "#"} target="_blank" rel="noopener noreferrer">
-                <span className="bar-nav-num">{String(index + 1).padStart(2, "0")}</span>
-                <span className="bar-nav-label">/ {item.label} {arrow}</span>
-              </a>
-            ) : null,
-          )}
+  const navNode = !isHidden("premium:nav") && premium.navLinks.length ? (
+    <nav className="bar-nav" aria-label="Atalhos">
+      {premium.navLinks.slice(0, 3).map((item, index) =>
+        item.label ? (
+          <a key={index} href={linkHref(item.url) ?? "#"} target="_blank" rel="noopener noreferrer">
+            <span className="bar-nav-num">{String(index + 1).padStart(2, "0")}</span>
+            <span className="bar-nav-label">/ {item.label} {arrow}</span>
+          </a>
+        ) : null,
+      )}
+    </nav>
+  ) : null;
+
+  const experienceNode = (premium.sectionTitle || premium.heading || cards.length) ? (
+    <section className="bar-section">
+      {!isHidden("premium:text") && premium.sectionTitle ? <span className="bar-eyebrow bar-eyebrow-accent">{premium.sectionTitle}</span> : null}
+      {!isHidden("premium:text") && premium.heading ? <h2 className="bar-h2">{barDot(premium.heading)}</h2> : null}
+      {cards.length ? (
+        <div className="bar-cards">
+          {cards.map((block) => {
+            const image = imageSrc(block.imageUrl);
+            const href = linkHref(block.url);
+            return (
+              <BlockLink key={block.id} block={block} handle={handle} href={href} className="bar-card">
+                {image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={image} alt={block.title} loading="lazy" />
+                ) : (
+                  <span className="bar-card-ph" />
+                )}
+                <span className="bar-card-shade" />
+                <span className="bar-card-copy">
+                  <strong>{block.title}</strong>
+                  {block.buttonText ? <span className="bar-card-cta">{block.buttonText} {arrow}</span> : null}
+                </span>
+              </BlockLink>
+            );
+          })}
+        </div>
+      ) : null}
+    </section>
+  ) : null;
+
+  const statementNode = !isHidden("premium:text") && (statement.length || aboutText) ? (
+    <section className="bar-statement">
+      {statement.length ? (
+        <p className="bar-statement-big">
+          {statement.map((line, index) => (
+            <span key={index} className={index === statement.length - 1 ? "bar-statement-accent" : undefined}>
+              {barDot(line)}
+            </span>
+          ))}
+        </p>
+      ) : null}
+      {aboutText ? <p className="bar-statement-sub">{aboutText}</p> : null}
+    </section>
+  ) : null;
+
+  const moodNode = !isHidden("premium:feature") && (moodImg || premium.featureLabel) ? (
+    <section className="bar-mood">
+      {moodImg ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img className="bar-mood-img" src={moodImg} alt="" loading="lazy" />
+      ) : (
+        <div className="bar-mood-img bar-ph" />
+      )}
+      <div className="bar-mood-shade" />
+      {premium.featureLabel ? <span className="bar-mood-label">{premium.featureLabel}</span> : null}
+    </section>
+  ) : null;
+
+  const infoNode = (
+    <section className="bar-info">
+      <div className="bar-info-text">
+        {!isHidden("premium:text") && premium.siteLabel ? (
+          infoHref ? (
+            <a className="bar-info-title" href={infoHref} target="_blank" rel="noopener noreferrer">
+              {premium.siteLabel} {arrow}
+            </a>
+          ) : (
+            <span className="bar-info-title">{premium.siteLabel}</span>
+          )
+        ) : null}
+        {!isHidden("premium:text") && premium.credential ? <p className="bar-info-line">{premium.credential}</p> : null}
+        {!isHidden("premium:text") && premium.promoNote ? <p className="bar-info-line">{premium.promoNote}</p> : null}
+      </div>
+      {socials.length ? (
+        <nav className="bar-socials" aria-label="Redes sociais">
+          {socials.map(({ social, href }) => (
+            <a key={`${social.platform}-${href}`} href={href} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[social.platform]} onClick={() => track(handle, { kind: "social_click", target: social.platform })}>
+              <SocialIcon platform={social.platform} />
+            </a>
+          ))}
         </nav>
       ) : null}
+    </section>
+  );
 
-      {/* Experience */}
-      {(premium.sectionTitle || premium.heading || cards.length) ? (
-        <section className="bar-section">
-          {!isHidden("premium:text") && premium.sectionTitle ? <span className="bar-eyebrow bar-eyebrow-accent">{premium.sectionTitle}</span> : null}
-          {!isHidden("premium:text") && premium.heading ? <h2 className="bar-h2">{barDot(premium.heading)}</h2> : null}
-          {cards.length ? (
-            <div className="bar-cards">
-              {cards.map((block) => {
-                const image = imageSrc(block.imageUrl);
-                const href = linkHref(block.url);
-                return (
-                  <BlockLink key={block.id} block={block} handle={handle} href={href} className="bar-card">
-                    {image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={image} alt={block.title} loading="lazy" />
-                    ) : (
-                      <span className="bar-card-ph" />
-                    )}
-                    <span className="bar-card-shade" />
-                    <span className="bar-card-copy">
-                      <strong>{block.title}</strong>
-                      {block.buttonText ? <span className="bar-card-cta">{block.buttonText} {arrow}</span> : null}
-                    </span>
-                  </BlockLink>
-                );
-              })}
-            </div>
-          ) : null}
-        </section>
-      ) : null}
+  const ctaNode = premium.promoButton ? (
+    <a className="bar-cta" href={ctaHref ?? "#"} target="_blank" rel="noopener noreferrer" onClick={() => ctaHref && track(handle, { kind: "block_click", blockId: "cta", target: ctaHref })}>
+      {premium.promoButton} {arrow}
+    </a>
+  ) : null;
 
-      {/* Statement */}
-      {!isHidden("premium:text") && (statement.length || aboutText) ? (
-        <section className="bar-statement">
-          {statement.length ? (
-            <p className="bar-statement-big">
-              {statement.map((line, index) => (
-                <span key={index} className={index === statement.length - 1 ? "bar-statement-accent" : undefined}>
-                  {barDot(line)}
-                </span>
-              ))}
-            </p>
-          ) : null}
-          {aboutText ? <p className="bar-statement-sub">{aboutText}</p> : null}
-        </section>
-      ) : null}
+  const barGroup = (id: string): React.ReactNode => {
+    switch (id) {
+      case "premium:hero":
+        return heroNode;
+      case "premium:promo":
+        return (
+          <>
+            {bannerNode}
+            {ctaNode}
+          </>
+        );
+      case "premium:nav":
+        return navNode;
+      case "premium:text":
+        return (
+          <>
+            {experienceNode}
+            {statementNode}
+            {infoNode}
+          </>
+        );
+      case "premium:feature":
+        return moodNode;
+      default:
+        return null;
+    }
+  };
+  const barOrder = premium.partOrder.filter((id) => BAR_PARTS.includes(id));
 
-      {/* Mood image */}
-      {!isHidden("premium:feature") && (moodImg || premium.featureLabel) ? (
-        <section className="bar-mood">
-          {moodImg ? (
+  return (
+    <div
+      className="vita-premium premium-bar"
+      style={{ "--bar-bg": theme.background, "--bar-text": theme.text, "--bar-accent": theme.accent } as React.CSSProperties}
+    >
+      {/* Top bar */}
+      {!premium.hideName ? (
+        <div className="bar-top">
+          {logo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img className="bar-mood-img" src={moodImg} alt="" loading="lazy" />
+            <img className="bar-top-logo" src={logo} alt={brand} />
           ) : (
-            <div className="bar-mood-img bar-ph" />
+            <span className="bar-wordmark">{brand}</span>
           )}
-          <div className="bar-mood-shade" />
-          {premium.featureLabel ? <span className="bar-mood-label">{premium.featureLabel}</span> : null}
-        </section>
-      ) : null}
-
-      {/* Extra blocks (link buttons added in Blocos) sit in the content, above
-          the closing contact/reserve/footer block. */}
-      {extra}
-
-      {/* Info + socials */}
-      <section className="bar-info">
-        <div className="bar-info-text">
-          {!isHidden("premium:text") && premium.siteLabel ? (
-            infoHref ? (
-              <a className="bar-info-title" href={infoHref} target="_blank" rel="noopener noreferrer">
-                {premium.siteLabel} {arrow}
-              </a>
-            ) : (
-              <span className="bar-info-title">{premium.siteLabel}</span>
-            )
-          ) : null}
-          {!isHidden("premium:text") && premium.credential ? <p className="bar-info-line">{premium.credential}</p> : null}
-          {!isHidden("premium:text") && premium.promoNote ? <p className="bar-info-line">{premium.promoNote}</p> : null}
         </div>
-        {socials.length ? (
-          <nav className="bar-socials" aria-label="Redes sociais">
-            {socials.map(({ social, href }) => (
-              <a key={`${social.platform}-${href}`} href={href} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[social.platform]} onClick={() => track(handle, { kind: "social_click", target: social.platform })}>
-                <SocialIcon platform={social.platform} />
-              </a>
-            ))}
-          </nav>
-        ) : null}
-      </section>
-
-      {/* Orange CTA */}
-      {premium.promoButton ? (
-        <a className="bar-cta" href={ctaHref ?? "#"} target="_blank" rel="noopener noreferrer" onClick={() => ctaHref && track(handle, { kind: "block_click", blockId: "cta", target: ctaHref })}>
-          {premium.promoButton} {arrow}
-        </a>
       ) : null}
+
+      {barOrder.length ? (
+        <>
+          {barOrder.map((id) => (
+            <Fragment key={id}>{barGroup(id)}</Fragment>
+          ))}
+          {extra}
+        </>
+      ) : (
+        <>
+          {heroNode}
+          {bannerNode}
+          {navNode}
+          {experienceNode}
+          {statementNode}
+          {moodNode}
+          {extra}
+          {infoNode}
+          {ctaNode}
+        </>
+      )}
 
       {/* Footer */}
       <footer className="bar-footer">

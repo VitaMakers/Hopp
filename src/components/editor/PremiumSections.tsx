@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { imageSrc } from "@/lib/page/links";
 import type { PageDoc, Theme } from "@/lib/page/schema";
 import { canHideBrand } from "@/lib/entitlements";
@@ -97,6 +100,10 @@ const HIDEABLE: Record<string, string[]> = {
   bistro: ["premium:hero", "premium:feature", "premium:text", "premium:nav"],
   casa: ["premium:hero", "premium:text"],
 };
+
+// Designs whose page render reads premium.partOrder, so their parts can be
+// dragged to reorder in the editor. Others keep their fixed layout.
+const REORDERABLE_DESIGNS = ["bar"];
 
 // A short line shown under the card title while it is collapsed.
 export function premiumSectionSummary(id: string, doc: PageDoc): string {
@@ -653,6 +660,7 @@ function PremiumSectionCard({
   doc,
   onChange,
   plan,
+  dragHandle,
 }: {
   id: string;
   label: string;
@@ -662,6 +670,7 @@ function PremiumSectionCard({
   doc: PageDoc;
   onChange: DocChange;
   plan?: string;
+  dragHandle?: ReactNode;
 }) {
   const parts = doc.premium.hiddenParts;
   const hidden = parts.includes(id);
@@ -681,6 +690,7 @@ function PremiumSectionCard({
       className={`scroll-mt-24 rounded-xl bg-white ring-1 transition ${open ? "ring-2 ring-blue-500" : "ring-stone-200"}`}
     >
       <div className="flex items-center gap-2 p-3">
+        {dragHandle}
         <button type="button" onClick={onToggleOpen} className="min-w-0 flex-1 text-left">
           <span className="block text-xs text-stone-400">Parte do modelo</span>
           <span className={`block truncate font-medium ${hidden ? "text-stone-400 line-through" : ""}`}>{label}</span>
@@ -728,6 +738,44 @@ function PremiumSectionCard({
   );
 }
 
+// A draggable wrapper around a section card (for designs that support
+// reordering their parts), with a grip handle on the left.
+function SortableSectionCard(props: {
+  id: string;
+  label: string;
+  summary: string;
+  open: boolean;
+  onToggleOpen: () => void;
+  doc: PageDoc;
+  onChange: DocChange;
+  plan?: string;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: props.id });
+  const handle = (
+    <button
+      type="button"
+      {...attributes}
+      {...listeners}
+      aria-label="Arrastar para reordenar"
+      className="cursor-grab touch-none rounded-md p-1 text-stone-300 transition-colors hover:text-stone-600 active:cursor-grabbing"
+    >
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
+        <circle cx="9" cy="6" r="1.6" />
+        <circle cx="15" cy="6" r="1.6" />
+        <circle cx="9" cy="12" r="1.6" />
+        <circle cx="15" cy="12" r="1.6" />
+        <circle cx="9" cy="18" r="1.6" />
+        <circle cx="15" cy="18" r="1.6" />
+      </svg>
+    </button>
+  );
+  return (
+    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.6 : 1 }}>
+      <PremiumSectionCard {...props} dragHandle={handle} />
+    </div>
+  );
+}
+
 // The whole "Partes do modelo" editor shown in the Aparência tab for a premium
 // model: every section as a card, plus an exit action. Opens/scrolls to the
 // card named by `focus` (set when an area is clicked in the preview).
@@ -747,7 +795,30 @@ export function PremiumSectionsEditor({
   const design = doc.theme.premium as Design;
   // "Cores do modelo" is shown as its own card next to the profile (see
   // PremiumColorsCard / BlocksPanel), so it's excluded from this list.
-  const sections = getPremiumSections(design).filter((s) => s.id !== "premium:colors");
+  const baseSections = getPremiumSections(design).filter((s) => s.id !== "premium:colors");
+  // Only designs whose render reads premium.partOrder can be reordered.
+  const canReorder = REORDERABLE_DESIGNS.includes(design);
+  const order = doc.premium.partOrder;
+  const sections =
+    canReorder && order.length
+      ? [...baseSections].sort((a, b) => {
+          const ia = order.indexOf(a.id);
+          const ib = order.indexOf(b.id);
+          return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+        })
+      : baseSections;
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+    const ids = sections.map((s) => s.id);
+    const from = ids.indexOf(String(active.id));
+    const to = ids.indexOf(String(over.id));
+    if (from === -1 || to === -1) return;
+    onChange((d) => ({ ...d, premium: { ...d.premium, partOrder: arrayMove(ids, from, to) } }));
+  };
   const [openId, setOpenId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -783,19 +854,39 @@ export function PremiumSectionsEditor({
           Sair do modelo
         </button>
       </div>
-      {sections.map((section) => (
-        <PremiumSectionCard
-          key={section.id}
-          id={section.id}
-          label={section.label}
-          summary={premiumSectionSummary(section.id, doc)}
-          open={openId === section.id}
-          onToggleOpen={() => setOpenId(openId === section.id ? null : section.id)}
-          doc={doc}
-          onChange={onChange}
-          plan={plan}
-        />
-      ))}
+      {canReorder ? (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+          <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+            {sections.map((section) => (
+              <SortableSectionCard
+                key={section.id}
+                id={section.id}
+                label={section.label}
+                summary={premiumSectionSummary(section.id, doc)}
+                open={openId === section.id}
+                onToggleOpen={() => setOpenId(openId === section.id ? null : section.id)}
+                doc={doc}
+                onChange={onChange}
+                plan={plan}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
+      ) : (
+        sections.map((section) => (
+          <PremiumSectionCard
+            key={section.id}
+            id={section.id}
+            label={section.label}
+            summary={premiumSectionSummary(section.id, doc)}
+            open={openId === section.id}
+            onToggleOpen={() => setOpenId(openId === section.id ? null : section.id)}
+            doc={doc}
+            onChange={onChange}
+            plan={plan}
+          />
+        ))
+      )}
     </div>
   );
 }
