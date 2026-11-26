@@ -2503,6 +2503,9 @@ function Clinic({ doc, handle, plan, extra }: Props) {
   const socials = doc.socials
     .map((social) => ({ social, href: socialHref(social) }))
     .filter((item): item is { social: (typeof doc.socials)[number]; href: string } => !!item.href);
+  // The name sits in the column left of the photo: its longest word sets the
+  // font size, so a long surname shrinks instead of breaking or covering the photo.
+  const nameLongest = Math.max(4, ...brand.split(/\s+/).map((word) => word.length));
   const stats = (visible(doc, "stats")[0]?.items ?? []).filter((item) => item.value.trim() || item.label.trim()).slice(0, 3);
   const services = visible(doc, "product");
   const links = visible(doc, "link");
@@ -2533,7 +2536,7 @@ function Clinic({ doc, handle, plan, extra }: Props) {
         <div className="clinic-who">
           {premium.heroPill.trim() ? <span className="clinic-rating">{premium.heroPill}</span> : null}
           {!premium.hideName ? (
-            <h1 className="clinic-name">
+            <h1 className="clinic-name" style={{ fontSize: `max(18px, min(clamp(28px, 8.8cqi, 38px), calc((46cqi - 24px) / ${(nameLongest * 0.56).toFixed(2)})))` }}>
               {brand}
               {profile.verified ? <VerifiedCheck className="ml-1.5 inline h-[0.6em] w-[0.6em] align-middle" /> : null}
             </h1>
