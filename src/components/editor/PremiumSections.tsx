@@ -212,24 +212,63 @@ function ColorInputs({ doc, setTheme }: { doc: PageDoc; setTheme: (patch: Partia
     ["text", "Texto"],
     ["accent", "Destaque"],
   ];
+  const palettes = design === "clinic" ? CLINIC_PALETTES : [];
   return (
-    <div className="grid grid-cols-3 gap-3">
-      {colors
-        .filter(([key]) => design !== "authority" || key !== "accent")
-        .map(([key, label]) => (
-          <label key={String(key)} className="flex flex-col gap-1 text-sm font-medium text-stone-700">
-            {label}
-            <input
-              type="color"
-              value={String(doc.theme[key])}
-              onChange={(event) => setTheme({ [key]: event.target.value })}
-              className="h-10 w-full cursor-pointer rounded-lg ring-1 ring-stone-300"
-            />
-          </label>
-        ))}
+    <div className="flex flex-col gap-3">
+      {palettes.length ? (
+        <div>
+          <p className="mb-1.5 text-sm font-medium text-stone-700">Paletas prontas</p>
+          <div className="flex flex-wrap gap-2">
+            {palettes.map((palette) => {
+              const active = doc.theme.background === palette.background && doc.theme.text === palette.text && doc.theme.accent === palette.accent;
+              return (
+                <button
+                  key={palette.name}
+                  type="button"
+                  onClick={() => setTheme({ background: palette.background, text: palette.text, accent: palette.accent })}
+                  className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm ring-1 ${active ? "ring-2 ring-stone-900" : "ring-stone-300"}`}
+                >
+                  <span className="flex overflow-hidden rounded-full ring-1 ring-black/10">
+                    <span className="h-4 w-3" style={{ background: palette.background }} />
+                    <span className="h-4 w-3" style={{ background: palette.accent }} />
+                    <span className="h-4 w-3" style={{ background: palette.text }} />
+                  </span>
+                  {palette.name}
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-1.5 text-xs text-stone-500">Toque numa paleta ou ajuste cada cor abaixo.</p>
+        </div>
+      ) : null}
+      <div className="grid grid-cols-3 gap-3">
+        {colors
+          .filter(([key]) => design !== "authority" || key !== "accent")
+          .map(([key, label]) => (
+            <label key={String(key)} className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+              {label}
+              <input
+                type="color"
+                value={String(doc.theme[key])}
+                onChange={(event) => setTheme({ [key]: event.target.value })}
+                className="h-10 w-full cursor-pointer rounded-lg ring-1 ring-stone-300"
+              />
+            </label>
+          ))}
+      </div>
     </div>
   );
 }
+
+// One-tap colour sets for the clinic model (background, text and accent).
+const CLINIC_PALETTES = [
+  { name: "Azul", background: "#dfe9ee", text: "#0b3147", accent: "#5aa7bf" },
+  { name: "Verde", background: "#e3ede6", text: "#12392b", accent: "#5fae8b" },
+  { name: "Rosa", background: "#f3e4e6", text: "#4a1f2c", accent: "#d98a9c" },
+  { name: "Lilás", background: "#e9e5f3", text: "#2b2350", accent: "#9484d6" },
+  { name: "Areia", background: "#efe8dd", text: "#3b2f22", accent: "#c8a26b" },
+  { name: "Escuro", background: "#0f1c24", text: "#eaf3f7", accent: "#5aa7bf" },
+];
 
 function CoverPosition({ doc, setPremium }: { doc: PageDoc; setPremium: (patch: Patch<PageDoc["premium"]>) => void }) {
   const coverSrc = imageSrc(doc.profile.coverUrl);

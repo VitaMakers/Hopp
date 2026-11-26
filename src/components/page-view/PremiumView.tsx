@@ -2688,6 +2688,7 @@ function Clinic({ doc, handle, plan, extra }: Props) {
           "--cl-bg": theme.background,
           "--cl-text": theme.text,
           "--cl-accent": theme.accent,
+          ...(darkBg ? { "--cl-soft": `color-mix(in srgb, ${theme.accent} 38%, ${theme.background})` } : {}),
           "--cl-card": darkBg ? `color-mix(in srgb, #ffffff 8%, ${theme.background})` : `color-mix(in srgb, #ffffff 74%, ${theme.background})`,
         } as React.CSSProperties
       }
