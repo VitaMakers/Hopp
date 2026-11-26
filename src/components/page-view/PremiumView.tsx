@@ -2073,7 +2073,6 @@ function Bistro({ doc, handle, plan, extra }: Props) {
             ))}
           </nav>
         ) : null}
-        {showsBadge(plan) ? <small className="bistro-foot-made">Feito com {APP_NAME}</small> : null}
       </footer>
     </div>
   );
@@ -2350,7 +2349,6 @@ function Bar({ doc, handle, plan, extra }: Props) {
       {/* Footer */}
       <footer className="bar-footer">
         {!footerHidden(doc, plan) ? <span>{brand} © {year}</span> : null}
-        {showsBadge(plan) ? <span className="bar-footer-made">Feito com {APP_NAME}</span> : null}
       </footer>
     </div>
   );
@@ -2475,7 +2473,6 @@ function Casa({ doc, handle, plan, extra }: Props) {
             ))}
           </nav>
         ) : null}
-        {showsBadge(plan) ? <small className="casa-made">Feito com {APP_NAME}</small> : null}
       </div>
       {extra}
     </div>

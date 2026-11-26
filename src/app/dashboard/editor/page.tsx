@@ -2,11 +2,12 @@ import { defaultPageDoc } from "@/lib/page/catalog";
 import { normalizeLegacyCover } from "@/lib/page/migrate";
 import { pageDocSchema } from "@/lib/page/schema";
 import { Editor } from "@/components/editor/Editor";
+import { isAdmin } from "@/lib/admin";
 import { getOwner } from "../context";
 import { fetchAll } from "@/lib/supabase/fetch-all";
 
 export default async function EditorPage() {
-  const { supabase, profile, clients } = await getOwner();
+  const { supabase, user, profile, clients } = await getOwner();
   const { data: page } = await supabase
     .from("pages")
     .select("draft, published_at, updated_at")
@@ -62,6 +63,7 @@ export default async function EditorPage() {
       initialDoc={doc}
       handle={profile.handle}
       plan={profile.plan}
+      courtesy={isAdmin(user.email)}
       publishedAt={page?.published_at ?? null}
       stats={{ views, clicks }}
     />

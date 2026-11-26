@@ -4,6 +4,7 @@ import { normalizeHandle } from "@/lib/handles";
 import { canUseForms, enforcePlan } from "@/lib/entitlements";
 import { formBlockSchema, pageDocSchema, type PageDoc } from "@/lib/page/schema";
 import { createAdminClient } from "@/lib/supabase/server";
+import { isAdmin } from "@/lib/admin";
 
 export type PublicForm = { id: string; ownerId: string; config: ReturnType<typeof formBlockSchema.parse> };
 
@@ -23,7 +24,9 @@ export const getFormByCode = cache(async (code: string): Promise<PublicForm | nu
   return { id: data.id, ownerId: data.owner_id, config: parsed.data };
 });
 
-export type PublicPage = { ownerId: string; handle: string; plan: string; doc: PageDoc };
+// `courtesy`: the page belongs to the platform admin account (its clients use
+// every feature for free), so it still carries the Virtú.bio signature.
+export type PublicPage = { ownerId: string; handle: string; plan: string; courtesy: boolean; doc: PageDoc };
 
 // Only the published version is ever read here; drafts stay private.
 export const getPublishedPage = cache(async (rawHandle: string): Promise<PublicPage | null> => {
@@ -31,7 +34,7 @@ export const getPublishedPage = cache(async (rawHandle: string): Promise<PublicP
   const admin = createAdminClient();
   const { data: profile, error } = await admin
     .from("profiles")
-    .select("id, handle, plan")
+    .select("id, handle, plan, account_id")
     .eq("handle", handle)
     .maybeSingle();
   if (error) throw serverError(error);
@@ -44,7 +47,17 @@ export const getPublishedPage = cache(async (rawHandle: string): Promise<PublicP
   if (pageError) throw serverError(pageError);
   const parsed = pageDocSchema.safeParse(page?.published);
   if (!parsed.success) return null;
-  return { ownerId: profile.id, handle: profile.handle, plan: profile.plan, doc: enforcePlan(parsed.data, profile.plan) };
+  // Best effort: a failed lookup only means the signature follows the plan.
+  let courtesy = false;
+  if (profile.account_id) {
+    try {
+      const { data: account } = await admin.auth.admin.getUserById(profile.account_id);
+      courtesy = isAdmin(account.user?.email);
+    } catch {
+      courtesy = false;
+    }
+  }
+  return { ownerId: profile.id, handle: profile.handle, plan: profile.plan, courtesy, doc: enforcePlan(parsed.data, profile.plan) };
 });
 
 export async function ownerIdForHandle(rawHandle: string): Promise<string | null> {

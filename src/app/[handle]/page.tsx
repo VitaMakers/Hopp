@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BrandBar } from "@/components/page-view/BrandBar";
+import { BrandSignature } from "@/components/page-view/BrandSignature";
 import { Integrations } from "@/components/page-view/Integrations";
 import { PageView } from "@/components/page-view/PageView";
-import { APP_NAME, APP_TAGLINE, env } from "@/lib/env";
+import { APP_NAME, env } from "@/lib/env";
 import { showsBadge, showsBrandBar } from "@/lib/entitlements";
 import { getPublishedPage } from "@/lib/public-data";
 
@@ -47,11 +47,10 @@ export default async function PublicPage({ params }: Params) {
       handle={page.handle}
       plan={page.plan}
       footer={
-        showsBadge(page.plan) ? (
-          <Link href="/" className="mt-12 flex flex-col items-center gap-0.5 text-center opacity-70 transition hover:opacity-100">
-            <span className="text-sm font-semibold">{APP_NAME}</span>
-            <span className="text-xs">{APP_TAGLINE}</span>
-          </Link>
+        showsBadge(page.plan) || page.courtesy ? (
+          <div className="mt-12">
+            <BrandSignature appName={APP_NAME} href={env.siteUrl()} />
+          </div>
         ) : null
       }
     />

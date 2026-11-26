@@ -65,11 +65,7 @@ export function BrandBar({ appName, siteUrl, title, top = true }: { appName: str
   return (
     <>
       {top ? (
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 mx-auto flex max-w-[720px] items-start justify-between p-3">
-        <a href={siteUrl} target="_blank" rel="noopener" aria-label={`Feito com ${appName}`} className={round}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand-mark.png" alt="" className="h-[22px] w-auto" />
-        </a>
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 mx-auto flex max-w-[720px] items-start justify-end p-3">
         <button type="button" onClick={share} aria-label="Compartilhar esta página" className={`${round} relative`}>
           <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M12 15V3M8 7l4-4 4 4M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
