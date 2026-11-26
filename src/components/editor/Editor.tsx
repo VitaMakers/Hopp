@@ -104,16 +104,26 @@ export function Editor({
 
   // Paint a green outline on the preview element that matches what's being
   // edited (a block, or a premium area tagged with data-edit).
+  // The preview only scrolls to the highlighted part when the selection
+  // changes — not on every edit, or dragging/typing elsewhere (e.g. positioning
+  // the cover) would keep pulling the preview to the open block.
+  const scrolledTo = useRef<string | null>(null);
   useEffect(() => {
     const root = previewRef.current;
     if (!root) return;
     root.querySelectorAll(".vita-edit-highlight").forEach((el) => el.classList.remove("vita-edit-highlight"));
-    if (!active) return;
+    if (!active) {
+      scrolledTo.current = null;
+      return;
+    }
     const safe = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(active) : active;
     const el = root.querySelector(`[data-edit="${safe}"]`);
     if (el) {
       el.classList.add("vita-edit-highlight");
-      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      if (scrolledTo.current !== active) {
+        scrolledTo.current = active;
+        el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
     }
   }, [active, doc]);
 
