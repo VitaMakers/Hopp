@@ -546,7 +546,7 @@ function CoverSlider({
         <button
           type="button"
           aria-label="Diminuir"
-          onClick={() => onChange(Math.max(min, value - 5))}
+          onClick={() => onChange(Math.max(min, value - 1))}
           disabled={value <= min}
           className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-lg leading-none text-stone-700 ring-1 ring-stone-300 transition-colors hover:bg-stone-100 disabled:opacity-40"
         >
@@ -557,7 +557,7 @@ function CoverSlider({
           type="range"
           min={min}
           max={max}
-          step={5}
+          step={1}
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
           className="h-1.5 w-full cursor-pointer accent-stone-900"
@@ -565,7 +565,7 @@ function CoverSlider({
         <button
           type="button"
           aria-label="Aumentar"
-          onClick={() => onChange(Math.min(max, value + 5))}
+          onClick={() => onChange(Math.min(max, value + 1))}
           disabled={value >= max}
           className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-lg leading-none text-stone-700 ring-1 ring-stone-300 transition-colors hover:bg-stone-100 disabled:opacity-40"
         >
