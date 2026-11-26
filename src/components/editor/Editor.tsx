@@ -5,8 +5,9 @@ import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { publish, saveDraft } from "@/app/dashboard/actions";
 import { ClientSwitcher } from "@/app/dashboard/ClientSwitcher";
 import type { Client } from "@/app/dashboard/context";
+import { BrandSignature } from "@/components/page-view/BrandSignature";
 import { PageView } from "@/components/page-view/PageView";
-import { APP_NAME, APP_TAGLINE } from "@/lib/env";
+import { APP_NAME } from "@/lib/env";
 import { showsBadge } from "@/lib/entitlements";
 import type { PageDoc } from "@/lib/page/schema";
 import { BlocksPanel } from "./BlocksPanel";
@@ -73,6 +74,7 @@ export function Editor({
   initialDoc,
   handle,
   plan,
+  courtesy = false,
   publishedAt: initialPublishedAt,
   stats,
 }: {
@@ -85,6 +87,8 @@ export function Editor({
   initialDoc: PageDoc;
   handle: string;
   plan: string;
+  // A client of the platform admin account: free, but keeps the signature.
+  courtesy?: boolean;
   publishedAt: string | null;
   stats?: BlockStats;
 }) {
@@ -251,10 +255,9 @@ export function Editor({
     error: "bg-red-600",
   };
 
-  const badge = showsBadge(plan) ? (
-    <div className="mt-12 flex flex-col items-center gap-0.5 text-center opacity-70">
-      <span className="text-sm font-semibold">{APP_NAME}</span>
-      <span className="text-xs">{APP_TAGLINE}</span>
+  const badge = showsBadge(plan) || courtesy ? (
+    <div className="mt-12">
+      <BrandSignature appName={APP_NAME} />
     </div>
   ) : null;
 

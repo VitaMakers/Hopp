@@ -121,7 +121,18 @@ function PageViewInner({ doc, handle, plan, footer, still, onEdit }: Props) {
         </div>
       </div>
     ) : null;
-    return <PremiumView doc={doc} handle={handle} plan={plan} onEdit={onEdit} still={still} extra={extra} />;
+    return (
+      <>
+        <PremiumView doc={doc} handle={handle} plan={plan} onEdit={onEdit} still={still} extra={extra} />
+        {/* The brand signature sits under the model's own footer, on the
+            model's background colour so it blends with any design. */}
+        {footer ? (
+          <div style={{ background: theme.background }} className="px-5 pb-24 pt-2 [&>*]:!mt-2">
+            {footer}
+          </div>
+        ) : null}
+      </>
+    );
   }
 
   const content = (
