@@ -464,6 +464,17 @@ function CoverPositioner({
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{ px: number; py: number; x: number; y: number } | null>(null);
+  // While dragging to position, stop the touch gesture from scrolling the page
+  // (touch-action alone isn't enough on some mobile browsers).
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    const prevent = (e: TouchEvent) => {
+      if (drag.current) e.preventDefault();
+    };
+    el.addEventListener("touchmove", prevent, { passive: false });
+    return () => el.removeEventListener("touchmove", prevent);
+  }, []);
   const src = imageSrc(url);
   if (!src) return null;
   const clamp = (v: number) => Math.max(0, Math.min(100, Math.round(v)));
@@ -532,9 +543,15 @@ function CoverSlider({
         <span className="text-[13px] tabular-nums text-stone-600">{value}%</span>
       </div>
       <div className="flex items-center gap-2.5">
-        <span aria-hidden className="text-sm text-stone-600">
+        <button
+          type="button"
+          aria-label="Diminuir"
+          onClick={() => onChange(Math.max(min, value - 5))}
+          disabled={value <= min}
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-lg leading-none text-stone-700 ring-1 ring-stone-300 transition-colors hover:bg-stone-100 disabled:opacity-40"
+        >
           −
-        </span>
+        </button>
         <input
           id={id}
           type="range"
@@ -545,9 +562,15 @@ function CoverSlider({
           onChange={(e) => onChange(Number(e.target.value))}
           className="h-1.5 w-full cursor-pointer accent-stone-900"
         />
-        <span aria-hidden className="text-sm text-stone-600">
+        <button
+          type="button"
+          aria-label="Aumentar"
+          onClick={() => onChange(Math.min(max, value + 5))}
+          disabled={value >= max}
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-lg leading-none text-stone-700 ring-1 ring-stone-300 transition-colors hover:bg-stone-100 disabled:opacity-40"
+        >
           +
-        </span>
+        </button>
       </div>
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs text-stone-600">{hint}</p>
