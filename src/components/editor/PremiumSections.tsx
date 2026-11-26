@@ -261,7 +261,7 @@ function HeroFields({ doc, setPremium, design }: { doc: PageDoc; setPremium: (pa
             type="range"
             min={0}
             max={620}
-            step={20}
+            step={1}
             value={p.coverHeight}
             onChange={(e) => setPremium({ coverHeight: Number(e.target.value) })}
           />
