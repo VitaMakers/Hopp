@@ -276,6 +276,8 @@ export function PremiumView({ doc, handle, plan, onEdit, still = false, extra }:
         return <Bar doc={doc} handle={handle} plan={plan} extra={extra} />;
       case "casa":
         return <Casa doc={doc} handle={handle} plan={plan} extra={extra} />;
+      case "clinic":
+        return <Clinic doc={doc} handle={handle} plan={plan} extra={extra} />;
       default:
         return null;
     }
@@ -2475,6 +2477,223 @@ function Casa({ doc, handle, plan, extra }: Props) {
         ) : null}
       </div>
       {extra}
+    </div>
+  );
+}
+
+/* ---------- Clinic (health professional: portrait cover, quick actions, days, services) ---------- */
+// Every part of the model, in its default order. The owner can reorder them
+// (premium.partOrder) and switch each one off (premium.hiddenParts).
+const CLINIC_PARTS = ["premium:hero", "premium:site", "premium:stats", "premium:hours", "premium:promo", "premium:text", "premium:feature"];
+
+const clinicIcon = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+
+function clinicStatIcon(index: number) {
+  if (index % 3 === 0) return <svg {...clinicIcon} aria-hidden><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>;
+  if (index % 3 === 1) return <svg {...clinicIcon} aria-hidden><circle cx="9" cy="8" r="3.5" /><path d="M2.500 20a6.500 6.500 0 0 1 13 0M16 5a3.500 3.500 0 0 1 0 7M18 14a6 6 0 0 1 3.500 6" /></svg>;
+  return <svg {...clinicIcon} aria-hidden><path d="M12 3l2.700 5.600 6.100.900-4.400 4.300 1 6.100L12 17l-5.400 2.900 1-6.100L3.200 9.500l6.100-.900z" /></svg>;
+}
+
+function Clinic({ doc, handle, plan, extra }: Props) {
+  const { profile, theme, premium } = doc;
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const brand = profile.name || APP_NAME;
+  const photo = imageSrc(premium.heroSlides[0]?.imageUrl || profile.coverUrl);
+  const isHidden = (sec: string) => premium.hiddenParts.includes(sec);
+  const socials = doc.socials
+    .map((social) => ({ social, href: socialHref(social) }))
+    .filter((item): item is { social: (typeof doc.socials)[number]; href: string } => !!item.href);
+  const stats = (visible(doc, "stats")[0]?.items ?? []).filter((item) => item.value.trim() || item.label.trim()).slice(0, 3);
+  const services = visible(doc, "product");
+  const links = visible(doc, "link");
+  const hours = premium.hours.filter((day) => day.label.trim());
+  const headingLines = (premium.heading || "").split("\n").map((s) => s.trim()).filter(Boolean);
+  const aboutText = (premium.about || "").trim();
+  const aboutHref = linkHref(premium.siteUrl);
+  const ctaHref = linkHref(premium.promoUrl);
+  const mapHref = linkHref(premium.featureUrl);
+  const arrow = <svg {...clinicIcon} aria-hidden><path d="M7 17 17 7M9 7h8v8" /></svg>;
+  // Cards sit lighter than a light background and slightly lifted on a dark one.
+  const darkBg = textOn(theme.background) === "#ffffff";
+
+  const cta = (label: string, blockId: string) =>
+    label.trim() ? (
+      <a className="clinic-cta" href={ctaHref ?? "#"} target="_blank" rel="noopener noreferrer" onClick={() => ctaHref && track(handle, { kind: "block_click", blockId, target: ctaHref })}>
+        {label}
+      </a>
+    ) : null;
+
+  const nodes: Record<string, React.ReactNode> = {
+    "premium:hero": (
+      <header className="clinic-cover" data-edit="premium:hero" style={coverStyle(premium.coverHeight)}>
+        {photo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="clinic-photo" src={photo} alt={brand} style={heroImgStyle(premium)} />
+        ) : null}
+        <div className="clinic-who">
+          {premium.heroPill.trim() ? <span className="clinic-rating">{premium.heroPill}</span> : null}
+          {!premium.hideName ? (
+            <h1 className="clinic-name">
+              {brand}
+              {profile.verified ? <VerifiedCheck className="ml-1.5 inline h-[0.6em] w-[0.6em] align-middle" /> : null}
+            </h1>
+          ) : null}
+          {premium.credential.trim() ? <p className="clinic-cred">{premium.credential}</p> : null}
+          {premium.tagline.trim() ? <p className="clinic-spec">{premium.tagline}</p> : null}
+        </div>
+      </header>
+    ),
+    "premium:site":
+      premium.siteLabel.trim() || socials.length ? (
+        <section className="clinic-actions" data-edit="premium:site">
+          <div className="clinic-actions-row">
+            {premium.siteLabel.trim() && (aboutText || aboutHref) ? (
+              aboutText ? (
+                <button type="button" className="clinic-pill" aria-expanded={aboutOpen} onClick={() => setAboutOpen((v) => !v)}>
+                  <svg {...clinicIcon} aria-hidden><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></svg>
+                  {premium.siteLabel}
+                </button>
+              ) : (
+                <a className="clinic-pill" href={aboutHref ?? "#"} target="_blank" rel="noopener noreferrer">
+                  <svg {...clinicIcon} aria-hidden><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></svg>
+                  {premium.siteLabel}
+                </a>
+              )
+            ) : (
+              <span />
+            )}
+            {socials.length ? (
+              <nav className="clinic-icons" aria-label="Contatos">
+                {socials.slice(0, 4).map(({ social, href }) => (
+                  <a key={`${social.platform}-${href}`} href={href} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[social.platform]} onClick={() => track(handle, { kind: "social_click", target: social.platform })}>
+                    <SocialIcon platform={social.platform} />
+                  </a>
+                ))}
+              </nav>
+            ) : null}
+          </div>
+          {aboutText && aboutOpen ? <p className="clinic-about">{aboutText}</p> : null}
+        </section>
+      ) : null,
+    "premium:stats": stats.length ? (
+      <section className="clinic-card clinic-stats" data-edit="premium:stats">
+        {stats.map((item, index) => (
+          <div key={index} className="clinic-stat">
+            {clinicStatIcon(index)}
+            <div>
+              <b>{item.value}</b>
+              <span>{item.label}</span>
+            </div>
+          </div>
+        ))}
+      </section>
+    ) : null,
+    "premium:hours": hours.length ? (
+      <section className="clinic-card" data-edit="premium:hours">
+        {premium.sectionTitle.trim() || premium.promoNote.trim() ? (
+          <div className="clinic-head">
+            <h2>{premium.sectionTitle}</h2>
+            <small>{premium.promoNote}</small>
+          </div>
+        ) : null}
+        <div className="clinic-days">
+          {hours.map((day, index) => (
+            <div key={index} className={`clinic-day ${day.highlight ? "on" : ""} ${day.closed ? "off" : ""}`}>
+              <b>{day.label}</b>
+              {day.time.trim() ? <span>{day.time}</span> : null}
+            </div>
+          ))}
+        </div>
+      </section>
+    ) : null,
+    "premium:promo": premium.promoButton.trim() ? (
+      <section className="clinic-cta-wrap" data-edit="premium:promo">
+        {cta(premium.promoButton, "cta")}
+      </section>
+    ) : null,
+    "premium:text":
+      headingLines.length || services.length ? (
+        <section className="clinic-card" data-edit="premium:text">
+          {headingLines.length ? (
+            <h2 className="clinic-title">
+              {headingLines.map((line, index) => (
+                <span key={index} className={index === headingLines.length - 1 && headingLines.length > 1 ? "strong" : undefined}>
+                  {line}
+                </span>
+              ))}
+            </h2>
+          ) : null}
+          {services.length ? (
+            <div className="clinic-services">
+              {services.map((block) => (
+                <BlockLink key={block.id} block={block} handle={handle} href={linkHref(block.url)} className={`clinic-svc ${block.label.trim() ? "on" : ""}`}>
+                  <span className="clinic-svc-top">
+                    {block.label.trim() ? <em>{block.label}</em> : null}
+                    <strong>{block.title}</strong>
+                  </span>
+                  <span className="clinic-svc-bottom">
+                    <span>
+                      {block.price.trim() ? <b>{block.price}</b> : null}
+                      {block.description.trim() ? <small>{block.description}</small> : null}
+                    </span>
+                    <i>{arrow}</i>
+                  </span>
+                </BlockLink>
+              ))}
+            </div>
+          ) : null}
+        </section>
+      ) : null,
+    "premium:feature":
+      premium.featureLabel.trim() || premium.featureTitle.trim() || links.length || premium.contactLabel.trim() ? (
+        <section className="clinic-card" data-edit="premium:feature">
+          {premium.featureLabel.trim() || premium.featureTitle.trim() ? (
+            <a className="clinic-where" href={mapHref ?? "#"} target="_blank" rel="noopener noreferrer" onClick={(e) => (mapHref ? track(handle, { kind: "block_click", blockId: "map", target: mapHref }) : e.preventDefault())}>
+              <i>
+                <svg {...clinicIcon} aria-hidden><path d="M12 21s7-6.200 7-11a7 7 0 1 0-14 0c0 4.800 7 11 7 11z" /><circle cx="12" cy="10" r="2.5" /></svg>
+              </i>
+              <span>
+                {premium.featureLabel.trim() ? <b>{premium.featureLabel}</b> : null}
+                {premium.featureTitle.trim() ? <small>{premium.featureTitle}</small> : null}
+              </span>
+            </a>
+          ) : null}
+          {links.length ? (
+            <nav className="clinic-links" aria-label="Links">
+              {links.map((block: LinkBlock) => (
+                <PremiumLink key={block.id} block={block} handle={handle}>
+                  <BlockLink block={block} handle={handle} href={linkHref(block.url)} className="clinic-link">
+                    <span>{block.title}</span>
+                    {arrow}
+                  </BlockLink>
+                </PremiumLink>
+              ))}
+            </nav>
+          ) : null}
+          {cta(premium.contactLabel, "cta-2")}
+        </section>
+      ) : null,
+  };
+
+  const order = [...premium.partOrder.filter((id) => CLINIC_PARTS.includes(id)), ...CLINIC_PARTS.filter((id) => !premium.partOrder.includes(id))];
+
+  return (
+    <div
+      className="vita-premium premium-clinic"
+      style={
+        {
+          "--cl-bg": theme.background,
+          "--cl-text": theme.text,
+          "--cl-accent": theme.accent,
+          "--cl-card": darkBg ? `color-mix(in srgb, #ffffff 8%, ${theme.background})` : `color-mix(in srgb, #ffffff 74%, ${theme.background})`,
+        } as React.CSSProperties
+      }
+    >
+      <div className="clinic-inner">
+        {order.map((id) => (isHidden(id) ? null : <Fragment key={id}>{nodes[id]}</Fragment>))}
+        {extra}
+        <footer className="clinic-footer">{!footerHidden(doc, plan) ? <span>{brand} © {year}</span> : null}</footer>
+      </div>
     </div>
   );
 }

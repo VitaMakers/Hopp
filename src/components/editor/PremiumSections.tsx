@@ -71,6 +71,18 @@ export function getPremiumSections(design: Design): PremiumSection[] {
         { id: "premium:nav", label: "Atalhos / rodapé" },
         { id: "premium:promo", label: "Cartão de oferta" },
       ];
+    case "clinic":
+      // Health professional: every part is its own card, hideable and draggable.
+      return [
+        COLORS,
+        { id: "premium:hero", label: "Capa e identificação" },
+        { id: "premium:site", label: "Sobre mim e contatos" },
+        { id: "premium:stats", label: "Números" },
+        { id: "premium:hours", label: "Dias de atendimento" },
+        { id: "premium:promo", label: "Botão de agendar" },
+        { id: "premium:text", label: "Serviços" },
+        { id: "premium:feature", label: "Endereço e links" },
+      ];
     case "menu":
       // Menu draws only a cover, the dish list (product blocks), a reserve
       // button and the footer links — it has no feature/size cards.
@@ -99,15 +111,38 @@ const HIDEABLE: Record<string, string[]> = {
   bar: ["premium:hero", "premium:promo", "premium:nav", "premium:feature", "premium:text"],
   bistro: ["premium:hero", "premium:feature", "premium:text", "premium:nav"],
   casa: ["premium:hero", "premium:text"],
+  clinic: ["premium:hero", "premium:site", "premium:stats", "premium:hours", "premium:promo", "premium:text", "premium:feature"],
 };
 
 // Designs whose page render reads premium.partOrder, so their parts can be
 // dragged to reorder in the editor. Others keep their fixed layout.
-const REORDERABLE_DESIGNS = ["bar"];
+const REORDERABLE_DESIGNS = ["bar", "clinic"];
 
 // A short line shown under the card title while it is collapsed.
 export function premiumSectionSummary(id: string, doc: PageDoc): string {
   const p = doc.premium;
+  if (doc.theme.premium === "clinic") {
+    switch (id) {
+      case "premium:hero":
+        return [p.credential, p.tagline].filter(Boolean).join(" · ") || "Foto, registro e especialidade";
+      case "premium:site":
+        return p.siteLabel || "Botão e ícones de contato";
+      case "premium:stats": {
+        const items = doc.blocks.find((b) => b.type === "stats")?.items ?? [];
+        return items.length ? items.map((i) => i.value).filter(Boolean).join(" · ") : "Sem números";
+      }
+      case "premium:hours":
+        return p.hours.length ? `${p.hours.length} ${p.hours.length === 1 ? "dia" : "dias"}` : "Nenhum dia";
+      case "premium:promo":
+        return p.promoButton || "Sem botão";
+      case "premium:text": {
+        const n = doc.blocks.filter((b) => b.type === "product").length;
+        return `${n} ${n === 1 ? "serviço" : "serviços"}`;
+      }
+      case "premium:feature":
+        return p.featureLabel || p.featureTitle || "Endereço, links e botão final";
+    }
+  }
   switch (id) {
     case "premium:colors":
       return "Fundo, texto e destaque";
@@ -587,6 +622,147 @@ function TextSection({ doc, onChange, setPremium }: { doc: PageDoc; onChange: Do
   );
 }
 
+// Editing controls for every part of the "clinic" model. Each card shows only
+// the fields that part really draws.
+function ClinicFields({ id, doc, onChange, setPremium }: { id: string; doc: PageDoc; onChange: DocChange; setPremium: (patch: Patch<PageDoc["premium"]>) => void }) {
+  const p = doc.premium;
+  const hint = (text: string) => <p className="text-xs text-stone-500">{text}</p>;
+  const addRow = "self-start rounded-lg border border-dashed border-stone-300 px-3 py-1.5 text-sm text-stone-600";
+
+  if (id === "premium:hero") {
+    const photo = p.heroSlides[0]?.imageUrl ?? "";
+    const setPhoto = (imageUrl: string) =>
+      setPremium((cur) => ({
+        heroSlides: cur.heroSlides.length
+          ? cur.heroSlides.map((slide, i) => (i === 0 ? { ...slide, imageUrl } : slide))
+          : [{ imageUrl, headline: "", productLabel: "", productName: "", priceFrom: "", price: "", url: "" }],
+      }));
+    return (
+      <div className="flex flex-col gap-3">
+        <TextField label="Foto da capa (link ou envie)" type="url" value={photo} placeholder="https://..." onChange={setPhoto} />
+        <UploadButton label="Enviar foto" onUploaded={setPhoto} />
+        {hint("Use uma foto sua de frente, de preferência com fundo liso. Ela aparece à direita da capa.")}
+        <PositionControls doc={doc} setPremium={setPremium} />
+        <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+          Altura da capa
+          <input type="range" min={0} max={620} step={1} value={p.coverHeight} onChange={(e) => setPremium({ coverHeight: Number(e.target.value) })} />
+          <span className="text-xs text-stone-500">{p.coverHeight ? `${p.coverHeight}px` : "Automático (padrão)"}</span>
+        </label>
+        <Toggle label="Mostrar o nome na capa" checked={!p.hideName} onChange={(on) => setPremium({ hideName: !on })} />
+        <TextField label="Selo de nota (ex.: ★ 4,9)" value={p.heroPill} maxLength={40} onChange={(heroPill) => setPremium({ heroPill })} />
+        <TextField label="Registro (ex.: CRM-SP 123456)" value={p.credential} maxLength={80} onChange={(credential) => setPremium({ credential })} />
+        <TextField label="Especialidade" value={p.tagline} maxLength={120} onChange={(tagline) => setPremium({ tagline })} />
+        {hint("O nome vem do Perfil (card no topo). Campo vazio não aparece na página.")}
+      </div>
+    );
+  }
+
+  if (id === "premium:site") {
+    return (
+      <div className="flex flex-col gap-3">
+        <TextField label="Texto do botão (ex.: Sobre mim)" value={p.siteLabel} maxLength={40} onChange={(siteLabel) => setPremium({ siteLabel })} />
+        <TextArea label="Texto que abre ao tocar no botão" value={p.about} maxLength={1000} onChange={(about) => setPremium({ about })} />
+        <TextField label="Ou um link para o botão (usado se o texto acima estiver vazio)" type="url" value={p.siteUrl} maxLength={2000} onChange={(siteUrl) => setPremium({ siteUrl })} />
+        {hint("Os ícones redondos ao lado são as suas redes e contatos: edite no Perfil (card no topo). Aparecem os 4 primeiros.")}
+      </div>
+    );
+  }
+
+  if (id === "premium:stats") {
+    const block = doc.blocks.find((b) => b.type === "stats");
+    const items = block?.items ?? [];
+    const setItems = (next: { value: string; label: string }[]) =>
+      onChange((d) => {
+        const existing = d.blocks.find((b) => b.type === "stats");
+        if (existing) return { ...d, blocks: d.blocks.map((b) => (b.id === existing.id && b.type === "stats" ? { ...b, enabled: true, items: next } : b)) };
+        return { ...d, blocks: [...d.blocks, { id: `stats-${Date.now().toString(36)}`, enabled: true, type: "stats" as const, items: next }] };
+      });
+    return (
+      <div className="flex flex-col gap-3">
+        {items.slice(0, 3).map((item, index) => (
+          <div key={index} className="grid grid-cols-[1fr_1fr_auto] items-end gap-2">
+            <TextField label="Número" value={item.value} maxLength={20} onChange={(value) => setItems(items.map((it, i) => (i === index ? { ...it, value } : it)))} />
+            <TextField label="Descrição" value={item.label} maxLength={60} onChange={(label) => setItems(items.map((it, i) => (i === index ? { ...it, label } : it)))} />
+            <button type="button" onClick={() => setItems(items.filter((_, i) => i !== index))} className="pb-2 text-xs text-red-500">
+              ✕
+            </button>
+          </div>
+        ))}
+        {items.length < 3 ? (
+          <button type="button" onClick={() => setItems([...items, { value: "", label: "" }])} className={addRow}>
+            + Adicionar número
+          </button>
+        ) : null}
+        {hint("Até 3 números (ex.: 8 anos · de experiência). Sem nenhum, a faixa não aparece.")}
+      </div>
+    );
+  }
+
+  if (id === "premium:hours") {
+    const days = p.hours;
+    const setDay = (index: number, patch: Partial<(typeof days)[number]>) => setPremium({ hours: days.map((day, i) => (i === index ? { ...day, ...patch } : day)) });
+    return (
+      <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-2 gap-3">
+          <TextField label="Título" value={p.sectionTitle} maxLength={60} onChange={(sectionTitle) => setPremium({ sectionTitle })} />
+          <TextField label="Texto à direita (ex.: 08h às 18h)" value={p.promoNote} maxLength={80} onChange={(promoNote) => setPremium({ promoNote })} />
+        </div>
+        {days.map((day, index) => (
+          <div key={index} className="flex flex-col gap-2 rounded-lg bg-stone-50 p-2.5">
+            <div className="grid grid-cols-[1fr_1fr_auto] items-end gap-2">
+              <TextField label="Dia" value={day.label} maxLength={12} onChange={(label) => setDay(index, { label })} />
+              <TextField label="Horário" value={day.time} maxLength={20} onChange={(time) => setDay(index, { time })} />
+              <button type="button" onClick={() => setPremium({ hours: days.filter((_, i) => i !== index) })} className="pb-2 text-xs text-red-500">
+                ✕
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-x-5 gap-y-1">
+              <Toggle label="Em destaque" checked={day.highlight} onChange={(highlight) => setDay(index, { highlight })} />
+              <Toggle label="Fechado (fica apagado)" checked={day.closed} onChange={(closed) => setDay(index, { closed })} />
+            </div>
+          </div>
+        ))}
+        {days.length < 7 ? (
+          <button type="button" onClick={() => setPremium({ hours: [...days, { label: "", time: "", highlight: false, closed: false }] })} className={addRow}>
+            + Adicionar dia
+          </button>
+        ) : null}
+        {hint("É só informativo: o agendamento acontece pelo botão de agendar.")}
+      </div>
+    );
+  }
+
+  if (id === "premium:promo") {
+    return (
+      <div className="flex flex-col gap-3">
+        <TextField label="Texto do botão (ex.: Agendar consulta)" value={p.promoButton} maxLength={30} onChange={(promoButton) => setPremium({ promoButton })} />
+        <TextField label="Link do agendamento (WhatsApp, agenda online…)" type="url" value={p.promoUrl} maxLength={2000} onChange={(promoUrl) => setPremium({ promoUrl })} />
+        {hint("Para WhatsApp use https://wa.me/55 + DDD + número. O botão do fim da página usa este mesmo link.")}
+      </div>
+    );
+  }
+
+  if (id === "premium:text") {
+    return (
+      <div className="flex flex-col gap-3">
+        <TextArea label="Título (uma linha por trecho; a última fica em negrito)" value={p.heading} maxLength={240} onChange={(heading) => setPremium({ heading })} />
+        {hint("Cada serviço é um bloco Produto (em Blocos, logo abaixo): título, preço (opcional), descrição curta e link. Preencher a Etiqueta deixa o cartão em destaque escuro.")}
+      </div>
+    );
+  }
+
+  // premium:feature
+  return (
+    <div className="flex flex-col gap-3">
+      <TextField label="Nome do local (ex.: Clínica Vida — Sala 204)" value={p.featureLabel} maxLength={60} onChange={(featureLabel) => setPremium({ featureLabel })} />
+      <TextField label="Endereço" value={p.featureTitle} maxLength={100} onChange={(featureTitle) => setPremium({ featureTitle })} />
+      <TextField label="Link do mapa" type="url" value={p.featureUrl} maxLength={2000} onChange={(featureUrl) => setPremium({ featureUrl })} />
+      <TextField label="Texto do botão do fim da página (vazio = sem botão)" value={p.contactLabel} maxLength={60} onChange={(contactLabel) => setPremium({ contactLabel })} />
+      {hint("Os links desta parte são os blocos Link (em Blocos, logo abaixo).")}
+    </div>
+  );
+}
+
 // Renders the editing controls for one premium section. Reuses exactly the
 // fields that used to live in the Aparência tab, so behavior is unchanged.
 export function PremiumSectionBody({ id, doc, onChange, plan }: { id: string; doc: PageDoc; onChange: DocChange; plan?: string }) {
@@ -594,6 +770,7 @@ export function PremiumSectionBody({ id, doc, onChange, plan }: { id: string; do
   const setTheme = (patch: Patch<Theme>) => onChange((d) => ({ ...d, theme: applyPatch(d.theme, patch) }));
   const setPremium = (patch: Patch<PageDoc["premium"]>) => onChange((d) => ({ ...d, premium: applyPatch(d.premium, patch) }));
 
+  if (design === "clinic" && id !== "premium:colors") return <ClinicFields id={id} doc={doc} onChange={onChange} setPremium={setPremium} />;
   switch (id) {
     case "premium:colors":
       return <ColorInputs doc={doc} setTheme={setTheme} />;

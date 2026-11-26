@@ -288,7 +288,7 @@ export const AVATAR_SHAPES = ["circle", "rounded", "square"] as const;
 export const SOCIAL_STYLES = ["icons", "pills"] as const;
 // Vita premium designs: when set, the page is drawn by that template's own
 // layout (src/components/page-view/PremiumView.tsx) instead of the theme.
-export const PREMIUM_DESIGNS = ["", "authority", "spotlight", "ecosystem", "catalog", "experience", "store", "lookbook", "mosaic", "dropz", "promo", "menu", "bistro", "bar", "casa"] as const;
+export const PREMIUM_DESIGNS = ["", "authority", "spotlight", "ecosystem", "catalog", "experience", "store", "lookbook", "mosaic", "dropz", "promo", "menu", "bistro", "bar", "casa", "clinic"] as const;
 
 export const themeSchema = z.object({
   layout: z.enum(LAYOUTS),
@@ -363,6 +363,18 @@ export const premiumFieldsSchema = z.object({
   partOrder: z.array(z.string().max(40)).max(30).default([]),
   // Profissional can hide the model footer (the owner name + copyright line).
   hideFooter: z.boolean().default(false),
+  // "clinic" design: the days the professional sees patients, one chip each.
+  hours: z
+    .array(
+      z.object({
+        label: z.string().max(12).default(""),
+        time: z.string().max(20).default(""),
+        highlight: z.boolean().default(false),
+        closed: z.boolean().default(false),
+      }),
+    )
+    .max(7)
+    .default([]),
   heroSlides: z
     .array(
       z.object({
@@ -386,8 +398,8 @@ export const premiumFieldsSchema = z.object({
   // the button just links to promoUrl.
   promoCode: z.string().max(30).default(""),
   benefits: z.array(z.string().max(30)).max(4).default([]),
-  featureLabel: z.string().max(30).default("LANÇAMENTO"),
-  featureTitle: z.string().max(40).default(""),
+  featureLabel: z.string().max(60).default("LANÇAMENTO"),
+  featureTitle: z.string().max(100).default(""),
   featureTags: z.array(z.string().max(20)).max(5).default([]),
   featureImageUrl: z.string().max(1000).default(""),
   featureUrl: z.string().max(2000).default(""),

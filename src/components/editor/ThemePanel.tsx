@@ -97,6 +97,7 @@ const PREMIUM_NAMES: Record<Exclude<Theme["premium"], "">, string> = {
   bistro: "Restaurante Completo",
   bar: "Restaurante / Bar Noturno",
   casa: "Restaurante Elegante",
+  clinic: "Clínica / Profissional de saúde",
 };
 
 export function ThemePanel({ doc, onChange, onGoColors }: PanelProps) {
