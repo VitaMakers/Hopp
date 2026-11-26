@@ -601,6 +601,7 @@ const PREMIUM_RENDERS: Record<string, string[]> = {
   bistro: ["product"],
   bar: ["product"],
   casa: ["link"],
+  clinic: ["link", "product", "stats"],
 };
 
 // Scheduling block in "reveal" mode: a button that, on click, opens the

@@ -30,7 +30,7 @@ export function ProfileHeader({ doc, onChange, plan }: { doc: PageDoc; onChange:
   // Designs whose cover is edited in their own "Capa / topo" part (heroSlides):
   // for these, the separate "Capa" card at the top is redundant, so it's hidden.
   const designHasOwnCover =
-    isPremium && ["bar", "bistro", "casa", "store", "lookbook", "mosaic", "dropz", "promo", "menu"].includes(doc.theme.premium);
+    isPremium && ["bar", "bistro", "casa", "store", "lookbook", "mosaic", "dropz", "promo", "menu", "clinic"].includes(doc.theme.premium);
   // Two portrait-cover designs (Presença, Restaurante/Ecossistema) can show a
   // video in that cover, so they get the image/video choice and a video upload.
   const premiumVideoCover = isPremium && (doc.theme.premium === "spotlight" || doc.theme.premium === "ecosystem");

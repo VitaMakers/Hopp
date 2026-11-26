@@ -53,6 +53,7 @@ export const TEMPLATE_COLLECTIONS: TemplateCollection[] = [
   },
   { id: "presenca", tab: "premium", name: "Presença", description: "Perfil profissional com público duplo.", swatch: { background: "#0a0a0f", accent: "#a78bfa", text: "#f5f5f5" }, templateIds: ["experiencia"] },
   { id: "ecossistema", tab: "premium", name: "Restaurante", description: "Modelos de cardápio para restaurantes, bares e delivery.", swatch: { background: "#1c0f0b", accent: "#d8a24a", text: "#f3e9df" }, templateIds: ["resto-menu", "resto-bistro", "resto-bar", "resto-casa"] },
+  { id: "saude", tab: "premium", name: "Saúde", description: "Modelos para médicos, dentistas, psicólogos e clínicas.", swatch: { background: "#dfe9ee", accent: "#5aa7bf", text: "#0b3147" }, templateIds: ["saude-clinica"] },
   { id: "vitrine", tab: "premium", name: "Vitrine", description: "Em breve.", swatch: { background: "#111d1f", accent: "#e6ff35", text: "#e7e9e8" }, templateIds: [], requiresPlan: "essencial" },
 ];
 
@@ -155,6 +156,59 @@ export function page(
 // essential (plan "basic") models grouped by category.
 export const TEMPLATES: PageTemplate[] = [
   ...ESSENTIAL_TEMPLATES,
+  {
+    id: "saude-clinica",
+    name: "Clínica",
+    category: "Saúde",
+    plan: "premium",
+    tab: "premium",
+    description: "Para profissionais de saúde: capa com a sua foto, registro e especialidade, contatos rápidos, números, dias de atendimento, serviços e botão de agendar. Cada parte pode ser editada, escondida e reordenada.",
+    swatch: { background: "#dfe9ee", accent: "#5aa7bf", text: "#0b3147" },
+    build: (name) =>
+      page(name, {
+        profile: { bio: "", floatingWhatsapp: "" },
+        socials: [
+          { platform: "whatsapp", url: "https://wa.me/5511999990000" },
+          { platform: "instagram", url: "https://www.instagram.com/" },
+        ],
+        theme: { premium: "clinic", background: "#dfe9ee", text: "#0b3147", accent: "#5aa7bf", font: "sans" },
+        premium: {
+          heroPill: "★ 4,9",
+          credential: "CRM-SP 123456",
+          tagline: "Clínica médica · Medicina da família",
+          siteLabel: "Sobre mim",
+          siteUrl: "",
+          about: "Atendo adultos e famílias com foco em prevenção e acompanhamento contínuo. Consultas presenciais e por vídeo.",
+          sectionTitle: "Dias de atendimento",
+          promoNote: "08h às 18h",
+          hours: [
+            { label: "Seg", time: "08–18h", highlight: false, closed: false },
+            { label: "Ter", time: "08–18h", highlight: false, closed: false },
+            { label: "Qua", time: "08–20h", highlight: true, closed: false },
+            { label: "Qui", time: "08–18h", highlight: false, closed: false },
+            { label: "Sex", time: "08–16h", highlight: false, closed: false },
+            { label: "Sáb", time: "fechado", highlight: false, closed: true },
+          ],
+          promoButton: "Agendar consulta",
+          promoUrl: "https://wa.me/5511999990000",
+          heading: "Como posso\nte ajudar",
+          featureLabel: "Clínica Vida — Sala 204",
+          featureTitle: "Av. Brasil, 1200 · Centro · Sorocaba/SP",
+          featureUrl: "https://maps.google.com/",
+          contactLabel: "Agendar pelo WhatsApp",
+          heroSlides: [{ imageUrl: unsplash("1594824476967-48c8b964273f", 900), headline: "", productLabel: "", productName: "", priceFrom: "", price: "", url: "" }],
+        },
+        blocks: [
+          { id: id(), enabled: true, type: "stats", items: [{ value: "8 anos", label: "de experiência" }, { value: "3,5 mil +", label: "pacientes" }, { value: "2,8 mil +", label: "avaliações" }] },
+          product({ label: "", title: "Consulta geral", description: "por consulta", price: "R$ 250", imageUrl: "", buttonText: "", url: "https://wa.me/5511999990000" }),
+          product({ label: "", title: "Retorno", description: "até 30 dias", price: "R$ 120", imageUrl: "", buttonText: "", url: "https://wa.me/5511999990000" }),
+          product({ label: "", title: "Check-up completo", description: "com exames", price: "R$ 480", imageUrl: "", buttonText: "", url: "https://wa.me/5511999990000" }),
+          product({ label: "Online", title: "Teleconsulta", description: "por vídeo", price: "R$ 180", imageUrl: "", buttonText: "", url: "https://wa.me/5511999990000" }),
+          link({ display: "button", title: "Convênios atendidos", url: "https://example.com/convenios" }),
+          link({ display: "button", title: "Resultados de exames", url: "https://example.com/exames" }),
+        ],
+      }),
+  },
   {
     id: "bf-loja",
     name: "Loja Black Friday",
