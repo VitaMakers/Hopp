@@ -36,6 +36,25 @@
 .site-morada .mo-house.cut { height: auto; margin: -17% 6px 0; -webkit-mask-image: none; mask-image: none; }
 .site-morada .mo-house.cut img { height: auto; object-fit: contain; filter: drop-shadow(0 18px 22px rgba(60, 30, 10, 0.28)); }
 .site-morada .mo-house.cut + .mo-card.up { margin-top: -34px; }
+/* Stage cover (cut-out photo + highlight card): the house crosses the page over
+   the giant word, the dark card sits at the bottom left over it, and the intro
+   text with its buttons stays at the right of the card. */
+.site-morada .mo-hero.stage { display: grid; grid-template-columns: 46% minmax(0, 1fr); column-gap: 12px; align-items: end; padding-bottom: 20px; }
+.site-morada .mo-hero.stage > :is(.mo-bar, .mo-giant, .mo-house) { grid-column: 1 / -1; }
+.site-morada .mo-hero.stage .mo-house.cut { margin: -18% -18px 0 13%; }
+.site-morada .mo-hero.stage .mo-card.up { grid-column: 1; align-self: end; margin: -34% 0 0 12px; padding: 10px; border-radius: 14px; }
+.site-morada .mo-hero.stage .mo-card-top { gap: 6px; }
+.site-morada .mo-hero.stage .mo-card-top b { font-size: 11.5px; }
+.site-morada .mo-hero.stage .mo-card-top small { font-size: 8.5px; margin-top: 2px; }
+.site-morada .mo-hero.stage .mo-card-top em { font-size: 12.5px; }
+.site-morada .mo-hero.stage .mo-card-img { height: 78px; margin-top: 8px; border-radius: 8px; }
+.site-morada .mo-hero.stage .mo-card-btns { gap: 5px; margin-top: 8px; }
+.site-morada .mo-hero.stage .mo-card-btns .mo-btn { min-width: 0; padding: 7px 3px; font-size: 8.5px; white-space: nowrap; }
+.site-morada .mo-hero.stage .mo-intro { grid-column: 2; align-self: end; margin: 0; padding: 0 14px 0 0; min-width: 0; }
+.site-morada .mo-hero.stage .mo-intro .mo-h { font-size: 17px; }
+.site-morada .mo-hero.stage .mo-lead { margin: 0; font-size: 11.5px; line-height: 1.35; }
+.site-morada .mo-hero.stage .mo-btns { flex-wrap: nowrap; gap: 5px; margin-top: 10px; }
+.site-morada .mo-hero.stage .mo-btns .mo-btn { flex: 1; min-width: 0; padding: 8px 6px; font-size: 9px; gap: 4px; white-space: nowrap; }
 .site-morada .mo-card { position: relative; display: block; margin: 18px 16px 0; padding: 14px; border-radius: 16px; background: var(--mo-dark); color: var(--mo-ond); box-shadow: 0 14px 30px color-mix(in srgb, var(--mo-dark) 28%, transparent); }
 .site-morada .mo-card.up { margin-top: -78px; }
 .site-morada .mo-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }

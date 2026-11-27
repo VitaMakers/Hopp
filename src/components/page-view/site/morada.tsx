@@ -40,7 +40,7 @@ export const morada: SiteRender = (c) => {
   const contact = { label: c.final.button, href: c.final.href };
   return {
     hero: (
-      <div className="mo-hero">
+      <div className={`mo-hero ${c.hero.cutout && c.hero.photo && c.hero.card.name ? "stage" : ""}`}>
         <div className="mo-bar">
           {c.hero.showName ? (
             <div className="mo-brand">
