@@ -184,7 +184,7 @@ export function StatIcon({ index }: { index: number }) {
   const paths = [
     <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
     <><circle cx="9" cy="8" r="3.2" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 5.500a3 3 0 0 1 0 5.500M17.5 14.500c2 .900 3.5 3 3.5 5.5" /></>,
-    <path d="m12 3 2.7 5.8 6.3.800-4.6 4.4 1.2 6.300L12 17.2 6.4 20.300l1.2-6.300L3 9.600l6.3-.800z" />,
+    <path key="s" d="m12 3 2.7 5.8 6.3.800-4.6 4.4 1.2 6.300L12 17.2 6.4 20.300l1.2-6.300L3 9.600l6.3-.800z" />,
     <><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z" /><circle cx="12" cy="10" r="2.5" /></>,
   ];
   return <svg {...icon}>{paths[index % paths.length]}</svg>;

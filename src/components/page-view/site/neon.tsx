@@ -10,13 +10,13 @@ const ArrowDown = () => <svg {...svg}><path d="M17 7 7 17M15 17H7V9" /></svg>;
 const Spark = () => <svg {...svg} fill="currentColor" stroke="none"><path d="M12 3l2 7 7 2-7 2-2 7-2-7-7-2 7-2z" /></svg>;
 const TAB_ICONS: ReactNode[] = [
   <><rect x="5" y="9" width="14" height="10" rx="3" /><path d="M12 9V5M9 14h.01M15 14h.01M3 14h2M19 14h2" /></>,
-  <path d="M13 3 5 13h6l-1 8 8-10h-6z" />,
+  <path key="t" d="M13 3 5 13h6l-1 8 8-10h-6z" />,
   <><rect x="4" y="4" width="11" height="11" rx="2" /><path d="M9 20h9a2 2 0 0 0 2-2V9" /></>,
   <><circle cx="12" cy="12" r="3" /><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.600 5.600l2.100 2.100M16.300 16.300l2.100 2.100M5.600 18.400l2.100-2.100M16.300 7.700l2.100-2.100" /></>,
 ];
 const LOGO_ICONS: ReactNode[] = [
   <><circle cx="12" cy="12" r="8" /><path d="M12 4v16M4 12h16" /></>,
-  <path d="M4 17h16M7 12h10M10 7h4" />,
+  <path key="l" d="M4 17h16M7 12h10M10 7h4" />,
   <><circle cx="8" cy="12" r="4" /><circle cx="16" cy="12" r="4" /></>,
   <><rect x="5" y="5" width="14" height="14" rx="3" /><path d="M9 15V9l6 6V9" /></>,
 ];

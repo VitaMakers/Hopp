@@ -1,5 +1,6 @@
 /* Reforma — house painting / home services (royal blue, lime, white). */
-.site-reforma { font-family: "Manrope Variable", system-ui, sans-serif; --rf-lime: #b9f23f; --rf-on-lime: #10240a; --rf-soft: color-mix(in srgb, var(--s-accent) 8%, var(--s-bg)); --rf-line: color-mix(in srgb, var(--s-text) 14%, var(--s-bg)); --rf-mut: color-mix(in srgb, var(--s-text) 58%, var(--s-bg)); --rf-navy: color-mix(in srgb, var(--s-accent) 30%, var(--s-text)); --rf-sw: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'%3E%3Cpath d='M1 8C34 2 84 1 119 4 86 4.5 40 6.5 1 10z'/%3E%3Cpath d='M38 11.5C62 8 92 7.5 112 9 92 9.500 62 10 38 11.500z'/%3E%3C/svg%3E"); }
+.site-reforma { font-family: "Manrope Variable", system-ui, sans-serif; --rf-lime: #b9f23f; --rf-on-lime: #10240a; --rf-soft: color-mix(in srgb, var(--s-accent) 8%, var(--s-bg)); --rf-line: color-mix(in srgb, var(--s-text) 14%, var(--s-bg)); --rf-mut: color-mix(in srgb, var(--s-text) 58%, var(--s-bg)); --rf-navy: color-mix(in srgb, var(--s-accent) 30%, var(--s-text)); --rf-on-navy: var(--s-bg); --rf-sw: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'%3E%3Cpath d='M1 8C34 2 84 1 119 4 86 4.5 40 6.5 1 10z'/%3E%3Cpath d='M38 11.5C62 8 92 7.5 112 9 92 9.500 62 10 38 11.500z'/%3E%3C/svg%3E"); }
+.site-reforma.site-dark { --rf-navy: color-mix(in srgb, var(--s-accent) 16%, var(--s-bg)); --rf-on-navy: var(--s-text); }
 .site-reforma :is(h1, h2, h3, strong, .rf-brand b, .rf-footer b, .rf-stats b) { font-family: "Outfit Variable", "Manrope Variable", sans-serif; }
 
 /* Shared pieces: lime tag, pill buttons, titles with the brushed underline. */
@@ -27,8 +28,9 @@
 .site-reforma .rf-socials svg { width: 16px; height: 16px; }
 
 /* Cover: photo under a blue wash, title with the lime underline. */
-.site-reforma .rf-hero { position: relative; min-height: 620px; overflow: hidden; background: linear-gradient(165deg, var(--s-accent), color-mix(in srgb, var(--s-accent) 62%, #fff)); color: var(--s-on-accent); }
-.site-reforma .sp-hero:not(:has(+ .sp-hours)) .rf-hero { min-height: 440px; }
+.site-reforma .rf-hero { position: relative; min-height: 440px; overflow: hidden; background: linear-gradient(165deg, var(--s-accent), color-mix(in srgb, var(--s-accent) 62%, #fff)); color: var(--s-on-accent); }
+/* Room at the bottom of the cover for the estimate card that overlaps it. */
+.site-reforma .sp-hero:has(+ .sp-hours) .rf-head { padding-bottom: 336px; }
 .site-reforma .rf-photo { position: absolute; inset: 0; }
 .site-reforma .rf-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(168deg, var(--s-accent) 0%, color-mix(in srgb, var(--s-accent) 90%, transparent) 24%, color-mix(in srgb, var(--s-accent) 48%, transparent) 46%, transparent 68%); }
 .site-reforma .rf-bar { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 18px 0 20px; }
@@ -44,7 +46,7 @@
 
 /* Estimate card: frosted over the cover when it comes right after it. */
 .site-reforma .sp-hours { padding: 14px 14px 6px; }
-.site-reforma .sp-hero + .sp-hours { z-index: 2; margin-top: -262px; min-height: 262px; padding-top: 0; }
+.site-reforma .sp-hero + .sp-hours { z-index: 2; margin-top: -276px; min-height: 276px; padding-top: 0; }
 .site-reforma .rf-form { padding: 14px; border-radius: 20px; background: var(--rf-soft); border: 1px solid color-mix(in srgb, var(--s-accent) 12%, var(--s-bg)); }
 .site-reforma .sp-hero + .sp-hours .rf-form { background: color-mix(in srgb, var(--s-bg) 80%, transparent); border-color: color-mix(in srgb, var(--s-bg) 55%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 12px 30px color-mix(in srgb, var(--s-text) 14%, transparent); }
 .site-reforma .rf-form-title { display: block; margin: 0 2px 10px; font-size: 14px; font-weight: 700; }
@@ -57,9 +59,9 @@
 .site-reforma .rf-fields .on b { font-weight: 600; color: var(--s-text); }
 .site-reforma .rf-fields .off { opacity: 0.45; }
 .site-reforma .rf-fields svg { font-size: 14px; color: var(--rf-mut); }
-.site-reforma .rf-services { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; padding: 0 2px; }
+.site-reforma .rf-services { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 10px; padding: 0 2px; }
 .site-reforma .rf-services small { font-size: 11px; font-weight: 600; margin-right: 2px; }
-.site-reforma .rf-services span { padding: 5px 12px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--s-accent) 38%, var(--s-bg)); background: var(--s-bg); color: var(--s-accent); font-size: 11px; font-weight: 500; }
+.site-reforma .rf-services span { padding: 4px 10px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--s-accent) 38%, var(--s-bg)); background: var(--s-bg); color: var(--s-accent); font-size: 11px; font-weight: 500; }
 .site-reforma .rf-form .rf-btn { margin-top: 12px; }
 .site-reforma .rf-form > .rf-btn:first-child { margin-top: 0; }
 
@@ -149,7 +151,7 @@
 /* Closing call and navy footer. */
 .site-reforma .rf-final { display: flex; flex-direction: column; align-items: flex-start; padding-bottom: 28px; }
 .site-reforma .rf-final .rf-btn { margin-top: 16px; }
-.site-reforma .sp-footer { padding: 24px 20px 28px; border-radius: 22px 22px 0 0; background: var(--rf-navy); color: var(--s-bg); }
+.site-reforma .sp-footer { padding: 24px 20px 28px; border-radius: 22px 22px 0 0; background: var(--rf-navy); color: var(--rf-on-navy); }
 .site-reforma .rf-footer { display: flex; flex-direction: column; gap: 14px; }
 .site-reforma .rf-footer b { display: block; font-size: 18px; font-weight: 800; letter-spacing: -0.01em; text-transform: uppercase; overflow-wrap: anywhere; }
 .site-reforma .rf-footer small { display: block; margin-top: 3px; font-size: 11px; opacity: 0.7; }
