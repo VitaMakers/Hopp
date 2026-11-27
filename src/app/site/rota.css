@@ -145,3 +145,11 @@
 .site-rota .ro-foot { padding: 28px 18px 0; overflow: hidden; }
 .site-rota .ro-foot p { margin: 8px 0 14px; font-size: 11px; line-height: 1.45; color: var(--ro-dmut); }
 .site-rota .ro-foot .ro-giant { height: 0.56em; margin: 26px -18px 0; font-size: clamp(22px, calc((100cqi - 12px) / (var(--n) * 0.66)), 112px); font-style: italic; color: transparent; background: linear-gradient(180deg, color-mix(in srgb, var(--s-bg) 46%, var(--s-text)), color-mix(in srgb, var(--s-bg) 6%, var(--s-text)) 62%); -webkit-background-clip: text; background-clip: text; overflow: hidden; }
+
+/* Cut-out cars (PNG or our "recorte" samples): shown whole, without fading,
+   so the giant word and the red shapes appear behind them. */
+.site-rota .ro-photo:has(img:is([src*="recorte"], [src*=".png"])) { left: 3%; right: 3%; top: 92px; bottom: 6px; -webkit-mask-image: none; mask-image: none; }
+.site-rota img:is([src*="recorte"], [src*=".png"]) { object-fit: contain; -webkit-mask-image: none; mask-image: none; }
+.site-rota .ro-photo img:is([src*="recorte"], [src*=".png"]) { object-position: center 38% !important; filter: drop-shadow(0 22px 18px rgba(0, 0, 0, 0.45)); }
+.site-rota .ro-car-img:has(img:is([src*="recorte"], [src*=".png"])) { background: transparent; overflow: visible; }
+.site-rota .ro-car-img img:is([src*="recorte"], [src*=".png"]) { filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.25)); }
