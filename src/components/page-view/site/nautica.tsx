@@ -68,7 +68,7 @@ export const nautica: SiteRender = (c) => {
           ) : null}
           {c.hero.sub ? <p className="na-sub">{c.hero.sub}</p> : null}
         </div>
-        {c.stats.length || c.hero.card.name ? (
+        {(c.stats.length && !c.hidden("premium:stats")) || c.hero.card.name ? (
           <div className="na-side">
             {c.hero.card.name ? (
               <Act c={c} to={{ label: c.hero.card.name, href: c.hero.card.href }} id="hero-card" className="na-herocard">
@@ -80,8 +80,8 @@ export const nautica: SiteRender = (c) => {
               <span />
             )}
             {/* The number chips are the "Números" block, so they are edited and
-                removed in that card (clicking a chip opens it). */}
-            {c.stats.length ? (
+                removed in that card, and its "Visível" switch hides them. */}
+            {c.stats.length && !c.hidden("premium:stats") ? (
               <div className="na-chips" data-edit="premium:stats">
                 {c.stats.map((s, i) => (
                   <div key={i}>

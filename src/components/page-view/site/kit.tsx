@@ -21,6 +21,10 @@ type Action = { label: string; href: string | null };
 export type SiteCtx = {
   doc: PageDoc;
   handle?: string;
+  // Whether a part was turned off with its "Visível" switch. A design that
+  // draws one part's content inside another node checks this so that part's
+  // switch still hides it (e.g. the numbers shown on a cover).
+  hidden: (part: string) => boolean;
   // Brand name (profile name) and the small line that goes with it.
   brand: string;
   brandSub: string;
@@ -76,6 +80,7 @@ export function buildSiteCtx(doc: PageDoc, handle: string | undefined, brand: st
   return {
     doc,
     handle,
+    hidden: (part: string) => p.hiddenParts.includes(part),
     brand,
     brandSub: t(p.tagline),
     logo: img(doc.profile.logo),
