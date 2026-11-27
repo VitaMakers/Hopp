@@ -22,7 +22,7 @@ export const rotaTemplate: SiteTemplate = {
     siteUrl: WHATS,
     heroSlides: slide(photo("1492144534655-ae79c964c9d7"), { productLabel: "Sedan de luxo", productName: "Sedan Executivo", price: "R$ 189 / dia", url: WHATS }),
     sectionTitle: "Sobre nós",
-    aboutTitle: "Seu parceiro de confiança\nem locação de carros",
+    aboutTitle: "Seu parceiro de confiança em locação de carros",
     about: "A Rota é uma locadora premium dedicada a oferecer veículos bem cuidados e de alta qualidade para cada viagem. Com reserva simples, opções flexíveis e suporte de verdade, alugar um carro fica fácil, prático e sem dor de cabeça.",
     aboutImageUrl: photo("1503376780353-7e6692767b70"),
     benefits: ["Seguro incluso", "KM livre", "Suporte 24h", "Sem taxas"],

@@ -1,0 +1,187 @@
+/* Neon — AI / automation agency (near-black, neon green, light geometric titles). */
+.site-neon {
+  font-family: "Manrope Variable", system-ui, sans-serif;
+  --nn-card: color-mix(in srgb, var(--s-text) 7%, var(--s-bg));
+  --nn-card2: color-mix(in srgb, var(--s-text) 11%, var(--s-bg));
+  --nn-line: color-mix(in srgb, var(--s-text) 13%, transparent);
+  --nn-mut: color-mix(in srgb, var(--s-text) 46%, var(--s-bg));
+  --nn-soft: color-mix(in srgb, var(--s-text) 78%, var(--s-bg));
+  --nn-glow: color-mix(in srgb, var(--s-accent) 55%, transparent);
+  --nn-deep: color-mix(in srgb, var(--s-accent) 30%, #000);
+  padding-bottom: 6px;
+}
+.site-neon .mu { color: var(--nn-mut); }
+.site-neon :is(h1, h2, h3) > span { display: block; }
+
+/* Shared pieces */
+.site-neon .nn-tag { display: block; font-size: 8.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--s-accent); overflow-wrap: anywhere; }
+.site-neon .nn-label { display: flex; align-items: center; gap: 8px; font-size: 8.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--nn-soft); }
+.site-neon .nn-label i { display: flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 5px; background: color-mix(in srgb, var(--s-accent) 16%, var(--s-bg)); color: var(--s-accent); font-size: 10px; flex: none; }
+.site-neon .nn-h { font-size: clamp(21px, 6.2cqi, 26px); font-weight: 500; line-height: 1.06; letter-spacing: -0.025em; overflow-wrap: anywhere; }
+.site-neon .nn-h.big { font-size: clamp(24px, 7.2cqi, 30px); }
+.site-neon .nn-pillbtn { display: inline-flex; align-items: center; gap: 12px; max-width: 100%; padding: 5px 5px 5px 16px; border-radius: 999px; background: var(--s-text); color: var(--s-bg); font-size: 12px; font-weight: 600; line-height: 1.15; }
+.site-neon .nn-pillbtn > span { min-width: 0; overflow-wrap: anywhere; }
+.site-neon .nn-pillbtn i { display: flex; align-items: center; justify-content: center; flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--s-accent); color: var(--s-on-accent); font-size: 13px; box-shadow: 0 0 12px var(--nn-glow); }
+.site-neon .nn-pillbtn.sm { gap: 9px; padding: 4px 4px 4px 12px; font-size: 10.5px; }
+.site-neon .nn-pillbtn.sm i { width: 21px; height: 21px; font-size: 11px; }
+
+/* Cover */
+.site-neon .nn-hero { position: relative; display: flex; flex-direction: column; min-height: 548px; padding: 14px 18px 26px; overflow: hidden; }
+.site-neon .nn-hero::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(color-mix(in srgb, var(--s-text) 13%, transparent) 1px, transparent 1.4px); background-size: 13px 13px; -webkit-mask-image: linear-gradient(115deg, #000, transparent 45%, transparent 70%, #000); mask-image: linear-gradient(115deg, #000, transparent 45%, transparent 70%, #000); opacity: 0.55; pointer-events: none; }
+.site-neon .nn-hero > * { position: relative; }
+.site-neon .nn-blob { position: absolute; left: -34px; bottom: 54px; width: 272px; height: 272px; pointer-events: none; }
+.site-neon .nn-blob-in { position: absolute; inset: 12px; border-radius: 58% 42% 55% 45% / 48% 60% 40% 52%; overflow: hidden; isolation: isolate; transform: rotate(-16deg); background: radial-gradient(circle at 32% 26%, color-mix(in srgb, var(--s-accent) 80%, #fff), var(--s-accent) 28%, var(--nn-deep) 68%, color-mix(in srgb, var(--s-accent) 10%, #000)); box-shadow: 0 0 64px var(--nn-glow), 0 0 140px color-mix(in srgb, var(--s-accent) 22%, transparent); }
+.site-neon .nn-blob-in img { transform: rotate(16deg) scale(1.45); filter: grayscale(1) contrast(1.35) brightness(1.15); mix-blend-mode: multiply; }
+.site-neon .nn-blob-in::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: radial-gradient(circle at 64% 62%, color-mix(in srgb, var(--s-accent) 6%, #000) 0 14%, transparent 44%), repeating-radial-gradient(circle at 20% 82%, transparent 0 4px, color-mix(in srgb, var(--s-accent) 38%, transparent) 4px 5px), radial-gradient(circle at 26% 20%, color-mix(in srgb, #fff 34%, transparent), transparent 36%); box-shadow: inset 0 0 34px color-mix(in srgb, var(--s-accent) 70%, transparent), inset -18px -22px 50px color-mix(in srgb, #000 60%, transparent); }
+.site-neon .nn-blob > i { position: absolute; inset: 0; border: 1px solid color-mix(in srgb, var(--s-accent) 60%, transparent); border-radius: 46% 54% 42% 58% / 58% 44% 56% 42%; transform: rotate(24deg); box-shadow: inset 0 0 26px color-mix(in srgb, var(--s-accent) 22%, transparent); }
+.site-neon .nn-blob > i + i { inset: 22px -6px 6px 18px; border-radius: 60% 40% 48% 52% / 42% 58% 42% 58%; transform: rotate(-38deg); border-color: color-mix(in srgb, var(--s-accent) 36%, transparent); }
+.site-neon .nn-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.site-neon .nn-brand { display: flex; align-items: center; gap: 7px; min-width: 0; padding: 7px 13px 7px 9px; border-radius: 999px; background: var(--nn-card2); border: 1px solid var(--nn-line); font-size: 11.5px; }
+.site-neon .nn-brand svg { color: var(--s-accent); font-size: 15px; }
+.site-neon .nn-brand b { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.site-neon .nn-logo { width: 18px; height: 18px; flex: none; object-fit: contain; border-radius: 4px; }
+.site-neon .nn-bar .nn-pillbtn { flex: none; max-width: 60%; }
+.site-neon .nn-head { margin-top: 28px; }
+.site-neon .nn-head .nn-tag { margin-bottom: 10px; }
+.site-neon .nn-title { font-size: clamp(31px, 9.3cqi, 40px); font-weight: 500; line-height: 1.02; letter-spacing: -0.035em; overflow-wrap: anywhere; text-shadow: 0 1px 18px color-mix(in srgb, var(--s-bg) 55%, transparent); }
+.site-neon .nn-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 16px; }
+.site-neon .nn-textlink { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; border-bottom: 1px solid var(--nn-line); padding-bottom: 2px; }
+.site-neon .nn-foot { display: flex; flex-direction: column; align-items: flex-end; margin-top: auto; padding-top: 34px; }
+.site-neon .nn-sub { width: 152px; max-width: 100%; font-size: 10.5px; line-height: 1.42; color: color-mix(in srgb, var(--s-text) 88%, var(--s-bg)); }
+.site-neon .nn-title-b { margin-top: 26px; max-width: 330px; text-align: right; text-wrap: balance; }
+.site-neon .nn-herocard { display: flex; flex-direction: column; gap: 2px; max-width: 170px; margin-bottom: 12px; padding: 9px 12px; border-radius: 10px; background: color-mix(in srgb, var(--s-bg) 62%, transparent); border: 1px solid var(--nn-line); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); font-size: 12px; overflow-wrap: anywhere; }
+.site-neon .nn-herocard small { font-size: 8.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--s-accent); }
+.site-neon .nn-herocard b { font-weight: 600; }
+.site-neon .nn-herocard em { font-style: normal; font-weight: 700; color: var(--s-accent); }
+
+/* Partner card */
+.site-neon .nn-trust { margin: 14px 16px 0; padding: 22px 18px 26px; border-radius: 6px; background: var(--nn-card); }
+.site-neon .nn-logos { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 10px; }
+.site-neon .nn-logos span { display: inline-flex; align-items: center; gap: 4px; min-width: 0; font-size: 13.5px; font-weight: 700; letter-spacing: -0.03em; color: var(--nn-soft); overflow-wrap: anywhere; }
+.site-neon .nn-logos svg { font-size: 15px; }
+.site-neon .nn-trust hr { height: 1px; margin: 20px 0 22px; border: 0; background: linear-gradient(90deg, var(--nn-line), var(--s-accent) 50%, var(--nn-line)); box-shadow: 0 0 10px var(--nn-glow); opacity: 0.8; }
+.site-neon .nn-trust .nn-tag { margin-bottom: 8px; }
+.site-neon .nn-trust strong { display: block; font-size: 40px; font-weight: 500; line-height: 1; letter-spacing: -0.04em; color: var(--s-accent); overflow-wrap: anywhere; }
+.site-neon .nn-trust > small { display: block; margin: 4px 0 10px; font-size: 11px; color: var(--nn-mut); }
+.site-neon .nn-trust .nn-h { font-size: clamp(19px, 5.6cqi, 23px); }
+.site-neon .nn-trust p { margin-top: 18px; font-size: 11.5px; line-height: 1.45; color: var(--nn-soft); }
+.site-neon .nn-underlink { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; padding-bottom: 6px; border-bottom: 1px solid var(--nn-mut); font-size: 11px; font-weight: 600; }
+
+/* Numbers */
+.site-neon .nn-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin: 14px 16px 0; border-radius: 6px; overflow: hidden; background: var(--nn-line); }
+.site-neon .nn-stats div { min-width: 0; padding: 16px; background: var(--nn-card); }
+.site-neon .nn-stats div:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.site-neon .nn-stats b { display: block; font-size: 27px; font-weight: 500; line-height: 1; letter-spacing: -0.03em; overflow-wrap: anywhere; }
+.site-neon .nn-stats b::after { content: ""; display: inline-block; width: 6px; height: 6px; margin-left: 5px; border-radius: 50%; background: var(--s-accent); box-shadow: 0 0 8px var(--s-accent); }
+.site-neon .nn-stats span { display: block; margin-top: 6px; font-size: 10.5px; color: var(--nn-mut); }
+
+/* About + video card */
+.site-neon .nn-about { padding: 58px 18px 0; }
+.site-neon .nn-lead { margin-top: 20px; font-size: clamp(18px, 5.3cqi, 22px); font-weight: 500; line-height: 1.1; letter-spacing: -0.025em; overflow-wrap: anywhere; color: var(--nn-mut); background: linear-gradient(180deg, var(--s-text) 2.2em, var(--nn-mut) 2.2em); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.site-neon .nn-body { margin-top: 16px; font-size: 10.5px; line-height: 1.45; color: var(--nn-soft); white-space: pre-line; }
+.site-neon .nn-video { position: relative; height: 216px; margin-top: 24px; border-radius: 6px; overflow: hidden; border: 1px solid var(--nn-line); background: var(--nn-card); color: #fff; }
+.site-neon .nn-video::after { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, rgb(0 0 0 / 0.6), transparent 42%), linear-gradient(0deg, rgb(0 0 0 / 0.5), transparent 40%); pointer-events: none; }
+.site-neon .nn-video-who { position: absolute; z-index: 1; left: 14px; top: 12px; max-width: 62%; display: flex; flex-direction: column; gap: 3px; }
+.site-neon .nn-video-who b { font-size: 14px; font-weight: 500; letter-spacing: -0.01em; }
+.site-neon .nn-video-who small { font-size: 8.5px; line-height: 1.35; opacity: 0.72; }
+.site-neon .nn-video-play { position: absolute; z-index: 1; left: 12px; bottom: 12px; max-width: calc(100% - 24px); display: flex; align-items: center; gap: 8px; padding: 5px 14px 5px 5px; border-radius: 999px; background: rgb(20 22 20 / 0.72); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); font-size: 9.5px; line-height: 1.25; }
+.site-neon .nn-video-play i { display: flex; align-items: center; justify-content: center; flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--s-accent); color: var(--s-on-accent); font-size: 13px; box-shadow: 0 0 12px var(--nn-glow); }
+.site-neon .nn-about blockquote { margin: 22px 0 0; padding: 16px; border-radius: 6px; background: var(--nn-card); border-left: 2px solid var(--s-accent); font-size: 14px; line-height: 1.35; }
+.site-neon .nn-about cite { display: block; margin-top: 8px; font-size: 10.5px; font-style: normal; color: var(--nn-mut); }
+
+/* Services: title, leaf and tabs */
+.site-neon .nn-serv { position: relative; padding: 64px 16px 0; overflow: hidden; }
+.site-neon .nn-serv .nn-h { position: relative; min-height: 96px; margin: 0 2px 22px 104px; }
+.site-neon .nn-leaf { position: absolute; left: -34px; top: 62px; width: 150px; height: 170px; pointer-events: none; }
+.site-neon .nn-serv.bare .nn-leaf { display: none; }
+.site-neon .nn-leaf i { position: absolute; border-radius: 4% 96% 6% 94% / 6% 94% 6% 94%; background: repeating-linear-gradient(118deg, transparent 0 3px, color-mix(in srgb, #000 30%, transparent) 3px 4px), linear-gradient(140deg, color-mix(in srgb, var(--s-accent) 82%, #fff), var(--s-accent) 34%, var(--nn-deep) 78%, color-mix(in srgb, var(--s-accent) 8%, #000)); box-shadow: 0 0 34px var(--nn-glow); }
+.site-neon .nn-leaf i:nth-child(1) { left: 34px; top: 0; width: 98px; height: 84px; transform: rotate(-8deg); }
+.site-neon .nn-leaf i:nth-child(2) { left: 0; top: 56px; width: 92px; height: 86px; transform: rotate(74deg); opacity: 0.92; }
+.site-neon .nn-leaf i:nth-child(3) { left: 62px; top: 86px; width: 78px; height: 74px; transform: rotate(18deg); opacity: 0.85; }
+.site-neon .nn-tabs { position: relative; display: flex; gap: 5px; margin: 0 -16px; padding: 0 16px; overflow-x: auto; scrollbar-width: none; }
+.site-neon .nn-tabs::-webkit-scrollbar { display: none; }
+.site-neon .nn-tabs a { display: flex; align-items: center; gap: 8px; flex: 1 0 auto; padding: 11px 14px; border-radius: 4px; background: var(--nn-card); font-size: 9.5px; font-weight: 500; color: var(--nn-soft); white-space: nowrap; }
+.site-neon .nn-tabs svg { font-size: 15px; color: var(--nn-mut); }
+.site-neon .nn-tabs a.on { background: var(--nn-card2); color: var(--s-text); }
+.site-neon .nn-tabs a.on svg { color: var(--s-accent); filter: drop-shadow(0 0 5px var(--nn-glow)); }
+
+/* Services: numbered card */
+.site-neon .nn-steps { position: relative; margin: 5px 16px 0; padding: 18px 8px 8px; border-radius: 4px; background: var(--nn-card); }
+.site-neon .nn-steps-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 0 8px 16px; }
+.site-neon .nn-steps-top h3 { min-width: 0; max-width: 62%; font-size: 17px; font-weight: 500; line-height: 1.08; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.site-neon .nn-steps-top .nn-tag { max-width: 44%; font-size: 7.5px; text-align: right; margin-top: 2px; }
+.site-neon .nn-row { display: block; margin-top: 6px; border: 1px solid var(--nn-line); border-radius: 3px; }
+.site-neon .nn-row-top { display: flex; align-items: center; gap: 12px; padding: 12px 12px; font-size: 11.5px; }
+.site-neon .nn-row-top small { flex: none; font-size: 8px; font-weight: 700; color: var(--s-accent); }
+.site-neon .nn-row-top b { flex: 1; min-width: 0; font-weight: 500; overflow-wrap: anywhere; }
+.site-neon .nn-row-top svg { font-size: 15px; color: var(--nn-mut); }
+.site-neon .nn-row.open .nn-row-top svg { transform: rotate(180deg); color: var(--s-text); }
+.site-neon .nn-row-body { display: flex; flex-direction: column; align-items: flex-start; gap: 9px; padding: 4px 12px 16px 32px; }
+.site-neon .nn-row-text { font-size: 10px; line-height: 1.5; color: var(--nn-soft); overflow-wrap: anywhere; }
+.site-neon .nn-row-img { align-self: stretch; height: 110px; border-radius: 3px; overflow: hidden; }
+.site-neon .nn-row-body .nn-pillbtn { margin-top: 4px; }
+
+/* Industries */
+.site-neon .nn-ind { padding: 64px 18px 0; }
+.site-neon .nn-ind-note { max-width: 230px; margin: 18px 0 0 auto; font-size: 9.5px; line-height: 1.45; color: var(--nn-soft); }
+.site-neon .nn-ind-grid { display: grid; grid-template-columns: minmax(0, 1fr) 42%; gap: 14px; align-items: start; margin-top: 22px; }
+.site-neon .nn-ind-grid.one { grid-template-columns: minmax(0, 1fr); }
+.site-neon .nn-ind ul { margin: 0; padding: 0; list-style: none; }
+.site-neon .nn-ind li { display: flex; align-items: center; gap: 9px; min-height: 31px; font-size: 13.5px; letter-spacing: -0.01em; color: var(--nn-mut); }
+.site-neon .nn-ind li span { min-width: 0; overflow-wrap: anywhere; }
+.site-neon .nn-ind li i { display: flex; align-items: center; justify-content: center; flex: none; width: 18px; height: 18px; font-size: 10px; }
+.site-neon .nn-ind li:not(.on) i::before { content: ""; width: 4px; height: 4px; border-radius: 50%; background: color-mix(in srgb, var(--s-text) 24%, var(--s-bg)); }
+.site-neon .nn-ind li.on { color: var(--s-text); margin-bottom: 4px; }
+.site-neon .nn-ind li.on i { border-radius: 5px; background: color-mix(in srgb, var(--s-accent) 18%, var(--s-bg)); color: var(--s-accent); box-shadow: 0 0 10px color-mix(in srgb, var(--s-accent) 30%, transparent); }
+.site-neon .nn-ind li.off span { text-decoration: line-through; opacity: 0.6; }
+.site-neon .nn-ind-img { height: 164px; border-radius: 4px; overflow: hidden; background: var(--nn-card); }
+.site-neon .nn-ind-grid.one .nn-ind-img { height: 200px; }
+
+/* Works */
+.site-neon .nn-works { padding: 64px 0 0; }
+.site-neon .nn-works > .nn-label, .site-neon .nn-works > .nn-h { margin-left: 18px; margin-right: 18px; }
+.site-neon .nn-works > .nn-h { margin-top: 14px; }
+.site-neon .nn-works > .nn-h span { display: inline; }
+.site-neon .nn-works > .nn-h span + span::before { content: " "; }
+.site-neon .nn-cards { display: flex; gap: 8px; margin-top: 20px; padding: 0 18px; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; }
+.site-neon .nn-cards::-webkit-scrollbar { display: none; }
+.site-neon .nn-card { display: flex; flex-direction: column; flex: none; width: 208px; padding: 12px; border-radius: 4px; background: var(--nn-card); scroll-snap-align: start; }
+.site-neon .nn-cards.one .nn-card { width: 100%; }
+.site-neon .nn-card > b { font-size: 13px; font-weight: 500; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.site-neon .nn-card-img { display: flex; align-items: center; justify-content: center; height: 104px; margin: 10px 0 12px; border-radius: 3px; overflow: hidden; background: var(--nn-card2); color: var(--s-accent); font-size: 36px; }
+.site-neon .nn-card-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; margin-top: auto; }
+.site-neon .nn-card-meta { display: flex; flex-direction: column; gap: 3px; min-width: 0; font-size: 7.5px; line-height: 1.35; color: var(--nn-mut); overflow-wrap: anywhere; }
+.site-neon .nn-card-meta small { font-size: inherit; }
+.site-neon .nn-card-meta em { font-size: 12px; font-style: normal; font-weight: 600; color: var(--s-text); }
+.site-neon .nn-card-meta u { font-size: 9px; font-weight: 600; color: var(--s-accent); text-decoration: none; }
+.site-neon .nn-card-foot > i { display: flex; align-items: center; justify-content: center; flex: none; width: 22px; height: 22px; border-radius: 3px; background: var(--s-accent); color: var(--s-on-accent); font-size: 12px; box-shadow: 0 0 12px var(--nn-glow); }
+
+/* Contact card */
+.site-neon .nn-contact { position: relative; display: flex; flex-direction: column; align-items: flex-start; min-height: 196px; margin: 64px 16px 0; padding: 24px 150px 24px 20px; border-radius: 4px; overflow: hidden; background: var(--nn-card); }
+.site-neon .nn-contact > :not(.nn-bolt) { position: relative; }
+.site-neon .nn-contact .nn-h { font-size: clamp(18px, 5.4cqi, 22px); }
+.site-neon .nn-contact-who { margin-top: 16px; }
+.site-neon .nn-contact-who b { display: block; font-size: 11px; font-weight: 600; }
+.site-neon .nn-contact-who small { display: block; margin-top: 2px; font-size: 8px; color: var(--nn-mut); }
+.site-neon .nn-contact-text { margin-top: 12px; font-size: 10.5px; line-height: 1.45; color: var(--nn-soft); }
+.site-neon .nn-contact .nn-pillbtn { margin-top: auto; }
+.site-neon .nn-contact :is(.nn-contact-who, .nn-contact-text, .nn-h) + .nn-pillbtn { margin-top: 20px; }
+.site-neon .nn-bolt { position: absolute; right: 8px; top: 50%; width: 138px; height: 130px; transform: translateY(-50%); filter: drop-shadow(0 0 18px var(--nn-glow)); pointer-events: none; }
+.site-neon .nn-bolt i { position: absolute; left: 0; right: 0; height: 56%; background: linear-gradient(150deg, color-mix(in srgb, var(--s-accent) 80%, #fff), var(--s-accent) 40%, var(--nn-deep)); }
+.site-neon .nn-bolt i:nth-child(1) { top: 0; clip-path: polygon(46% 0, 100% 0, 54% 100%, 0 100%, 12% 62%); border-radius: 0 0 0 40px; }
+.site-neon .nn-bolt i:nth-child(2) { bottom: 0; clip-path: polygon(46% 0, 100% 0, 88% 40%, 54% 100%, 0 100%); }
+
+/* Footer */
+.site-neon .sp-footer { margin-top: 56px; padding: 0 18px 22px; }
+.site-neon .nn-footer { display: block; }
+.site-neon .nn-footer-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 18px; border-bottom: 1px solid var(--nn-line); }
+.site-neon .nn-footer-brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.site-neon .nn-footer-brand > svg { color: var(--s-accent); font-size: 20px; }
+.site-neon .nn-footer-brand .nn-logo { width: 24px; height: 24px; }
+.site-neon .nn-footer-brand span { min-width: 0; }
+.site-neon .nn-footer-brand b { display: block; font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.site-neon .nn-footer-brand small { display: block; font-size: 8.5px; color: var(--nn-mut); }
+.site-neon .nn-socials { display: flex; flex: none; gap: 6px; }
+.site-neon .nn-socials a { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; background: var(--nn-card2); }
+.site-neon .nn-socials svg { width: 13px; height: 13px; }
+.site-neon .nn-copy { display: block; margin-top: 14px; font-size: 8.5px; color: var(--nn-mut); }

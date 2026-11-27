@@ -29,7 +29,7 @@ export const neonTemplate: SiteTemplate = {
     promoDiscount: "",
     featureLabel: "",
     featureTitle: "Confiada por\ntimes que pensam à frente",
-    promoNote: "De fluxos com IA à automação de ponta a ponta, para operar melhor e produzir mais.",
+    promoNote: "De fluxos com IA à automação de ponta a ponta, para operar e produzir melhor.",
     contactLabel: "Ver cases",
     featureUrl: WHATS,
     featureImageUrl: photo("1581094794329-c8112a89af12", 600),
@@ -70,12 +70,14 @@ export const neonTemplate: SiteTemplate = {
   },
   blocks: () => [
     link({ title: "Auditoria de processos e roteiro de automação" }),
-    link({
-      title: "Integração de IA e automação de fluxos",
-      label: "Descrição",
-      subtitle: "Identificamos oportunidades, integramos as ferramentas certas de IA e automatizamos fluxos para melhorar o desempenho e eliminar tarefas manuais.",
+    {
+      ...link({
+        title: "Integração de IA e automação de fluxos",
+        label: "Descrição",
+        subtitle: "Identificamos oportunidades, integramos as ferramentas certas de IA e automatizamos fluxos para melhorar o desempenho e eliminar tarefas manuais.",
+      }),
       buttonText: "Consultoria grátis",
-    }),
+    },
     link({ title: "Capacitação e treinamento do time em IA" }),
     product({ title: "FlexOps", label: "Ano: 2025 · Operações", description: "Fluxos com IA e otimização de processos", imageUrl: photo("1518770660439-4636190af475", 500) }),
     product({ title: "SaúdeAI", label: "Ano: 2025 · Saúde", description: "IA para jornada do paciente e operações", imageUrl: photo("1677442136019-21780ecad995", 500) }),

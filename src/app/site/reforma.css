@@ -1,0 +1,156 @@
+/* Reforma — house painting / home services (royal blue, lime, white). */
+.site-reforma { font-family: "Manrope Variable", system-ui, sans-serif; --rf-lime: #b9f23f; --rf-on-lime: #10240a; --rf-soft: color-mix(in srgb, var(--s-accent) 8%, var(--s-bg)); --rf-line: color-mix(in srgb, var(--s-text) 14%, var(--s-bg)); --rf-mut: color-mix(in srgb, var(--s-text) 58%, var(--s-bg)); --rf-navy: color-mix(in srgb, var(--s-accent) 30%, var(--s-text)); --rf-sw: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'%3E%3Cpath d='M1 8C34 2 84 1 119 4 86 4.5 40 6.5 1 10z'/%3E%3Cpath d='M38 11.5C62 8 92 7.5 112 9 92 9.500 62 10 38 11.500z'/%3E%3C/svg%3E"); }
+.site-reforma :is(h1, h2, h3, strong, .rf-brand b, .rf-footer b, .rf-stats b) { font-family: "Outfit Variable", "Manrope Variable", sans-serif; }
+
+/* Shared pieces: lime tag, pill buttons, titles with the brushed underline. */
+.site-reforma .rf-tag { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; padding: 4px 10px; border-radius: 999px; background: var(--rf-lime); color: var(--rf-on-lime); font-size: 10.5px; font-weight: 600; line-height: 1.2; }
+.site-reforma .rf-tag svg { font-size: 11px; }
+.site-reforma .rf-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; max-width: 100%; padding: 11px 18px; border-radius: 999px; background: var(--rf-lime); color: var(--rf-on-lime); font-size: 13px; font-weight: 600; line-height: 1.2; border: 1px solid transparent; }
+.site-reforma .rf-btn span { min-width: 0; overflow-wrap: anywhere; }
+.site-reforma .rf-btn svg { font-size: 15px; }
+.site-reforma .rf-btn small { font-size: 10px; opacity: 0.7; }
+.site-reforma .rf-btn.sm { padding: 8px 14px; font-size: 12px; gap: 8px; }
+.site-reforma .rf-btn.line { background: transparent; color: inherit; border-color: currentColor; }
+.site-reforma .rf-btn.blue { background: var(--s-accent); color: var(--s-on-accent); }
+.site-reforma .rf-btn.wide { display: flex; padding: 14px 18px; }
+.site-reforma .rf-ln { display: block; }
+.site-reforma .rf-ac { position: relative; display: inline-block; max-width: 100%; }
+.site-reforma .rf-ac::after { content: ""; position: absolute; left: -2%; right: -2%; bottom: -0.17em; height: 0.24em; background: var(--rf-lime); -webkit-mask: var(--rf-sw) center / 100% 100% no-repeat; mask: var(--rf-sw) center / 100% 100% no-repeat; }
+.site-reforma .rf-h { margin-top: 10px; font-size: clamp(25px, 7.2cqi, 30px); font-weight: 600; line-height: 1.1; letter-spacing: -0.025em; overflow-wrap: anywhere; }
+.site-reforma .rf-h:first-child { margin-top: 0; }
+.site-reforma .rf-h .rf-ac { color: var(--s-accent); }
+.site-reforma .rf-h3 { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 4px; }
+.site-reforma .rf-p { margin-top: 12px; font-size: 13.5px; line-height: 1.5; color: var(--rf-mut); }
+.site-reforma .rf-sec { padding: 26px 18px 10px; }
+.site-reforma .rf-socials { display: flex; gap: 8px; }
+.site-reforma .rf-socials a { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: color-mix(in srgb, currentColor 16%, transparent); }
+.site-reforma .rf-socials svg { width: 16px; height: 16px; }
+
+/* Cover: photo under a blue wash, title with the lime underline. */
+.site-reforma .rf-hero { position: relative; min-height: 620px; overflow: hidden; background: linear-gradient(165deg, var(--s-accent), color-mix(in srgb, var(--s-accent) 62%, #fff)); color: var(--s-on-accent); }
+.site-reforma .sp-hero:not(:has(+ .sp-hours)) .rf-hero { min-height: 440px; }
+.site-reforma .rf-photo { position: absolute; inset: 0; }
+.site-reforma .rf-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(168deg, var(--s-accent) 0%, color-mix(in srgb, var(--s-accent) 90%, transparent) 24%, color-mix(in srgb, var(--s-accent) 48%, transparent) 46%, transparent 68%); }
+.site-reforma .rf-bar { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 18px 0 20px; }
+.site-reforma .rf-brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.site-reforma .rf-brand b { font-size: 17px; font-weight: 800; letter-spacing: -0.01em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.site-reforma .rf-logo { width: 32px; height: 32px; object-fit: contain; flex: none; }
+.site-reforma .rf-bar .rf-btn { flex: none; max-width: 60%; }
+.site-reforma .rf-head { position: relative; padding: 30px 20px 24px; }
+.site-reforma .rf-head .rf-tag { margin-bottom: 12px; }
+.site-reforma .rf-title { font-size: clamp(33px, 10cqi, 42px); font-weight: 600; line-height: 1.07; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.site-reforma .rf-sub { margin-top: 20px; max-width: 310px; font-size: 13.5px; line-height: 1.45; }
+.site-reforma .rf-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+
+/* Estimate card: frosted over the cover when it comes right after it. */
+.site-reforma .sp-hours { padding: 14px 14px 6px; }
+.site-reforma .sp-hero + .sp-hours { z-index: 2; margin-top: -262px; min-height: 262px; padding-top: 0; }
+.site-reforma .rf-form { padding: 14px; border-radius: 20px; background: var(--rf-soft); border: 1px solid color-mix(in srgb, var(--s-accent) 12%, var(--s-bg)); }
+.site-reforma .sp-hero + .sp-hours .rf-form { background: color-mix(in srgb, var(--s-bg) 80%, transparent); border-color: color-mix(in srgb, var(--s-bg) 55%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 12px 30px color-mix(in srgb, var(--s-text) 14%, transparent); }
+.site-reforma .rf-form-title { display: block; margin: 0 2px 10px; font-size: 14px; font-weight: 700; }
+.site-reforma .rf-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.site-reforma .rf-fields > div { min-width: 0; padding: 8px 12px 9px; border-radius: 12px; background: var(--s-bg); }
+.site-reforma .rf-fields > div:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.site-reforma .rf-fields small { display: block; font-size: 10.5px; color: var(--rf-mut); }
+.site-reforma .rf-fields span { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 3px; }
+.site-reforma .rf-fields b { min-width: 0; font-size: 13px; font-weight: 500; color: var(--rf-mut); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.site-reforma .rf-fields .on b { font-weight: 600; color: var(--s-text); }
+.site-reforma .rf-fields .off { opacity: 0.45; }
+.site-reforma .rf-fields svg { font-size: 14px; color: var(--rf-mut); }
+.site-reforma .rf-services { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; padding: 0 2px; }
+.site-reforma .rf-services small { font-size: 11px; font-weight: 600; margin-right: 2px; }
+.site-reforma .rf-services span { padding: 5px 12px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--s-accent) 38%, var(--s-bg)); background: var(--s-bg); color: var(--s-accent); font-size: 11px; font-weight: 500; }
+.site-reforma .rf-form .rf-btn { margin-top: 12px; }
+.site-reforma .rf-form > .rf-btn:first-child { margin-top: 0; }
+
+/* Numbers with an icon tile. */
+.site-reforma .rf-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 12px; padding: 22px 20px 8px; }
+.site-reforma .rf-stats > div { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.site-reforma .rf-stats i { display: flex; align-items: center; justify-content: center; flex: none; width: 38px; height: 38px; border-radius: 10px; background: var(--rf-soft); color: var(--s-accent); font-size: 19px; border: 1px solid color-mix(in srgb, var(--s-accent) 14%, var(--s-bg)); }
+.site-reforma .rf-stats span { min-width: 0; }
+.site-reforma .rf-stats b { display: block; font-size: 21px; font-weight: 600; line-height: 1.05; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.site-reforma .rf-stats small { display: block; margin-top: 2px; font-size: 11.5px; line-height: 1.2; color: var(--rf-mut); }
+
+/* Projects: filter chips, card rail, pager with progress line. */
+.site-reforma .rf-filters, .site-reforma .rf-rail { display: flex; overflow-x: auto; margin: 16px -18px 0; padding: 0 18px; scrollbar-width: none; }
+.site-reforma .rf-filters::-webkit-scrollbar, .site-reforma .rf-rail::-webkit-scrollbar { display: none; }
+.site-reforma .rf-filters { gap: 6px; }
+.site-reforma .rf-filters button { display: flex; align-items: center; flex: none; min-height: 29px; padding: 5px 13px; border-radius: 999px; border: 1px solid var(--rf-line); background: transparent; font-size: 11.5px; cursor: pointer; }
+.site-reforma .rf-filters button.on { background: var(--s-accent); border-color: var(--s-accent); color: var(--s-on-accent); }
+.site-reforma .rf-rail { gap: 12px; margin-top: 14px; padding-bottom: 4px; scroll-snap-type: x mandatory; scroll-padding: 0 18px; }
+.site-reforma .rf-card { display: flex; flex-direction: column; flex: none; width: 230px; border-radius: 14px; overflow: hidden; background: var(--rf-soft); scroll-snap-align: start; }
+.site-reforma .rf-card:only-child { width: 100%; }
+.site-reforma .rf-card-img { position: relative; display: block; height: 150px; background: color-mix(in srgb, var(--s-accent) 18%, var(--s-bg)); }
+.site-reforma .rf-card-img .rf-tag { position: absolute; left: 8px; top: 8px; max-width: 70%; }
+.site-reforma .rf-card-img i { position: absolute; right: 8px; top: 8px; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; background: var(--s-bg); color: var(--s-text); font-size: 12px; }
+.site-reforma .rf-card-body { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 10px 12px 12px; }
+.site-reforma .rf-card-txt { flex: 1; min-width: 0; }
+.site-reforma .rf-card-txt b { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: 13.5px; font-weight: 600; line-height: 1.2; }
+.site-reforma .rf-card-txt small { display: flex; align-items: flex-start; gap: 4px; margin-top: 4px; font-size: 10.5px; color: var(--rf-mut); }
+.site-reforma .rf-card-txt small span { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.site-reforma .rf-card-txt small svg { margin-top: 1px; font-size: 11px; }
+.site-reforma .rf-card-txt em { display: block; margin-top: 4px; font-style: normal; font-size: 12.5px; font-weight: 700; color: var(--s-accent); }
+.site-reforma .rf-view { display: inline-flex; align-items: center; gap: 4px; flex: none; max-width: 50%; padding: 6px 10px; border-radius: 999px; background: var(--s-bg); color: var(--s-accent); font-size: 10.5px; font-weight: 600; }
+.site-reforma .rf-pager { display: flex; align-items: center; gap: 8px; margin-top: 16px; }
+.site-reforma .rf-pager button { display: flex; align-items: center; justify-content: center; flex: none; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: color-mix(in srgb, var(--s-text) 8%, var(--s-bg)); font-size: 13px; cursor: pointer; }
+.site-reforma .rf-pager button.on { background: var(--s-accent); color: var(--s-on-accent); }
+.site-reforma .rf-pager span { flex: 1; height: 2px; margin-left: 10px; border-radius: 2px; background: var(--rf-line); overflow: hidden; }
+.site-reforma .rf-pager span i { display: block; height: 100%; background: var(--s-accent); transition: margin-left 0.15s linear; }
+
+/* Story: small photo, tag and a two-tone quote, then the section title. */
+.site-reforma .rf-story-top { display: flex; align-items: flex-start; gap: 14px; }
+.site-reforma .rf-story-img { flex: none; width: 104px; height: 104px; border-radius: 14px; overflow: hidden; background: var(--rf-soft); }
+.site-reforma .rf-story-body { flex: 1; min-width: 0; }
+.site-reforma .rf-story blockquote { margin: 8px 0 0; font-family: "Outfit Variable", sans-serif; font-size: 17px; font-weight: 500; line-height: 1.28; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.site-reforma .rf-story blockquote:first-child { margin-top: 0; }
+.site-reforma .rf-story blockquote span { color: var(--rf-mut); font-weight: 400; }
+.site-reforma .rf-story cite { display: block; margin-top: 8px; font-style: normal; font-size: 11px; color: var(--rf-mut); }
+.site-reforma .rf-story-top + .rf-h, .site-reforma .rf-story-top + .rf-p { margin-top: 32px; }
+
+/* Numbered service rows, the first one in lime. */
+.site-reforma .rf-nav { display: flex; flex-direction: column; gap: 8px; padding-top: 10px; }
+.site-reforma .rf-svc { display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 16px; border-radius: 999px; border: 1px solid var(--rf-line); }
+.site-reforma .rf-svc small { flex: none; width: 34px; font-size: 11px; font-weight: 700; }
+.site-reforma .rf-svc svg { font-size: 16px; }
+.site-reforma .rf-svc b { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 600; overflow-wrap: anywhere; }
+.site-reforma .rf-svc i { display: flex; align-items: center; justify-content: center; flex: none; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--rf-line); background: var(--s-bg); color: var(--s-text); }
+.site-reforma .rf-svc i svg { font-size: 14px; }
+.site-reforma .rf-svc.on { background: var(--rf-lime); border-color: var(--rf-lime); color: var(--rf-on-lime); }
+.site-reforma .rf-svc.on i { border-color: transparent; }
+
+/* Call banner: photo under a side blue wash, lime button, benefit strip. */
+.site-reforma .rf-banner { position: relative; display: flex; flex-direction: column; min-height: 250px; margin: 22px 14px 12px; border-radius: 20px; overflow: hidden; background: linear-gradient(120deg, var(--s-accent), color-mix(in srgb, var(--s-accent) 70%, #fff)); color: var(--s-on-accent); }
+.site-reforma .rf-banner-img { position: absolute; inset: 0; }
+.site-reforma .rf-banner::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(100deg, var(--s-accent) 8%, color-mix(in srgb, var(--s-accent) 82%, transparent) 46%, color-mix(in srgb, var(--s-accent) 12%, transparent) 100%); }
+.site-reforma .rf-banner:not(:has(.rf-banner-img))::before { display: none; }
+.site-reforma .rf-banner-body { position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; max-width: 280px; padding: 26px 18px 20px; }
+.site-reforma .rf-banner strong { font-size: 40px; font-weight: 700; line-height: 1; letter-spacing: -0.02em; color: var(--rf-lime); }
+.site-reforma .rf-banner h2 { font-size: 24px; font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.site-reforma .rf-banner h2 .rf-ac { color: var(--rf-lime); }
+.site-reforma .rf-banner p { margin-top: 4px; font-size: 12px; line-height: 1.45; opacity: 0.92; }
+.site-reforma .rf-banner .rf-btn { margin-top: 8px; }
+.site-reforma .rf-banner-strip { position: relative; z-index: 2; display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 11px 18px; border-top: 1px solid color-mix(in srgb, var(--s-on-accent) 24%, transparent); background: color-mix(in srgb, var(--s-accent) 45%, transparent); font-size: 10.5px; font-weight: 500; }
+.site-reforma .rf-banner-strip span { display: inline-flex; align-items: center; gap: 5px; }
+.site-reforma .rf-banner-strip svg { font-size: 13px; }
+
+/* "Why choose": soft blue panel with white cards. */
+.site-reforma .rf-why { margin: 22px 14px 10px; padding: 20px 16px 16px; border-radius: 20px; background: linear-gradient(160deg, var(--rf-soft), color-mix(in srgb, var(--s-accent) 20%, var(--s-bg))); }
+.site-reforma .rf-why-img { height: 150px; margin-top: 14px; border-radius: 14px; overflow: hidden; }
+.site-reforma .rf-why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+.site-reforma .rf-why-card { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 12px; border-radius: 12px; background: var(--s-bg); }
+.site-reforma .rf-why-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.site-reforma .rf-why-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; margin-bottom: 4px; }
+.site-reforma .rf-why-top i { display: flex; align-items: center; justify-content: center; flex: none; width: 30px; height: 30px; border-radius: 8px; background: var(--rf-soft); color: var(--s-accent); font-size: 16px; }
+.site-reforma .rf-why-top > svg { font-size: 13px; color: var(--rf-mut); }
+.site-reforma .rf-why-top .rf-tag { min-width: 0; padding: 3px 8px; font-size: 9.5px; }
+.site-reforma .rf-why-card b { font-family: "Outfit Variable", sans-serif; font-size: 14px; font-weight: 600; line-height: 1.15; overflow-wrap: anywhere; }
+.site-reforma .rf-why-card small { font-size: 10.5px; line-height: 1.4; color: var(--rf-mut); }
+
+/* Closing call and navy footer. */
+.site-reforma .rf-final { display: flex; flex-direction: column; align-items: flex-start; padding-bottom: 28px; }
+.site-reforma .rf-final .rf-btn { margin-top: 16px; }
+.site-reforma .sp-footer { padding: 24px 20px 28px; border-radius: 22px 22px 0 0; background: var(--rf-navy); color: var(--s-bg); }
+.site-reforma .rf-footer { display: flex; flex-direction: column; gap: 14px; }
+.site-reforma .rf-footer b { display: block; font-size: 18px; font-weight: 800; letter-spacing: -0.01em; text-transform: uppercase; overflow-wrap: anywhere; }
+.site-reforma .rf-footer small { display: block; margin-top: 3px; font-size: 11px; opacity: 0.7; }
+.site-reforma .rf-footer > span { padding-top: 14px; border-top: 1px solid color-mix(in srgb, currentColor 16%, transparent); font-size: 11px; opacity: 0.7; }

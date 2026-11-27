@@ -202,9 +202,11 @@ export const rota: SiteRender = (c) => {
               {c.catalog.items.map((block, i) => (
                 <Item key={block.id} c={c} block={block} className="ro-car">
                   {block.label ? <span className="ro-car-tag">{block.label}</span> : null}
-                  <span className="ro-car-img">
-                    <Img src={block.imageUrl} alt={block.title} />
-                  </span>
+                  {block.imageUrl ? (
+                    <span className="ro-car-img">
+                      <Img src={block.imageUrl} alt={block.title} />
+                    </span>
+                  ) : null}
                   <b>{block.title}</b>
                   {block.description ? <span className="ro-car-specs">{specs(block.description).slice(0, 3).join(" · ")}</span> : null}
                   <span className="ro-car-foot">
@@ -219,10 +221,12 @@ export const rota: SiteRender = (c) => {
           ) : null}
           {first && first.buttonText ? (
             <Item c={c} block={first} className="ro-detail">
-              <span className="ro-detail-img">
-                <i />
-                <Img src={first.imageUrl} alt={first.title} />
-              </span>
+              {first.imageUrl ? (
+                <span className="ro-detail-img">
+                  <i />
+                  <Img src={first.imageUrl} alt={first.title} />
+                </span>
+              ) : null}
               {first.label ? <span className="ro-tag">{first.label}</span> : null}
               <b>{first.title}</b>
               <span className="ro-stars">

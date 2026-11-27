@@ -57,7 +57,7 @@ export const reformaTemplate: SiteTemplate = {
     promoDiscount: "",
     linksLabel: "Por que escolher",
     linksTitle: "Por que escolher a\nnossa equipe?",
-    ctaTitle: "Vamos levar\ncor\nao seu espaço",
+    ctaTitle: "Vamos dar ao seu espaço mais\ncor",
     ctaText: "Tem um projeto em mente? Receba orientação de especialistas, um orçamento sob medida e uma experiência sem dor de cabeça.",
     ctaButton: "Solicitar orçamento",
     partOrder: ["premium:hero", "premium:hours", "premium:stats", "premium:catalog", "premium:text", "premium:nav", "premium:feature", "premium:links", "premium:promo"],

@@ -32,8 +32,8 @@
 .site-atelier .at-stage { position: relative; display: flex; flex-direction: column; justify-content: flex-end; min-height: 520px; padding: 170px 18px 26px; }
 .site-atelier .at-stage.nop { min-height: 0; padding-top: 120px; }
 .site-atelier .at-ghost { position: absolute; left: 0; right: 0; top: 34px; overflow: hidden; text-align: center; white-space: nowrap; font-weight: 800; font-size: clamp(40px, calc(150cqi / var(--n)), 108px); line-height: 1; letter-spacing: -0.05em; text-transform: uppercase; color: color-mix(in srgb, var(--s-text) 7%, var(--s-bg)); pointer-events: none; }
-.site-atelier .at-photo { position: absolute; left: 24%; right: 0; top: 0; bottom: 0; -webkit-mask-image: linear-gradient(90deg, transparent, #000 40%), linear-gradient(180deg, #000 80%, transparent); -webkit-mask-composite: source-in; mask-image: linear-gradient(90deg, transparent, #000 40%), linear-gradient(180deg, #000 80%, transparent); mask-composite: intersect; }
-.site-atelier.site-light .at-photo img { filter: grayscale(1) contrast(1.14) brightness(1.1); mix-blend-mode: multiply; }
+.site-atelier .at-photo { position: absolute; left: 26%; right: 0; top: 0; bottom: 0; -webkit-mask-image: linear-gradient(90deg, transparent, #000 44%, #000 90%, transparent), linear-gradient(180deg, transparent, #000 16%, #000 80%, transparent); -webkit-mask-composite: source-in; mask-image: linear-gradient(90deg, transparent, #000 44%, #000 90%, transparent), linear-gradient(180deg, transparent, #000 16%, #000 80%, transparent); mask-composite: intersect; }
+.site-atelier.site-light .at-photo img { filter: grayscale(1) contrast(1.28) brightness(1.24); mix-blend-mode: multiply; }
 .site-atelier .at-card { position: absolute; z-index: 2; right: 14px; top: 92px; width: 94px; display: flex; flex-direction: column; gap: 1px; padding: 8px; border-radius: 16px; background: color-mix(in srgb, var(--s-bg) 78%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); overflow-wrap: anywhere; }
 .site-atelier .at-card-img { display: block; height: 82px; margin-bottom: 6px; border-radius: 10px; overflow: hidden; background: var(--at-soft); }
 .site-atelier .at-card small { font-size: 9px; color: var(--at-mut); }
@@ -43,7 +43,7 @@
 .site-atelier .at-round { display: flex; flex: none; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1.5px solid currentColor; border-radius: 50%; font-size: 14px; font-style: normal; }
 .site-atelier .at-round.back svg { transform: scaleX(-1); }
 .site-atelier .at-head { position: relative; z-index: 2; max-width: 252px; min-width: 0; }
-.site-atelier .at-title { font-weight: 800; font-size: clamp(30px, 9.2cqi, 40px); line-height: 0.98; letter-spacing: -0.04em; text-transform: uppercase; overflow-wrap: anywhere; }
+.site-atelier .at-title { font-weight: 800; font-size: clamp(30px, 9.2cqi, 40px); line-height: 0.98; letter-spacing: -0.03em; text-transform: uppercase; overflow-wrap: anywhere; }
 .site-atelier .at-title .ac { color: var(--s-accent); }
 .site-atelier .at-sub { margin-top: 12px; max-width: 214px; font-size: 13px; font-weight: 500; line-height: 1.32; }
 .site-atelier .at-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
@@ -109,7 +109,7 @@
 .site-atelier .at-prod-text { margin-bottom: 12px; font-size: 11.5px; line-height: 1.4; }
 .site-atelier .at-prod-body > small { font-size: 10px; color: var(--at-mut); }
 .site-atelier .at-prod-body > b { font-size: 12.5px; font-weight: 500; }
-.site-atelier .at-prod-body > em { margin-top: 2px; font-size: 31px; line-height: 1.05; letter-spacing: -0.04em; }
+.site-atelier .at-prod-body > em { margin-top: 2px; font-size: 31px; line-height: 1.05; letter-spacing: -0.03em; }
 .site-atelier .at-prod-buy { display: flex; gap: 10px; align-items: center; margin-top: 12px; }
 .site-atelier .at-swatches { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 10px; margin-top: 16px; }
 .site-atelier .at-swatches a { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
