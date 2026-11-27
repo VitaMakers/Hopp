@@ -1,0 +1,124 @@
+/* Patinha — pet shop app (white / red accent / black showcase panel). */
+.site-patinha { font-family: "Outfit Variable", system-ui, sans-serif; font-size: 15px; --pt-card: color-mix(in srgb, var(--s-text) 4.5%, var(--s-bg)); --pt-card2: color-mix(in srgb, var(--s-text) 8%, var(--s-bg)); --pt-line: color-mix(in srgb, var(--s-text) 13%, transparent); --pt-mut: color-mix(in srgb, var(--s-text) 68%, var(--s-bg)); --pt-warm: color-mix(in srgb, var(--s-accent) 5%, var(--pt-card)); --pt-panel: color-mix(in srgb, var(--s-text) 88%, #000); --pt-on-panel: var(--s-bg); padding-bottom: 6px; }
+.site-patinha.site-dark { --pt-panel: color-mix(in srgb, var(--s-bg) 55%, #000); --pt-on-panel: var(--s-text); }
+.site-patinha svg { display: block; }
+.site-patinha em { font-style: normal; font-weight: 700; color: var(--s-accent); }
+.site-patinha em small { font-size: 0.62em; font-weight: 500; color: var(--pt-mut); }
+.site-patinha .pt-h { min-width: 0; font-size: 21px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; overflow-wrap: anywhere; }
+.site-patinha .pt-label { display: block; font-size: 11px; font-weight: 500; letter-spacing: 0.09em; text-transform: uppercase; color: var(--pt-mut); }
+.site-patinha .pt-round { display: flex; align-items: center; justify-content: center; flex: none; width: 42px; height: 42px; border-radius: 50%; background: var(--s-accent); color: var(--s-on-accent); font-size: 20px; }
+.site-patinha .pt-round.sm { width: 36px; height: 36px; font-size: 18px; }
+
+/* Shop home: brand bar, greeting, title */
+.site-patinha .pt-hero { padding: 20px 18px 6px; }
+.site-patinha .pt-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px; }
+.site-patinha .pt-brand { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.site-patinha .pt-brand > svg { font-size: 27px; color: var(--s-accent); }
+.site-patinha .pt-brand span { min-width: 0; }
+.site-patinha .pt-brand b { display: block; font-size: 23px; font-weight: 800; letter-spacing: 0.01em; line-height: 1; text-transform: uppercase; overflow-wrap: anywhere; }
+.site-patinha .pt-brand small { display: block; margin-top: 3px; font-size: 10.5px; color: var(--pt-mut); }
+.site-patinha .pt-logo { width: 34px; height: 34px; object-fit: contain; flex: none; }
+.site-patinha .pt-socials { display: flex; gap: 8px; flex: none; }
+.site-patinha .pt-socials a { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 50%; background: var(--pt-card); border: 1px solid var(--pt-line); }
+.site-patinha .pt-socials a:last-child:not(:first-child) { background: var(--s-text); color: var(--s-bg); border-color: transparent; }
+.site-patinha .pt-socials svg { width: 19px; height: 19px; }
+.site-patinha .pt-hello { display: block; margin-bottom: 3px; font-size: 16.5px; color: var(--pt-mut); }
+.site-patinha .pt-title { font-size: clamp(30px, 9.2cqi, 40px); font-weight: 700; letter-spacing: -0.025em; line-height: 1.04; overflow-wrap: anywhere; }
+.site-patinha .pt-sub { margin-top: 8px; max-width: 320px; color: var(--pt-mut); }
+.site-patinha .pt-herocard { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; padding: 12px 16px; border-radius: 16px; background: var(--pt-card); }
+.site-patinha .pt-herocard span { min-width: 0; }
+.site-patinha .pt-herocard small { display: block; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--pt-mut); }
+.site-patinha .pt-herocard b { display: block; font-weight: 600; overflow-wrap: anywhere; }
+.site-patinha .pt-herocard > em { font-size: 19px; white-space: nowrap; }
+
+/* Tabs + search pill */
+.site-patinha .pt-nav { padding: 8px 18px 10px; display: flex; flex-direction: column; gap: 12px; }
+.site-patinha .pt-tabs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 4px; margin-left: -2px; font-size: 16px; font-weight: 500; }
+.site-patinha .pt-tabs a { padding: 7px 15px; border-radius: 999px; white-space: nowrap; }
+.site-patinha .pt-tabs a.on { padding: 7px 22px; margin-right: 4px; background: var(--s-accent); color: var(--s-on-accent); box-shadow: 0 4px 10px color-mix(in srgb, var(--s-accent) 28%, transparent); }
+.site-patinha .pt-search { display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 10px 18px; border-radius: 999px; background: var(--pt-card); border: 1px solid var(--pt-line); color: var(--pt-mut); font-size: 14.5px; }
+.site-patinha .pt-search svg { font-size: 22px; color: var(--s-text); }
+.site-patinha .pt-search span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Banner card */
+.site-patinha .pt-banner { position: relative; margin: 10px 18px; min-height: 204px; border-radius: 20px; overflow: hidden; background: linear-gradient(90deg, var(--pt-card), var(--pt-warm)); display: flex; }
+.site-patinha .pt-banner-img { position: absolute; top: 0; right: 0; bottom: 0; width: 60%; -webkit-mask-image: linear-gradient(90deg, transparent, #000 38%); mask-image: linear-gradient(90deg, transparent, #000 38%); }
+.site-patinha .pt-banner-body { position: relative; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; width: 54%; min-width: 0; padding: 22px 0 20px 20px; }
+.site-patinha .pt-banner.noimg .pt-banner-body { width: 100%; padding-right: 20px; }
+.site-patinha .pt-banner h2 { font-size: 29px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; overflow-wrap: anywhere; }
+.site-patinha .pt-banner strong { font-size: 24px; font-weight: 800; line-height: 1; color: var(--s-accent); }
+.site-patinha .pt-banner p { font-size: 14px; line-height: 1.2; color: var(--pt-mut); }
+.site-patinha .pt-banner .pt-round { margin-top: 8px; }
+.site-patinha .pt-tag { padding: 3px 10px; border-radius: 999px; background: var(--s-accent); color: var(--s-on-accent); font-size: 11px; font-weight: 600; }
+
+/* Product grid */
+.site-patinha .pt-catalog { padding: 14px 18px 12px; }
+.site-patinha .pt-headrow { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+.site-patinha .pt-headrow span { flex: none; font-size: 14.5px; font-weight: 500; color: var(--s-accent); }
+.site-patinha .pt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.site-patinha .pt-card { display: flex; flex-direction: column; min-width: 0; padding: 8px 10px 12px; border-radius: 18px; background: var(--pt-card); }
+.site-patinha .pt-card:only-child { grid-column: 1 / -1; }
+.site-patinha .pt-card-img { position: relative; display: block; height: 124px; border-radius: 12px; overflow: hidden; background: var(--pt-card2); }
+.site-patinha .pt-card:only-child .pt-card-img { height: 190px; }
+.site-patinha .pt-card-img svg { position: absolute; right: 6px; top: 6px; width: 30px; height: 30px; padding: 5px; border-radius: 50%; background: color-mix(in srgb, var(--s-bg) 82%, transparent); stroke-width: 2; }
+.site-patinha .pt-card-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; margin-top: 10px; padding: 0 2px; flex: 1; }
+.site-patinha .pt-card-txt { min-width: 0; }
+.site-patinha .pt-card-txt small { display: block; font-size: 11px; color: var(--pt-mut); }
+.site-patinha .pt-card-txt b { display: block; font-size: 15.5px; font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
+.site-patinha .pt-card-txt em { display: block; margin-top: 2px; font-size: 19px; letter-spacing: -0.01em; }
+
+/* Black showcase panel */
+.site-patinha .pt-panel { margin: 12px 8px; padding: 30px 18px 20px; border-radius: 34px; overflow: hidden; background: var(--pt-panel); color: var(--pt-on-panel); display: flex; flex-direction: column; }
+.site-patinha .pt-panel-title { font-size: clamp(36px, 11.4cqi, 48px); font-weight: 700; letter-spacing: -0.025em; line-height: 1; overflow-wrap: anywhere; }
+.site-patinha .pt-panel-text { margin-top: 10px; max-width: 310px; font-size: 17px; line-height: 1.2; opacity: 0.92; }
+.site-patinha .pt-panel-photo { height: 400px; margin: 14px -18px 0; -webkit-mask-image: linear-gradient(180deg, transparent, #000 12%, #000 86%, transparent); mask-image: linear-gradient(180deg, transparent, #000 12%, #000 86%, transparent); }
+.site-patinha .pt-cats { display: flex; gap: 4px; margin-top: 10px; }
+.site-patinha .pt-cats span { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12.5px; text-align: center; overflow-wrap: anywhere; }
+.site-patinha .pt-cats i { display: flex; align-items: center; justify-content: center; width: 70px; max-width: 100%; height: 40px; border-radius: 999px; font-size: 25px; }
+.site-patinha .pt-cats .on i { background: var(--s-accent); color: var(--s-on-accent); }
+.site-patinha .pt-cta { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 60px; margin-top: 20px; padding: 14px 26px; border-radius: 999px; background: var(--s-accent); color: var(--s-on-accent); font-size: 20px; font-weight: 500; }
+.site-patinha .pt-cta span { flex: 1; min-width: 0; text-align: center; padding-left: 26px; }
+.site-patinha .pt-cta svg { font-size: 26px; }
+
+/* Product-detail look: about, rating/price, options, rows, buttons */
+.site-patinha .pt-detail { padding: 16px 20px 8px; }
+.site-patinha .pt-detail-img { height: 270px; margin: 0 -4px 16px; border-radius: 22px; overflow: hidden; background: var(--pt-card); }
+.site-patinha .pt-caps { margin-top: 3px; font-size: 26px; font-weight: 800; line-height: 1; text-transform: uppercase; overflow-wrap: anywhere; }
+.site-patinha .pt-detail p { margin-top: 8px; font-size: 14.5px; line-height: 1.25; color: var(--pt-mut); white-space: pre-line; }
+.site-patinha .pt-detail blockquote { margin: 14px 0 0; padding: 12px 14px; border-radius: 14px; background: var(--pt-card); font-size: 15px; }
+.site-patinha .pt-detail cite { display: block; margin-top: 6px; font-style: normal; font-size: 12px; color: var(--pt-mut); }
+.site-patinha .pt-stats { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 4px 20px 8px; }
+.site-patinha .pt-stats > div { display: flex; align-items: baseline; gap: 5px; min-width: 0; }
+.site-patinha .pt-stats svg { align-self: center; font-size: 19px; color: var(--s-accent); }
+.site-patinha .pt-stats b { font-size: 16px; font-weight: 700; }
+.site-patinha .pt-stats span { font-size: 14.5px; color: var(--pt-mut); }
+.site-patinha .pt-stats .pr { margin-left: auto; flex-direction: column; align-items: flex-end; gap: 0; }
+.site-patinha .pt-stats .pr b { font-size: 26px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.05; color: var(--s-accent); }
+.site-patinha .pt-stats .pr span { font-size: 11.5px; }
+.site-patinha .pt-opts { padding: 10px 20px 6px; display: flex; flex-direction: column; gap: 10px; }
+.site-patinha .pt-opts .pt-h { margin-bottom: 2px; }
+.site-patinha .pt-opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 32px; }
+.site-patinha .pt-opt.off { opacity: 0.45; }
+.site-patinha .pt-opt.off i { text-decoration: line-through; }
+.site-patinha .pt-opt b { flex: none; font-size: 16px; font-weight: 700; }
+.site-patinha .pt-opt span { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; min-width: 0; }
+.site-patinha .pt-opt i { min-width: 40px; padding: 6px 10px; border-radius: 8px; background: var(--pt-card2); font-style: normal; font-size: 15px; line-height: 1.2; text-align: center; }
+.site-patinha .pt-opt i.on { background: var(--s-accent); color: var(--s-on-accent); font-weight: 600; }
+.site-patinha .pt-note { font-size: 12.5px; color: var(--pt-mut); }
+.site-patinha .pt-links { padding: 8px 20px 12px; }
+.site-patinha .pt-links .pt-h { margin: 2px 0 6px; }
+.site-patinha .pt-rows { border-top: 1px solid var(--pt-line); }
+.site-patinha .pt-row { display: flex; align-items: center; gap: 14px; min-height: 48px; padding: 9px 2px; border-bottom: 1px solid var(--pt-line); }
+.site-patinha .pt-row > svg { font-size: 25px; }
+.site-patinha .pt-row-img { width: 34px; height: 34px; border-radius: 9px; overflow: hidden; flex: none; }
+.site-patinha .pt-row-body { flex: 1; min-width: 0; }
+.site-patinha .pt-row-body b { display: block; font-size: 15.5px; font-weight: 500; overflow-wrap: anywhere; }
+.site-patinha .pt-row-body small { display: block; font-size: 12.5px; color: var(--pt-mut); }
+.site-patinha .pt-row > em { flex: none; font-size: 13px; }
+.site-patinha .pt-chev { flex: none; font-size: 22px; color: var(--pt-mut); transform: rotate(90deg); }
+.site-patinha .pt-buy { display: flex; gap: 10px; margin: 26px -4px 0; }
+.site-patinha .pt-btn { flex: 1.12; min-width: 0; display: flex; align-items: center; justify-content: center; min-height: 56px; padding: 10px 12px; border-radius: 14px; background: var(--s-accent); color: var(--s-on-accent); font-size: 18px; font-weight: 700; line-height: 1.1; text-align: center; text-transform: uppercase; box-shadow: 0 6px 14px color-mix(in srgb, var(--s-accent) 26%, transparent); }
+.site-patinha .pt-btn.ghost { flex: 1; background: var(--pt-card2); color: var(--s-text); box-shadow: none; }
+.site-patinha .sp-footer { padding: 16px 18px 22px; }
+.site-patinha .pt-footer { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; color: var(--pt-mut); }
+.site-patinha .pt-footer svg { color: var(--s-accent); font-size: 14px; }

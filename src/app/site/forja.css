@@ -1,0 +1,146 @@
+/* Forja — gym / fitness (black / orange-red, heavy italic titles, greyscale photos). */
+.site-forja { font-family: "Outfit Variable", system-ui, sans-serif; --fj-card: color-mix(in srgb, var(--s-text) 10%, var(--s-bg)); --fj-card2: color-mix(in srgb, var(--s-text) 15%, var(--s-bg)); --fj-line: color-mix(in srgb, var(--s-text) 20%, transparent); --fj-mut: color-mix(in srgb, var(--s-text) 68%, var(--s-bg)); --fj-grad: linear-gradient(180deg, color-mix(in srgb, var(--s-accent) 90%, #fff), color-mix(in srgb, var(--s-accent) 90%, #000)); padding-bottom: 8px; }
+.site-forja img:not(.fj-logo) { filter: grayscale(1) contrast(1.12) brightness(0.92); }
+.site-forja svg { display: block; }
+
+/* Cover: athlete on the right fading into the background. */
+.site-forja .fj-hero { position: relative; min-height: 348px; }
+.site-forja .fj-photo { position: absolute; right: 0; top: 0; bottom: 0; width: 68%; -webkit-mask-image: linear-gradient(90deg, transparent, #000 52%), linear-gradient(180deg, #000 72%, transparent); -webkit-mask-composite: source-in; mask-image: linear-gradient(90deg, transparent, #000 52%), linear-gradient(180deg, #000 72%, transparent); mask-composite: intersect; }
+.site-forja .fj-bar { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 20px 18px 0; }
+.site-forja .fj-brand { display: flex; gap: 9px; align-items: center; min-width: 0; text-transform: uppercase; }
+.site-forja .fj-brand > span { min-width: 0; }
+.site-forja .fj-brand b { display: block; font: italic 800 27px/0.82 "Barlow Condensed", sans-serif; letter-spacing: 0.02em; overflow-wrap: anywhere; }
+.site-forja .fj-brand small { display: block; margin-top: 4px; font-size: 9.5px; font-weight: 500; line-height: 1; letter-spacing: 0.3em; }
+.site-forja .fj-slash { display: flex; gap: 4px; flex: none; margin: 0 5px; transform: skewX(-24deg); }
+.site-forja .fj-slash span { width: 11px; height: 30px; background: var(--s-accent); }
+.site-forja .fj-logo { width: 38px; height: 38px; object-fit: contain; flex: none; }
+.site-forja .fj-socials { display: flex; gap: 8px; flex: none; }
+.site-forja .fj-socials a { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; background: color-mix(in srgb, var(--s-bg) 55%, transparent); border: 1px solid var(--fj-line); backdrop-filter: blur(6px); }
+.site-forja .fj-socials svg { width: 18px; height: 18px; }
+.site-forja .fj-head { position: relative; padding: 30px 18px 26px; }
+.site-forja .fj-label { display: block; margin-bottom: 6px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--s-accent); }
+.site-forja .fj-title { font: italic 800 clamp(38px, 12.3cqi, 50px)/0.86 "Barlow Condensed", sans-serif; letter-spacing: -0.005em; text-transform: uppercase; overflow-wrap: anywhere; }
+.site-forja .fj-title .ac { color: var(--s-accent); }
+.site-forja .fj-title2 { font-size: clamp(36px, 11.3cqi, 46px); }
+.site-forja .fj-sub { margin-top: 12px; max-width: 200px; font-size: 13.5px; line-height: 1.3; }
+
+/* Membership card. */
+.site-forja .fj-member { margin: 0 14px 12px; padding: 13px 16px; border-radius: 16px; background: var(--fj-card); }
+.site-forja .fj-member-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.site-forja .fj-member-id { min-width: 0; }
+.site-forja .fj-member-id small { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.site-forja .fj-member-id b { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 700; line-height: 1.2; text-transform: uppercase; overflow-wrap: anywhere; }
+.site-forja .fj-dot { flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--s-accent); }
+.site-forja .fj-renew { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 12.5px; text-align: right; }
+.site-forja .fj-renew b { font-weight: 600; }
+.site-forja .fj-renew svg { font-size: 18px; }
+.site-forja .fj-member .on b { color: var(--s-accent); }
+.site-forja .fj-member .off { opacity: 0.45; }
+.site-forja .fj-member-rows { margin-top: 10px; }
+.site-forja .fj-member-rows > div { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--fj-line); font-size: 12.5px; }
+.site-forja .fj-member-rows > div:last-child { padding-bottom: 0; }
+.site-forja .fj-member-rows span { color: var(--fj-mut); }
+
+/* Numbers with orange icons. */
+.site-forja .fj-stats { display: flex; flex-wrap: wrap; margin: 4px 14px 14px; row-gap: 14px; }
+.site-forja .fj-stats > div { flex: 1 1 0; min-width: 0; padding: 2px 8px 2px 18px; }
+.site-forja .fj-stats > div + div { border-left: 1px solid var(--fj-line); }
+.site-forja .fj-stats svg { font-size: 25px; color: var(--s-accent); margin-bottom: 4px; }
+.site-forja .fj-stats b { display: block; font-size: 22px; font-weight: 700; line-height: 1.15; overflow-wrap: anywhere; }
+.site-forja .fj-stats span { display: block; max-width: 84px; font-size: 11.5px; line-height: 1.2; color: var(--fj-mut); }
+
+/* Workout of the day. */
+.site-forja .fj-today { position: relative; display: flex; align-items: center; min-height: 128px; margin: 0 14px 10px; border-radius: 16px; background: var(--fj-card); overflow: hidden; }
+.site-forja .fj-today-img { position: absolute; right: 0; top: 0; bottom: 0; width: 62%; -webkit-mask-image: linear-gradient(90deg, transparent, #000 55%); mask-image: linear-gradient(90deg, transparent, #000 55%); }
+.site-forja .fj-today-body { position: relative; min-width: 0; max-width: 72%; padding: 14px 8px 14px 18px; display: flex; flex-direction: column; align-items: flex-start; }
+.site-forja .fj-today-tag { font-size: 10.5px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--fj-mut); margin-bottom: 4px; }
+.site-forja .fj-today strong { font: italic 800 34px/0.9 "Barlow Condensed", sans-serif; text-transform: uppercase; color: var(--s-accent); }
+.site-forja .fj-today .fj-label { margin: 4px 0 0; }
+.site-forja .fj-today b { font-size: 22px; font-weight: 700; line-height: 1.05; white-space: pre-line; overflow-wrap: anywhere; }
+.site-forja .fj-today-meta { display: flex; flex-wrap: wrap; margin-top: 10px; font-size: 11.5px; color: var(--fj-mut); }
+.site-forja .fj-today-meta span + span { margin-left: 10px; padding-left: 10px; border-left: 1px solid var(--fj-line); }
+.site-forja .fj-play { position: absolute; right: 16px; bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 6px; width: 38px; height: 38px; border-radius: 999px; background: var(--fj-grad); color: var(--s-on-accent); font-size: 12px; font-weight: 700; }
+.site-forja .fj-play.txt { width: auto; padding: 0 12px 0 16px; }
+.site-forja .fj-play svg { font-size: 18px; }
+
+/* Categories, coach's pick row and the main call. */
+.site-forja .fj-nav { display: flex; flex-direction: column; gap: 10px; margin: 0 14px 12px; }
+.site-forja .fj-h { min-width: 0; padding: 0 4px; font-size: 14px; font-weight: 500; overflow-wrap: anywhere; }
+.site-forja .fj-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.site-forja .fj-chips a { padding: 7px 14px; border-radius: 999px; background: var(--fj-card2); font-size: 12.5px; }
+.site-forja .fj-chips a.on { background: var(--s-text); color: var(--s-bg); font-weight: 600; }
+.site-forja .fj-pick { display: flex; align-items: center; gap: 12px; padding: 9px 14px; border-radius: 16px; background: var(--fj-card); }
+.site-forja .fj-pick-pic { display: flex; align-items: center; justify-content: center; flex: none; width: 38px; height: 38px; border-radius: 50%; overflow: hidden; background: var(--fj-card2); color: var(--s-accent); font-size: 20px; }
+.site-forja .fj-pick-pic img { filter: none; }
+.site-forja .fj-pick-body { flex: 1; min-width: 0; }
+.site-forja .fj-pick-body small { display: block; font-size: 11.5px; color: var(--s-accent); }
+.site-forja .fj-pick-body b { display: block; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.site-forja .fj-pick em { flex: none; font-style: normal; font-size: 12.5px; font-weight: 600; }
+.site-forja .fj-pick > svg { font-size: 20px; }
+.site-forja .fj-cta { display: flex; justify-content: center; align-items: center; gap: 30px; min-height: 54px; padding: 12px 26px; border-radius: 999px; background: var(--fj-grad); color: var(--s-on-accent); font: 800 23px/1 "Barlow Condensed", sans-serif; letter-spacing: 0.035em; text-transform: uppercase; text-align: center; }
+.site-forja .fj-cta span { min-width: 0; overflow-wrap: anywhere; }
+.site-forja .fj-cta svg { font-size: 24px; }
+
+/* Light rounded panel with the workout list (inverted surface). */
+.site-forja .fj-panel { margin: 14px 0; padding: 26px 14px 18px; border-radius: 30px; background: color-mix(in srgb, var(--s-text) 96%, var(--s-bg)); color: var(--s-bg); }
+.site-forja .fj-panel > .fj-title { padding: 0 6px; }
+.site-forja .fj-search { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 12px 16px; border-radius: 999px; background: color-mix(in srgb, var(--s-bg) 9%, transparent); font-size: 12.5px; color: color-mix(in srgb, var(--s-bg) 55%, var(--s-text)); }
+.site-forja .fj-search svg { font-size: 19px; color: var(--s-bg); }
+.site-forja .fj-search span { min-width: 0; overflow-wrap: anywhere; }
+.site-forja .fj-pills { display: flex; gap: 6px; margin-top: 14px; overflow: hidden; }
+.site-forja .fj-pills span { flex: none; padding: 8px 14px; border-radius: 999px; background: color-mix(in srgb, var(--s-bg) 9%, transparent); font-size: 12.5px; font-weight: 500; }
+.site-forja .fj-pills .on { background: var(--s-bg); color: var(--s-text); }
+.site-forja .fj-cards { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+.site-forja .fj-card { position: relative; display: flex; align-items: flex-end; min-height: 158px; border-radius: 18px; background: var(--s-bg); color: var(--s-text); overflow: hidden; }
+.site-forja .fj-card-img { position: absolute; inset: 0; }
+.site-forja .fj-card-img::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--s-bg) 82%, transparent), transparent 75%), linear-gradient(0deg, color-mix(in srgb, var(--s-bg) 80%, transparent), transparent 55%); }
+.site-forja .fj-card-price { position: absolute; right: 12px; top: 12px; padding: 4px 10px; border-radius: 999px; background: var(--s-accent); color: var(--s-on-accent); font-style: normal; font-size: 11.5px; font-weight: 700; }
+.site-forja .fj-card-body { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; padding: 44px 6px 12px 14px; }
+.site-forja .fj-card-body small { font-size: 10.5px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--s-accent); }
+.site-forja .fj-card-body b { max-width: 190px; font-size: 22px; font-weight: 700; line-height: 1.05; overflow-wrap: anywhere; }
+.site-forja .fj-card-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 9px; font-size: 10.5px; }
+.site-forja .fj-card-meta span { display: flex; align-items: center; gap: 5px; }
+.site-forja .fj-card-meta svg { font-size: 13px; }
+.site-forja .fj-go { position: relative; flex: none; display: flex; align-items: center; justify-content: center; gap: 2px; width: 32px; height: 32px; margin: 0 12px 12px 0; border-radius: 999px; background: var(--s-text); color: var(--s-accent); font-size: 12px; font-weight: 700; }
+.site-forja .fj-go.txt { width: auto; padding: 0 8px 0 14px; }
+.site-forja .fj-go svg { font-size: 19px; stroke-width: 2.4; }
+.site-forja .fj-panel > .fj-cta { margin-top: 14px; }
+
+/* About: exercise-screen look (photo on the right, set bar). */
+.site-forja .fj-about { position: relative; padding: 26px 18px 14px; }
+.site-forja .fj-about-img { position: absolute; right: 0; top: 0; width: 70%; height: 290px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 55%), linear-gradient(180deg, #000 68%, transparent); -webkit-mask-composite: source-in; mask-image: linear-gradient(90deg, transparent, #000 55%), linear-gradient(180deg, #000 68%, transparent); mask-composite: intersect; }
+.site-forja .fj-about-head { position: relative; }
+.site-forja .fj-about-head.pic { min-height: 236px; padding-top: 26px; }
+.site-forja .fj-set { margin-top: 14px; max-width: 230px; }
+.site-forja .fj-set b { display: block; font-size: 14.5px; font-weight: 500; line-height: 1.25; }
+.site-forja .fj-set small { display: block; margin-top: 8px; font-size: 11.5px; color: var(--fj-mut); }
+.site-forja .fj-segs { display: flex; gap: 4px; width: 124px; margin-top: 10px; }
+.site-forja .fj-segs i { flex: 1; height: 6px; border-radius: 99px; background: color-mix(in srgb, var(--s-text) 30%, var(--s-bg)); }
+.site-forja .fj-segs i.on { background: var(--s-accent); }
+.site-forja .fj-segs.wide { width: auto; margin: 10px 4px 0; }
+.site-forja .fj-about p { position: relative; font-size: 13.5px; color: var(--fj-mut); white-space: pre-line; }
+
+/* Links: progress rows. */
+.site-forja .fj-links { padding: 14px 14px 10px; }
+.site-forja .fj-links-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.site-forja .fj-links-top > span { flex: none; max-width: 50%; padding-right: 4px; font-size: 14px; font-weight: 500; text-align: right; }
+.site-forja .fj-steps { margin-top: 14px; border-radius: 16px; background: var(--fj-card); }
+.site-forja .fj-step { display: flex; align-items: center; gap: 12px; padding: 14px 12px 14px 16px; }
+.site-forja .fj-step + .fj-step { border-top: 1px solid var(--fj-line); }
+.site-forja .fj-step-n { flex: none; font-size: 34px; font-weight: 700; line-height: 1; white-space: nowrap; }
+.site-forja .fj-step-n small { font-size: 16px; font-weight: 600; color: var(--fj-mut); }
+.site-forja .fj-step-body { flex: 1; min-width: 0; }
+.site-forja .fj-step-body small { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--s-accent); }
+.site-forja .fj-step-body b { display: block; font-size: 14.5px; font-weight: 600; overflow-wrap: anywhere; }
+.site-forja .fj-step-body > span { display: block; font-size: 11.5px; color: var(--fj-mut); }
+.site-forja .fj-step-body .fj-track { height: 6px; margin-top: 8px; border-radius: 99px; background: color-mix(in srgb, var(--s-text) 28%, var(--s-bg)); overflow: hidden; }
+.site-forja .fj-track i { display: block; height: 100%; border-radius: 99px; background: var(--s-accent); }
+.site-forja .fj-step-img { flex: none; width: 44px; height: 44px; border-radius: 12px; overflow: hidden; }
+.site-forja .fj-step > svg { font-size: 20px; }
+
+/* Closing call. */
+.site-forja .fj-final { display: flex; flex-direction: column; gap: 12px; padding: 22px 14px 10px; }
+.site-forja .fj-final .fj-title, .site-forja .fj-final p { padding: 0 4px; }
+.site-forja .fj-final p { font-size: 13.5px; color: var(--fj-mut); }
+.site-forja .sp-footer { padding: 14px 18px 20px; text-align: center; }
+.site-forja .fj-footer { font-size: 11px; color: var(--fj-mut); }

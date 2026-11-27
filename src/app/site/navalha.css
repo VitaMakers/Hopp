@@ -1,0 +1,134 @@
+/* Navalha — barbershop (warm near-black / beige, thin uppercase titles). */
+.site-navalha { font-family: "Outfit Variable", system-ui, sans-serif; font-weight: 300; --nv-card: color-mix(in srgb, var(--s-text) 4%, var(--s-bg)); --nv-line: color-mix(in srgb, var(--s-text) 17%, var(--s-bg)); --nv-mut: color-mix(in srgb, var(--s-text) 56%, var(--s-bg)); --nv-soft: color-mix(in srgb, var(--s-text) 86%, var(--s-bg)); }
+.site-navalha svg { display: block; }
+.site-navalha em { font-style: normal; color: var(--s-accent); }
+.site-navalha em small { font-size: 0.75em; color: var(--nv-mut); }
+.site-navalha .ac { color: var(--s-accent); }
+
+/* Cover: full photo, brand on top, title and buttons at the bottom. */
+.site-navalha .nv-hero { position: relative; min-height: 820px; display: flex; flex-direction: column; justify-content: space-between; gap: 40px; }
+.site-navalha .nv-photo { position: absolute; inset: 0; overflow: hidden; }
+.site-navalha .nv-photo img { filter: brightness(0.74) sepia(0.24) contrast(1.05); }
+.site-navalha .nv-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--s-bg) 50%, transparent) 0%, color-mix(in srgb, var(--s-bg) 8%, transparent) 26%, color-mix(in srgb, var(--s-bg) 30%, transparent) 46%, color-mix(in srgb, var(--s-bg) 90%, transparent) 64%, var(--s-bg) 80%); }
+.site-navalha .nv-bar { position: relative; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 33px 28px 0; }
+.site-navalha .nv-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.site-navalha .nv-brand > span { min-width: 0; }
+.site-navalha .nv-brand b { display: block; font-size: 21px; font-weight: 300; line-height: 1; letter-spacing: 0.42em; text-transform: uppercase; }
+.site-navalha .nv-brand small { display: block; margin-top: 5px; font-size: 7.5px; font-weight: 400; line-height: 1; letter-spacing: 0.52em; text-transform: uppercase; opacity: 0.72; }
+.site-navalha .nv-logo { flex: none; width: 34px; height: 34px; object-fit: contain; }
+.site-navalha .nv-dash { flex: none; width: 38px; height: 1.5px; margin-top: 10px; background: var(--s-text); }
+.site-navalha .nv-head { position: relative; padding: 0 24px 38px 28px; }
+.site-navalha .nv-label { display: block; margin-bottom: 8px; font-size: 11.5px; font-weight: 400; letter-spacing: 0.07em; text-transform: uppercase; color: var(--nv-soft); }
+.site-navalha .nv-title { font-size: clamp(27px, 8.7cqi, 37px); font-weight: 300; line-height: 1.2; letter-spacing: -0.005em; text-transform: uppercase; }
+.site-navalha .nv-line { display: block; }
+.site-navalha .nv-title2 { font-size: clamp(22px, 6.6cqi, 28px); margin-bottom: 14px; }
+.site-navalha .nv-sub { margin-top: 10px; font-size: 15px; line-height: 1.42; white-space: pre-line; color: var(--nv-soft); }
+.site-navalha .nv-rule { display: block; width: 48px; height: 1.5px; background: var(--s-accent); }
+.site-navalha .nv-head .nv-rule { margin: 30px 0 42px; }
+.site-navalha .nv-btns { display: flex; gap: 15px; }
+.site-navalha .nv-btn { display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 58px; padding: 8px 24px; border-radius: 999px; font-size: 15px; font-weight: 400; line-height: 1.15; text-align: center; }
+.site-navalha .nv-btn.line { flex: 0 1 150px; border: 1px solid color-mix(in srgb, var(--s-text) 58%, transparent); background: color-mix(in srgb, var(--s-bg) 55%, transparent); }
+.site-navalha .nv-btn.fill { flex: 1 1 176px; gap: 8px; padding: 8px 22px 8px 34px; background: var(--s-accent); color: var(--s-on-accent); }
+.site-navalha .nv-btn.fill span { flex: 1; min-width: 0; }
+.site-navalha .nv-btn svg { font-size: 19px; }
+.site-navalha .nv-btn.sm { display: inline-flex; flex: none; gap: 10px; min-height: 44px; margin-top: 16px; font-size: 13.5px; }
+.site-navalha .nv-btn.sm svg { font-size: 16px; }
+.site-navalha .nv-guest { display: flex; align-items: center; gap: 18px; margin-top: 46px; font-size: 14.5px; }
+.site-navalha .nv-guest > span:last-child { min-width: 0; }
+.site-navalha .nv-guest small { display: block; font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--nv-mut); }
+.site-navalha .nv-guest em { margin-left: 8px; }
+.site-navalha .nv-circle { flex: none; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border: 1.5px solid var(--s-text); border-radius: 50%; font-size: 17px; }
+
+/* Tabs: the first one is the beige pill. */
+.site-navalha .nv-nav { padding: 22px 0 8px; }
+.site-navalha .nv-h { padding: 0 20px; margin-bottom: 12px; font-size: 18px; font-weight: 400; }
+.site-navalha .nv-tabs, .site-navalha .nv-slots { display: flex; align-items: center; overflow-x: auto; scrollbar-width: none; }
+.site-navalha .nv-tabs::-webkit-scrollbar, .site-navalha .nv-slots::-webkit-scrollbar { display: none; }
+.site-navalha .nv-tabs { gap: 4px; padding: 0 10px; }
+.site-navalha .nv-tabs a { flex: none; display: flex; align-items: center; min-height: 35px; padding: 0 13px; border-radius: 14px; font-size: 13.5px; white-space: nowrap; color: var(--nv-mut); }
+.site-navalha .nv-tabs a.on { padding: 0 19px; margin-right: 4px; background: var(--s-accent); color: var(--s-on-accent); font-weight: 400; }
+.site-navalha .nv-strip { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 17px 0; }
+.site-navalha .nv-strip span { padding: 7px 14px; border: 1px solid var(--nv-line); border-radius: 999px; font-size: 12px; color: var(--nv-soft); }
+
+/* Service cards: text on the left, photo fading in on the right. */
+.site-navalha .nv-catalog { display: flex; flex-direction: column; gap: 9px; padding: 8px 17px 12px; }
+.site-navalha .nv-catalog > .nv-label { margin: 8px 3px 0; }
+.site-navalha .nv-catalog > .nv-title2 { margin: 0 3px 6px; }
+.site-navalha .nv-svc { position: relative; display: flex; align-items: center; min-height: 147px; border: 1px solid var(--nv-line); border-radius: 20px; background: var(--nv-card); overflow: hidden; }
+.site-navalha .nv-svc-img { position: absolute; top: 0; right: 0; bottom: 0; width: 72%; -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 42%); mask-image: linear-gradient(90deg, transparent 0%, #000 42%); }
+.site-navalha .nv-svc-img img { filter: brightness(0.82) sepia(0.2); }
+.site-navalha .nv-svc-body { position: relative; display: flex; flex-direction: column; width: 46%; min-width: 0; padding: 16px 0 16px 20px; }
+.site-navalha .nv-svc.plain .nv-svc-body { width: auto; flex: 1; padding-right: 66px; }
+.site-navalha .nv-svc-body > small { margin-bottom: 4px; font-size: 10px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--s-accent); }
+.site-navalha .nv-svc-body b { font-size: 18.5px; font-weight: 400; line-height: 1.15; }
+.site-navalha .nv-svc-text { margin-top: 7px; font-size: 10.5px; line-height: 1.25; white-space: pre-line; color: var(--nv-soft); }
+.site-navalha .nv-svc-body em { margin-top: 7px; font-size: 13px; font-weight: 400; }
+.site-navalha .nv-svc-btn { margin-top: 8px; font-size: 11px; font-weight: 400; text-decoration: underline; text-underline-offset: 3px; }
+.site-navalha .nv-svc .nv-circle { position: absolute; right: 14px; bottom: 14px; background: color-mix(in srgb, var(--s-bg) 35%, transparent); }
+
+/* Booking header: photo, short rule, label, name and price. */
+.site-navalha .nv-feature { padding-bottom: 10px; }
+.site-navalha .nv-feature-img { height: 400px; -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent 100%); mask-image: linear-gradient(180deg, #000 55%, transparent 100%); }
+.site-navalha .nv-feature-img img { filter: brightness(0.8) sepia(0.2); }
+.site-navalha .nv-feature-body { position: relative; margin-top: -34px; padding: 0 20px 0 26px; }
+.site-navalha .nv-feature.plain .nv-feature-body { margin-top: 0; padding-top: 28px; }
+.site-navalha .nv-feature .nv-rule { margin-bottom: 24px; }
+.site-navalha .nv-tag { display: inline-block; margin-bottom: 10px; padding: 5px 12px; border-radius: 999px; background: var(--s-accent); color: var(--s-on-accent); font-size: 10.5px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+.site-navalha .nv-feature-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.site-navalha .nv-feature-row h2 { min-width: 0; font-size: 28px; font-weight: 300; line-height: 1.2; white-space: pre-line; }
+.site-navalha .nv-price { flex: none; max-width: 45%; text-align: right; }
+.site-navalha .nv-price strong { display: block; font-size: 26px; font-weight: 400; line-height: 1.1; }
+.site-navalha .nv-price small { display: block; margin-top: 4px; font-size: 11.5px; color: var(--nv-mut); }
+
+/* Rounded rows: barber, date, links. */
+.site-navalha .nv-box { display: flex; align-items: center; gap: 14px; border: 1px solid var(--nv-line); border-radius: 22px; background: var(--nv-card); }
+.site-navalha .nv-box > svg:last-child { margin-left: auto; font-size: 17px; color: var(--nv-mut); }
+.site-navalha .nv-about { padding: 8px 17px; }
+.site-navalha .nv-about > .nv-label { margin: 0 9px 10px; }
+.site-navalha .nv-person, .site-navalha .nv-link { min-height: 74px; padding: 11px 18px 11px 14px; }
+.site-navalha .nv-avatar { flex: none; width: 50px; height: 50px; border-radius: 50%; overflow: hidden; background: var(--nv-line); }
+.site-navalha .nv-person-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; padding-left: 2px; }
+.site-navalha .nv-person-body b { font-size: 15.5px; font-weight: 400; line-height: 1.2; }
+.site-navalha .nv-person-body > small { font-size: 10px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--s-accent); }
+.site-navalha .nv-role { display: flex; flex-wrap: wrap; align-items: center; column-gap: 12px; font-size: 11.5px; color: var(--nv-mut); }
+.site-navalha .nv-role > span { display: inline-flex; align-items: center; gap: 5px; min-width: 0; }
+.site-navalha .nv-role > span:has(svg) { color: var(--nv-soft); font-weight: 400; }
+.site-navalha .nv-role svg { font-size: 13px; color: var(--s-accent); }
+.site-navalha .nv-about blockquote { margin: 16px 9px 4px; padding-left: 14px; border-left: 1.5px solid var(--s-accent); font-size: 15px; line-height: 1.4; }
+.site-navalha .nv-about cite { display: block; margin-top: 6px; font-style: normal; font-size: 11.5px; color: var(--nv-mut); }
+.site-navalha .nv-hours { padding: 8px 0; }
+.site-navalha .nv-date { min-height: 50px; margin: 0 17px; padding: 8px 18px 8px 16px; border-radius: 18px; }
+.site-navalha .nv-date > svg:first-child { font-size: 20px; }
+.site-navalha .nv-date-body { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; min-width: 0; }
+.site-navalha .nv-date-body b { font-size: 13.5px; font-weight: 400; }
+.site-navalha .nv-date-body small { font-size: 11.5px; color: var(--nv-mut); }
+.site-navalha .nv-slots { gap: 8px; padding: 0 17px; }
+.site-navalha .nv-date + .nv-slots { margin-top: 12px; }
+.site-navalha .nv-slots > span { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 86px; min-height: 43px; padding: 5px 16px; border: 1px solid var(--nv-line); border-radius: 999px; background: var(--nv-card); font-size: 13px; font-weight: 400; white-space: nowrap; }
+.site-navalha .nv-slots small { font-size: 9.5px; font-weight: 300; opacity: 0.75; }
+.site-navalha .nv-slots .on { border-color: var(--s-accent); background: var(--s-accent); color: var(--s-on-accent); }
+.site-navalha .nv-slots .off { opacity: 0.4; text-decoration: line-through; }
+
+/* Closing call: the full-width beige button. */
+.site-navalha .nv-final { padding: 8px 17px 22px; }
+.site-navalha .nv-final > .nv-title2 { margin: 14px 9px 8px; }
+.site-navalha .nv-final p { margin: 0 9px 16px; font-size: 14px; color: var(--nv-soft); }
+.site-navalha .nv-book { display: flex; align-items: center; justify-content: center; gap: 14px; min-height: 54px; padding: 10px 22px; border-radius: 22px; background: var(--s-accent); color: var(--s-on-accent); font-size: 14.5px; font-weight: 500; text-align: center; }
+.site-navalha .nv-book span { min-width: 0; }
+.site-navalha .nv-book svg { font-size: 17px; }
+
+.site-navalha .nv-stats { display: flex; margin: 8px 17px; padding: 16px 4px; border: 1px solid var(--nv-line); border-radius: 22px; background: var(--nv-card); }
+.site-navalha .nv-stats > div { flex: 1; min-width: 0; padding: 0 10px; text-align: center; }
+.site-navalha .nv-stats > div + div { border-left: 1px solid var(--nv-line); }
+.site-navalha .nv-stats b { display: block; font-size: 22px; font-weight: 300; line-height: 1.1; color: var(--s-accent); overflow-wrap: anywhere; }
+.site-navalha .nv-stats span { display: block; margin-top: 4px; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--nv-mut); }
+.site-navalha .nv-links { display: flex; flex-direction: column; gap: 9px; padding: 8px 17px 12px; }
+.site-navalha .nv-links > .nv-label { margin: 8px 9px 0; }
+.site-navalha .nv-links > .nv-title2 { margin: 0 9px 6px; }
+.site-navalha .nv-link { min-height: 58px; padding-left: 18px; }
+.site-navalha .nv-link:has(.nv-avatar) { min-height: 74px; padding-left: 14px; }
+.site-navalha .sp-footer { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 16px 18px 26px; text-align: center; }
+.site-navalha .nv-socials { display: flex; gap: 10px; }
+.site-navalha .nv-socials a { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border: 1px solid var(--nv-line); border-radius: 50%; }
+.site-navalha .nv-socials svg { width: 16px; height: 16px; }
+.site-navalha .nv-footer { font-size: 11px; letter-spacing: 0.04em; color: var(--nv-mut); }
