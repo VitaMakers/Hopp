@@ -34,7 +34,7 @@ export const morada: SiteRender = (c) => {
     );
   };
   // The giant word always spans the column, whatever the brand length.
-  const giant = { fontSize: `clamp(34px, ${(150 / Math.max(c.brand.length, 3)).toFixed(1)}cqi, 132px)` };
+  const giant = { fontSize: `clamp(34px, ${(142 / Math.max(c.brand.length, 3)).toFixed(1)}cqi, 132px)` };
   const contact = { label: c.final.button, href: c.final.href };
   return {
     hero: (

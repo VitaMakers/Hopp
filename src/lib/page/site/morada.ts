@@ -51,7 +51,7 @@ export const moradaTemplate: SiteTemplate = {
     hoursTitle: "Perguntas\nfrequentes",
     hoursNote: "Respostas rápidas sobre compra, aluguel e investimento com a Morada.",
     hours: [
-      { label: "Como comprar", time: "Com corretor dedicado", highlight: false, closed: false },
+      { label: "Como comprar", time: "Corretor dedicado", highlight: false, closed: false },
       { label: "Financiam.", time: "Sim, com parceiros", highlight: true, closed: false },
       { label: "Visitas", time: "Agende pelo WhatsApp", highlight: false, closed: false },
       { label: "Taxas", time: "Tudo em contrato", highlight: false, closed: false },
