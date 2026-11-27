@@ -286,9 +286,12 @@ export const LAYOUTS = ["classic", "cover", "card", "hero", "name", "poster", "b
 export const BACKGROUND_TYPES = ["solid", "gradient", "image"] as const;
 export const AVATAR_SHAPES = ["circle", "rounded", "square"] as const;
 export const SOCIAL_STYLES = ["icons", "pills"] as const;
+// The "site" family: full landing-style models that share the same parts and
+// editor (src/components/page-view/site). Each id is one visual design.
+export const SITE_DESIGNS = ["nautica", "neon", "morada", "reforma", "obra", "atelier", "forja", "rota", "patinha", "casapet", "vetta", "lume", "vigor", "aurea", "navalha"] as const;
 // Vita premium designs: when set, the page is drawn by that template's own
 // layout (src/components/page-view/PremiumView.tsx) instead of the theme.
-export const PREMIUM_DESIGNS = ["", "authority", "spotlight", "ecosystem", "catalog", "experience", "store", "lookbook", "mosaic", "dropz", "promo", "menu", "bistro", "bar", "casa", "clinic"] as const;
+export const PREMIUM_DESIGNS = ["", "authority", "spotlight", "ecosystem", "catalog", "experience", "store", "lookbook", "mosaic", "dropz", "promo", "menu", "bistro", "bar", "casa", "clinic", ...SITE_DESIGNS] as const;
 
 export const themeSchema = z.object({
   layout: z.enum(LAYOUTS),
@@ -412,6 +415,19 @@ export const premiumFieldsSchema = z.object({
     .array(z.object({ label: z.string().max(20), url: z.string().max(2000).default("") }))
     .max(6)
     .default([]),
+  // "site" family: titles and texts of the parts the older designs don't have.
+  navTitle: z.string().max(60).default(""),
+  aboutTitle: z.string().max(240).default(""),
+  aboutImageUrl: z.string().max(1000).default(""),
+  catalogLabel: z.string().max(60).default(""),
+  catalogTitle: z.string().max(160).default(""),
+  linksLabel: z.string().max(60).default(""),
+  linksTitle: z.string().max(160).default(""),
+  hoursTitle: z.string().max(80).default(""),
+  hoursNote: z.string().max(80).default(""),
+  ctaTitle: z.string().max(160).default(""),
+  ctaText: z.string().max(300).default(""),
+  ctaButton: z.string().max(40).default(""),
 });
 
 export const PREMIUM_DEFAULTS = premiumFieldsSchema.parse({});

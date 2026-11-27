@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState, type FormEvent } from "react";
-import type { Block, PageDoc } from "@/lib/page/schema";
+import { SITE_DESIGNS, type Block, type PageDoc } from "@/lib/page/schema";
 import { SOCIAL_LABELS } from "@/lib/page/constants";
 import { spotifyEmbedUrl, youtubeEmbedUrl } from "@/lib/page/embed";
 import { imageSrc, linkHref, mapsDirectionsUrl, mapsEmbedUrl, socialHref, vCard, videoSrc, whatsappHref } from "@/lib/page/links";
@@ -603,6 +603,7 @@ const PREMIUM_RENDERS: Record<string, string[]> = {
   casa: ["link"],
   clinic: ["link", "product", "stats"],
 };
+for (const design of SITE_DESIGNS) PREMIUM_RENDERS[design] = ["link", "product", "stats"];
 
 // Scheduling block in "reveal" mode: a button that, on click, opens the
 // calendar embed in place (the visitor picks a date and time without leaving

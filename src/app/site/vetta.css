@@ -1,0 +1,90 @@
+/* Vetta — car rental (black / red, heavy italic titles). */
+.site-vetta { font-family: "Manrope Variable", system-ui, sans-serif; --vt-card: color-mix(in srgb, var(--s-text) 9%, var(--s-bg)); --vt-card2: color-mix(in srgb, var(--s-text) 13%, var(--s-bg)); --vt-line: color-mix(in srgb, var(--s-text) 16%, transparent); --vt-mut: color-mix(in srgb, var(--s-text) 62%, var(--s-bg)); padding-bottom: 8px; }
+.site-vetta .vt-hero { position: relative; min-height: 420px; }
+.site-vetta .vt-photo { position: absolute; left: 0; right: 0; top: 150px; bottom: 0; -webkit-mask-image: linear-gradient(180deg, transparent, #000 30%, #000 80%, transparent); mask-image: linear-gradient(180deg, transparent, #000 30%, #000 80%, transparent); }
+.site-vetta .vt-bar { position: relative; display: flex; justify-content: space-between; align-items: center; padding: 18px; }
+.site-vetta .vt-brand { display: flex; gap: 6px; align-items: flex-start; font: italic 800 22px/0.85 "Barlow Condensed", sans-serif; text-transform: uppercase; }
+.site-vetta .vt-brand i { color: var(--s-accent); font-style: italic; }
+.site-vetta .vt-brand b { display: block; font-weight: 800; }
+.site-vetta .vt-brand small { display: block; font: 500 8px/1 "Manrope Variable", sans-serif; letter-spacing: 0.34em; margin-top: 4px; }
+.site-vetta .vt-logo { width: 34px; height: 34px; object-fit: contain; }
+.site-vetta .vt-socials { display: flex; gap: 8px; }
+.site-vetta .vt-socials a { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: var(--vt-card2); }
+.site-vetta .vt-socials svg { width: 17px; height: 17px; }
+.site-vetta .vt-head { position: relative; padding: 0 18px; }
+.site-vetta .vt-pill { display: inline-block; margin-bottom: 8px; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--s-accent); }
+.site-vetta .vt-title { font: italic 800 clamp(34px, 10.4cqi, 46px)/0.9 "Barlow Condensed", sans-serif; text-transform: uppercase; }
+.site-vetta .vt-title .ac { color: var(--s-accent); }
+.site-vetta .vt-title2 { font-size: clamp(30px, 9.2cqi, 40px); padding: 0 4px; }
+.site-vetta .vt-sub { margin-top: 8px; max-width: 280px; font-size: 13px; }
+.site-vetta .vt-herocard { position: absolute; right: 16px; top: 250px; display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--s-bg) 70%, transparent); backdrop-filter: blur(8px); border: 1px solid var(--vt-line); }
+.site-vetta .vt-herocard small { font-size: 10px; color: var(--vt-mut); }
+.site-vetta em { font-style: normal; font-weight: 800; color: var(--s-accent); }
+.site-vetta em small { font-size: 10.5px; font-weight: 400; color: var(--vt-mut); }
+.site-vetta .vt-form { margin: 0 14px 10px; padding: 6px 16px; border-radius: 16px; background: var(--vt-card); }
+.site-vetta .vt-form-top { display: flex; gap: 12px; align-items: center; padding: 9px 0; }
+.site-vetta .vt-form small { display: block; font-size: 10.5px; color: var(--vt-mut); }
+.site-vetta .vt-form b { display: block; font-size: 14px; }
+.site-vetta .vt-form svg { font-size: 18px; }
+.site-vetta .vt-form-grid { display: grid; grid-template-columns: 1.25fr 1fr; }
+.site-vetta .vt-form-grid > div { display: flex; gap: 12px; align-items: center; padding: 9px 0; border-top: 1px solid var(--vt-line); }
+.site-vetta .vt-form-grid > div:nth-child(even) { padding-left: 12px; border-left: 1px solid var(--vt-line); }
+.site-vetta .vt-form-grid .on b { color: var(--s-accent); }
+.site-vetta .vt-form-grid .off { opacity: 0.45; }
+.site-vetta .vt-nav { padding: 4px 14px 10px; display: flex; flex-direction: column; gap: 10px; }
+.site-vetta .vt-h { font-size: 16px; font-weight: 700; padding: 0 4px; }
+.site-vetta .vt-h.big { font-size: 22px; line-height: 1.1; }
+.site-vetta .vt-tiles { display: flex; gap: 6px; }
+.site-vetta .vt-tiles a { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 2px 8px; border-radius: 12px; background: var(--vt-card2); text-align: center; font-size: 10px; line-height: 1.15; }
+.site-vetta .vt-tiles svg { width: 30px; height: 15px; }
+.site-vetta .vt-tiles a.on, .site-vetta .vt-cta { background: linear-gradient(180deg, color-mix(in srgb, var(--s-accent) 88%, #fff), color-mix(in srgb, var(--s-accent) 88%, #000)); color: var(--s-on-accent); }
+.site-vetta .vt-cta { display: flex; justify-content: center; align-items: center; gap: 30px; padding: 14px 24px; border-radius: 999px; font: 800 20px/1 "Barlow Condensed", sans-serif; letter-spacing: 0.03em; text-transform: uppercase; }
+.site-vetta .vt-cta.sm { font-size: 16px; padding: 10px 18px; }
+.site-vetta .vt-stats { display: flex; margin: 6px 14px 10px; padding: 14px 6px; border-radius: 16px; background: var(--vt-card); }
+.site-vetta .vt-stats > div { flex: 1; padding: 0 12px; }
+.site-vetta .vt-stats > div + div { border-left: 1px solid var(--vt-line); }
+.site-vetta .vt-stats b { display: block; font-size: 20px; }
+.site-vetta .vt-stats span { font-size: 10.5px; color: var(--vt-mut); }
+.site-vetta .vt-label { display: block; margin: 0 4px 6px; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--s-accent); }
+.site-vetta .vt-catalog { padding: 22px 14px 10px; }
+.site-vetta .vt-pills { display: flex; gap: 6px; margin: 12px 0; overflow: hidden; }
+.site-vetta .vt-pills span { flex: none; padding: 6px 13px; border-radius: 999px; background: var(--vt-card2); font-size: 12px; }
+.site-vetta .vt-pills .on { background: var(--s-text); color: var(--s-bg); font-weight: 700; }
+.site-vetta .vt-car { display: block; border-radius: 16px; background: var(--vt-card); overflow: hidden; margin-top: 12px; }
+.site-vetta .vt-car-img { position: relative; display: block; height: 170px; background: var(--vt-card2); }
+.site-vetta .vt-car-img svg { position: absolute; right: 14px; top: 12px; font-size: 20px; }
+.site-vetta .vt-car-body { display: block; padding: 12px 14px 14px; }
+.site-vetta .vt-car-top { display: flex; justify-content: space-between; gap: 10px; }
+.site-vetta .vt-car-top b { display: block; font-size: 17px; }
+.site-vetta .vt-car-top small, .site-vetta .vt-row-body > small { display: block; font-size: 10.5px; color: var(--vt-mut); }
+.site-vetta .vt-car-top em { font-size: 19px; text-align: right; white-space: nowrap; }
+.site-vetta .vt-car-top em small { display: block; }
+.site-vetta .vt-specs { display: flex; justify-content: space-between; gap: 6px; margin: 12px 0; font-size: 10.5px; text-align: center; opacity: 0.85; }
+.site-vetta .vt-specs span { flex: 1; }
+.site-vetta .vt-specs span + span { border-left: 1px solid var(--vt-line); }
+.site-vetta .vt-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.site-vetta .vt-row { display: flex; gap: 12px; align-items: center; padding: 8px 12px 8px 8px; border-radius: 14px; background: var(--vt-card); }
+.site-vetta .vt-row-img { width: 96px; height: 58px; border-radius: 10px; overflow: hidden; flex: none; background: var(--vt-card2); }
+.site-vetta .vt-row-body { flex: 1; min-width: 0; }
+.site-vetta .vt-row-body b { display: block; }
+.site-vetta .vt-row svg { font-size: 18px; }
+.site-vetta .vt-about { padding: 22px 18px 10px; }
+.site-vetta .vt-about-img { height: 190px; border-radius: 16px; overflow: hidden; margin-bottom: 14px; }
+.site-vetta .vt-about .vt-label, .site-vetta .vt-about .vt-h { margin-left: 0; padding: 0; }
+.site-vetta .vt-about p { margin-top: 8px; color: var(--vt-mut); }
+.site-vetta .vt-about blockquote { margin: 14px 0 0; padding-left: 12px; border-left: 3px solid var(--s-accent); font-size: 15px; }
+.site-vetta .vt-about cite { display: block; margin-top: 6px; font-style: normal; font-size: 11px; color: var(--vt-mut); }
+.site-vetta .vt-feature { position: relative; margin: 12px 14px; min-height: 220px; border-radius: 16px; overflow: hidden; background: var(--vt-card); display: flex; align-items: flex-end; }
+.site-vetta .vt-feature-img { position: absolute; inset: 0; filter: brightness(0.5); }
+.site-vetta .vt-feature-body { position: relative; padding: 16px; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; color: #fff; }
+.site-vetta .vt-feature .vt-label { margin: 0; }
+.site-vetta .vt-feature strong { font: italic 800 40px/0.9 "Barlow Condensed", sans-serif; text-transform: uppercase; color: var(--s-accent); }
+.site-vetta .vt-feature b { font-size: 19px; line-height: 1.1; }
+.site-vetta .vt-feature p { font-size: 12px; opacity: 0.8; margin-bottom: 6px; }
+.site-vetta .vt-links { padding: 10px 14px; }
+.site-vetta .vt-links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+.site-vetta .vt-links-grid a { padding: 12px; border-radius: 999px; background: var(--vt-card2); text-align: center; font-size: 12px; }
+.site-vetta .vt-final { padding: 20px 14px 10px; display: flex; flex-direction: column; gap: 10px; }
+.site-vetta .vt-final p { padding: 0 4px; color: var(--vt-mut); }
+.site-vetta .sp-footer { padding: 14px 18px 20px; text-align: center; }
+.site-vetta .vt-footer { font-size: 11px; color: var(--vt-mut); }

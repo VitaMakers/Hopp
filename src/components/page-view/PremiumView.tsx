@@ -10,6 +10,7 @@ import { imageSrc, linkHref, socialHref, videoSrc, whatsappHref } from "@/lib/pa
 import { SocialIcon } from "./SocialIcon";
 import { track } from "./track";
 import { VerifiedCheck } from "./VerifiedCheck";
+import { SiteView } from "./site/SiteView";
 
 // The four Vita premium designs. Each one mirrors the markup of the
 // original template so src/app/premium.css styles it the same way.
@@ -29,7 +30,7 @@ const PremiumEditContext = createContext<((target: string) => void) | null>(null
 // Whether the model footer credit (owner name + copyright) is hidden. Only
 // a plan that may drop branding can hide it, so the Virtú.bio credit always
 // stays on the free and Essencial plans.
-function footerHidden(doc: PageDoc, plan?: string): boolean {
+export function footerHidden(doc: PageDoc, plan?: string): boolean {
   return canHideBrand(plan) && doc.premium.hideFooter;
 }
 
@@ -60,12 +61,12 @@ type ProductBlock = Extract<Block, { type: "product" }>;
 
 const year = new Date().getFullYear();
 
-function visible<T extends Block["type"]>(doc: PageDoc, type: T) {
+export function visible<T extends Block["type"]>(doc: PageDoc, type: T) {
   return doc.blocks.filter((block): block is Extract<Block, { type: T }> => block.enabled && block.type === type);
 }
 
 // Readable text colour (dark or white) for a given background, by luminance.
-function textOn(hex: string): string {
+export function textOn(hex: string): string {
   const h = hex.replace("#", "");
   if (h.length !== 6) return "#111827";
   const r = parseInt(h.slice(0, 2), 16);
@@ -82,7 +83,7 @@ function linkTint(buttonColor?: string): React.CSSProperties | undefined {
 
 // "Altura da capa": when set, every model's cover/hero uses this exact height
 // instead of its default aspect ratio. 0 = automatic (the model's own size).
-function coverStyle(height: number): React.CSSProperties | undefined {
+export function coverStyle(height: number): React.CSSProperties | undefined {
   return height ? { height, minHeight: 0, aspectRatio: "auto" } : undefined;
 }
 
@@ -121,11 +122,11 @@ function usesHeroVideo(premium: PremiumFields): boolean {
 }
 
 // object-position for cover images, from the framing sliders.
-function heroImgStyle(premium: PremiumFields, extra?: React.CSSProperties): React.CSSProperties {
+export function heroImgStyle(premium: PremiumFields, extra?: React.CSSProperties): React.CSSProperties {
   return { objectPosition: `${premium.heroPosX}% ${premium.heroPosY}%`, ...extra };
 }
 
-function BlockLink({
+export function BlockLink({
   block,
   handle,
   href,
@@ -173,7 +174,7 @@ function BlockLink({
 // (tinted live by the per-button colour, passed as `children`); "Destaque" and
 // "Cartão" switch to a universal banner/card, so the format picker always
 // changes the preview the moment it is clicked — the same controls as Linktree.
-function PremiumLink({ block, handle, children }: { block: LinkBlock; handle?: string; children: React.ReactNode }) {
+export function PremiumLink({ block, handle, children }: { block: LinkBlock; handle?: string; children: React.ReactNode }) {
   if (block.display === "banner") return <PremiumBanner block={block} handle={handle} />;
   if (block.display === "card") return <PremiumCard block={block} handle={handle} />;
   return <>{children}</>;
@@ -279,7 +280,7 @@ export function PremiumView({ doc, handle, plan, onEdit, still = false, extra }:
       case "clinic":
         return <Clinic doc={doc} handle={handle} plan={plan} extra={extra} />;
       default:
-        return null;
+        return doc.theme.premium ? <SiteView doc={doc} handle={handle} plan={plan} extra={extra} /> : null;
     }
   })();
   if (onEdit) {

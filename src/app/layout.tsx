@@ -11,7 +11,17 @@ import "@fontsource/space-mono/latin-700.css";
 import "@fontsource-variable/instrument-sans";
 import "@fontsource-variable/bricolage-grotesque";
 import "./globals.css";
+import "@fontsource-variable/manrope";
+import "@fontsource-variable/outfit";
+import "@fontsource-variable/sora";
+import "@fontsource-variable/inter-tight";
+import "@fontsource/barlow-condensed/latin-700.css";
+import "@fontsource/barlow-condensed/latin-800.css";
+import "@fontsource/barlow-condensed/latin-700-italic.css";
+import "@fontsource/barlow-condensed/latin-800-italic.css";
+import "@fontsource/anton/latin-400.css";
 import "./premium.css";
+import "./site/index.css";
 
 // The site address comes from configuration, not from the request: reading the
 // request here would force every page (the public profiles included) to be
