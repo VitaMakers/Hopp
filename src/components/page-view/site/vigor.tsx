@@ -5,10 +5,10 @@ import { Act, ArrowUp, Cart, Img, Item, Lines, Socials, split, Star, type SiteRe
 // Spec icons of the numbers row (strength, layers, energy, lab), by position.
 function SpecIcon({ index }: { index: number }) {
   const paths = [
-    <path key="a" d="M6 20c-1.700-2.500-2-5.500-.500-8 1-1.700 2.700-2.500 4.500-2.500V5.500C10 4.100 11.100 3 12.500 3S15 4.100 15 5.500V8M10 9.500c2.200-1.200 4.800-.900 6.700.700 2.700 2.300 3 6.400 1.300 9.800H6M10 14c1.300-.900 2.800-.900 4 0" />,
-    <path key="b" d="m12 3 9 4.500-9 4.500-9-4.500zM3 12l9 4.500 9-4.500M3 16.500 12 21l9-4.500" />,
-    <path key="c" d="M13 2 5 13.500h6L10 22l9-12.500h-6.500z" />,
-    <path key="d" d="M9.500 3h5M10.500 3v6L5 18.500c-.600 1.100.200 2.500 1.500 2.500h11c1.300 0 2.100-1.400 1.500-2.500L13.500 9V3M8 15h8" />,
+    <path key="a" d="M6 20c-1.7-2.5-2-5.5-.5-8 1-1.7 2.7-2.5 4.5-2.5V5.5C10 4.1 11.1 3 12.5 3S15 4.1 15 5.5V8M10 9.5c2.2-1.2 4.8-.9 6.7.7 2.7 2.3 3 6.4 1.3 9.8H6M10 14c1.3-.9 2.8-.9 4 0" />,
+    <path key="b" d="m12 3 9 4.5-9 4.5-9-4.5zM3 12l9 4.5 9-4.5M3 16.5 12 21l9-4.5" />,
+    <path key="c" d="M13 2 5 13.5h6L10 22l9-12.5h-6.5z" />,
+    <path key="d" d="M9.5 3h5M10.5 3v6L5 18.5c-.6 1.1.2 2.5 1.5 2.5h11c1.3 0 2.1-1.4 1.5-2.5L13.5 9V3M8 15h8" />,
   ];
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" width="1em" height="1em" aria-hidden>

@@ -4,10 +4,10 @@
 /* Cover: the photo is tinted by the accent colour (colour blend) and fades into the page. */
 .site-aurea .au-hero { position: relative; display: flex; flex-direction: column; min-height: 620px; overflow: hidden; color: var(--s-on-accent); background: var(--s-bg); }
 .site-aurea .au-photo { position: absolute; inset: 0; isolation: isolate; background: linear-gradient(160deg, var(--s-accent), var(--au-deep)); }
-.site-aurea .au-photo img { filter: brightness(0.86) contrast(1.08); }
+.site-aurea .au-photo img { filter: saturate(0.55) contrast(1.12); }
 .site-aurea .au-photo::before, .site-aurea .au-photo::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
-.site-aurea .au-photo::before { background: var(--s-accent); mix-blend-mode: color; opacity: 0.82; }
-.site-aurea .au-photo::after { background: linear-gradient(180deg, transparent 58%, color-mix(in srgb, var(--s-bg) 78%, transparent) 86%, var(--s-bg) 100%), linear-gradient(180deg, color-mix(in srgb, var(--s-accent) 46%, transparent) 0%, color-mix(in srgb, var(--s-accent) 16%, transparent) 46%, transparent 70%), linear-gradient(100deg, color-mix(in srgb, var(--au-deep) 62%, transparent) 0%, transparent 72%); }
+.site-aurea .au-photo::before { background: linear-gradient(180deg, color-mix(in srgb, var(--s-accent) 86%, #000), var(--s-accent) 60%); mix-blend-mode: multiply; opacity: 0.94; }
+.site-aurea .au-photo::after { background: linear-gradient(180deg, transparent 58%, color-mix(in srgb, var(--s-bg) 78%, transparent) 86%, var(--s-bg) 100%), linear-gradient(180deg, color-mix(in srgb, var(--s-accent) 30%, transparent) 0%, transparent 50%), linear-gradient(100deg, color-mix(in srgb, var(--au-deep) 50%, transparent) 0%, transparent 70%); }
 .site-aurea .au-hero.np .au-photo::before { display: none; }
 .site-aurea .au-bar { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 20px 18px 0; }
 .site-aurea .au-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }

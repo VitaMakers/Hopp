@@ -163,10 +163,8 @@
 .site-lume .lm-item-desc { margin-top: 5px; font-size: 12px; color: var(--lm-mut); }
 .site-lume .lm-item em { margin-top: 7px; font: 700 17px/1.1 var(--lm-head); }
 .site-lume .lm-item em small { display: inline; font-size: 11px; font-weight: 500; color: var(--lm-mut); }
-.site-lume .lm-item .lm-cta { margin-top: auto; }
-.site-lume .lm-item em + .lm-cta, .site-lume .lm-item :not(em) + .lm-cta { transform: translateY(0); }
-.site-lume .lm-item .lm-cta::before { content: none; }
-.site-lume .lm-item > .lm-cta { margin-top: 12px; }
+.site-lume .lm-item > .lm-cta { margin-top: auto; }
+.site-lume .lm-item > :has(+ .lm-cta) { margin-bottom: 12px; }
 .site-lume .lm-final p { margin: 12px 0 0; font-size: 14.5px; line-height: 1.4; color: color-mix(in srgb, var(--lm-on-dark) 80%, transparent); }
 .site-lume .lm-final .lm-cta { margin-top: 18px; }
 .site-lume .lm-footer { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 18px 20px 22px; text-align: center; font-size: 12px; color: var(--lm-mut); }
