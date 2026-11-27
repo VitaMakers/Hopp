@@ -1,0 +1,207 @@
+/* Obra — construction company (navy-black / amber, warm glass cards). */
+.site-obra {
+  font-family: "Outfit Variable", system-ui, sans-serif;
+  font-weight: 300;
+  --ob-mut: color-mix(in srgb, var(--s-text) 60%, var(--s-bg));
+  --ob-line: color-mix(in srgb, var(--s-text) 13%, transparent);
+  --ob-card: color-mix(in srgb, var(--s-text) 4%, var(--s-bg));
+  --ob-warm: color-mix(in srgb, var(--s-accent) 26%, var(--s-bg));
+  --ob-glass-line: color-mix(in srgb, var(--s-accent) 50%, color-mix(in srgb, var(--s-text) 35%, transparent));
+  --ob-on-glass: color-mix(in srgb, var(--s-accent) 12%, #fff);
+}
+.site-obra b { font-weight: 500; }
+
+/* Shared pieces */
+.site-obra .ob-tag { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 4px 10px; border: 1px solid color-mix(in srgb, var(--s-text) 30%, transparent); border-radius: 999px; font-size: 9px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; }
+.site-obra .ob-tag i { flex: none; width: 5px; height: 5px; border-radius: 50%; background: var(--s-accent); }
+.site-obra .ob-tag svg { font-size: 11px; color: var(--s-accent); }
+.site-obra .ob-h { margin-top: 12px; font-size: clamp(24px, 7.2cqi, 30px); font-weight: 300; line-height: 1.1; letter-spacing: -0.01em; text-align: center; overflow-wrap: anywhere; }
+.site-obra .ob-h.left { text-align: left; font-size: clamp(22px, 6.4cqi, 27px); }
+.site-obra .ob-h .ac, .site-obra .ob-title .ac { color: var(--s-accent); }
+.site-obra .ob-center { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.site-obra .ob-lead { margin-top: 10px; max-width: 310px; font-size: 11.5px; line-height: 1.45; color: var(--ob-mut); }
+.site-obra .ob-lead.left { max-width: 290px; }
+.site-obra .ob-dot { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--s-bg); color: var(--s-text); font-size: 13px; }
+.site-obra .ob-dot.w { width: 22px; height: 22px; background: #fff; color: #111; font-size: 11px; }
+.site-obra .ob-btn { display: inline-flex; align-items: center; gap: 12px; max-width: 100%; padding: 5px 5px 5px 16px; border-radius: 999px; background: linear-gradient(180deg, color-mix(in srgb, var(--s-accent) 86%, #fff), var(--s-accent)); color: var(--s-on-accent); font-size: 13px; font-weight: 500; box-shadow: 0 6px 22px color-mix(in srgb, var(--s-accent) 35%, transparent); }
+.site-obra .ob-btn.sm { font-size: 12px; padding: 4px 4px 4px 14px; }
+.site-obra .ob-btn.sm .ob-dot { width: 22px; height: 22px; font-size: 11px; }
+.site-obra .ob-ghost { display: inline-flex; align-items: center; padding: 8px 15px; border: 1px solid color-mix(in srgb, var(--s-text) 45%, transparent); border-radius: 999px; font-size: 12px; font-weight: 500; }
+.site-obra .ob-glass { background: linear-gradient(165deg, color-mix(in srgb, var(--s-accent) 38%, transparent), color-mix(in srgb, var(--ob-warm) 62%, transparent) 55%, color-mix(in srgb, var(--s-accent) 22%, transparent)); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border: 1px solid var(--ob-glass-line); box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 22%, transparent), 0 18px 40px color-mix(in srgb, #000 40%, transparent); color: var(--ob-on-glass); }
+.site-obra .ob-ic { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 9px; background: color-mix(in srgb, var(--s-accent) 24%, transparent); border: 1px solid color-mix(in srgb, var(--s-accent) 40%, transparent); color: var(--s-accent); font-size: 14px; }
+/* Dot-matrix numbers of the glass cards. */
+.site-obra .ob-led { display: inline-block; font: 700 30px/1.05 "Space Mono", monospace; letter-spacing: 0.04em; color: transparent; background: radial-gradient(circle, var(--ob-on-glass) 0.95px, transparent 1.25px) 0 0 / 3px 3px; -webkit-background-clip: text; background-clip: text; overflow-wrap: anywhere; }
+.site-obra .ob-brand { display: inline-flex; align-items: center; gap: 7px; min-width: 0; font-size: 18px; letter-spacing: -0.01em; }
+.site-obra .ob-brand svg { color: var(--s-accent); font-size: 18px; }
+.site-obra .ob-brand b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.site-obra .ob-brand.sm { font-size: 12px; }
+.site-obra .ob-brand.sm svg { font-size: 12px; }
+.site-obra .ob-logo { width: 26px; height: 26px; object-fit: contain; flex: none; }
+.site-obra .ob-brand.sm .ob-logo { width: 18px; height: 18px; }
+
+/* Hero */
+.site-obra .ob-hero { position: relative; display: flex; flex-direction: column; min-height: 660px; padding-bottom: 30px; }
+.site-obra .ob-photo { position: absolute; inset: 0; }
+.site-obra .ob-photo img { filter: sepia(0.5) saturate(1.5) contrast(1.08); }
+/* Sunset wash: the cover photo takes the warm tone of the accent. */
+.site-obra .ob-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(200deg, color-mix(in srgb, var(--s-accent) 70%, #ff5a1f) 0%, color-mix(in srgb, var(--s-accent) 45%, #6b2400) 60%, #1a0d05 100%); mix-blend-mode: multiply; opacity: 0.55; }
+.site-obra .ob-shade { position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--s-bg) 45%, transparent) 0%, color-mix(in srgb, var(--ob-warm) 22%, transparent) 40%, color-mix(in srgb, var(--s-bg) 55%, transparent) 74%, var(--s-bg) 100%), linear-gradient(90deg, color-mix(in srgb, var(--s-bg) 50%, transparent), transparent 70%); }
+.site-obra .ob-bar { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 18px 0; }
+.site-obra .ob-top { flex: none; padding: 8px 15px; border-radius: 999px; background: var(--s-accent); color: var(--s-on-accent); font-size: 11.5px; font-weight: 500; }
+.site-obra .ob-head { position: relative; display: flex; flex-direction: column; align-items: flex-start; padding: 46px 18px 0; }
+.site-obra .ob-title { margin-top: 14px; font-size: clamp(34px, 10.6cqi, 46px); font-weight: 300; line-height: 1; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.site-obra .ob-sub { margin: 16px 0 0; max-width: 262px; font-size: 12.5px; line-height: 1.45; opacity: 0.9; }
+.site-obra .ob-head .ob-btn { margin-top: 20px; }
+.site-obra .ob-progress { position: relative; align-self: flex-end; display: flex; flex-direction: column; gap: 12px; width: 204px; max-width: calc(100% - 32px); margin: auto 16px 0; padding: 14px; border-radius: 26px; }
+.site-obra .ob-head + .ob-progress { margin-top: 34px; }
+.site-obra .ob-progress-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.site-obra .ob-progress-top small { flex: 1; min-width: 0; font-size: 10.5px; text-align: center; }
+.site-obra .ob-ring { align-self: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 104px; min-height: 104px; max-width: 100%; padding: 10px 14px; border-radius: 999px; border: 1px dashed color-mix(in srgb, var(--s-accent) 55%, transparent); text-align: center; }
+.site-obra .ob-ring em { font-style: normal; font-size: 9px; color: color-mix(in srgb, var(--s-accent) 70%, #fff); }
+.site-obra .ob-mini { display: flex; gap: 6px; text-align: center; }
+.site-obra .ob-mini > span { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.site-obra .ob-mini b { font-size: 11px; }
+.site-obra .ob-mini svg { font-size: 13px; color: var(--s-accent); }
+.site-obra .ob-mini small { font-size: 7.5px; line-height: 1.15; opacity: 0.75; overflow-wrap: anywhere; }
+.site-obra .ob-strip { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 14px; padding: 8px 20px 0; font-size: 13px; font-weight: 500; }
+.site-obra .ob-strip span { display: inline-flex; align-items: center; gap: 6px; }
+.site-obra .ob-strip svg { font-size: 15px; }
+
+/* Services bento */
+.site-obra .ob-catalog { display: flex; flex-direction: column; gap: 10px; padding: 64px 14px 20px; }
+.site-obra .ob-catalog .ob-center { padding: 0 6px 16px; }
+.site-obra .ob-bx { position: relative; display: flex; flex-direction: column; align-items: flex-start; min-width: 0; padding: 18px; border-radius: 26px; border: 1px solid var(--ob-line); background: radial-gradient(120% 90% at 50% 115%, color-mix(in srgb, var(--s-accent) 20%, transparent), transparent 70%), var(--ob-card); overflow: hidden; }
+.site-obra .ob-bx > b { margin-top: 16px; font-size: 17px; line-height: 1.15; overflow-wrap: anywhere; }
+.site-obra .ob-txt { display: block; margin-top: 8px; font-size: 11.5px; line-height: 1.45; color: var(--ob-mut); }
+.site-obra .ob-sq { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 10px; border: 1px solid color-mix(in srgb, var(--s-text) 28%, transparent); background: color-mix(in srgb, var(--s-text) 7%, transparent); font-size: 16px; }
+.site-obra .ob-bx em { margin-top: 10px; font-style: normal; font-weight: 500; color: var(--s-accent); }
+.site-obra .ob-over { margin-top: 14px; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--s-accent); }
+.site-obra .ob-over + b { margin-top: 4px; }
+.site-obra .ob-bx-img { display: block; width: 100%; height: 96px; border-radius: 14px; overflow: hidden; }
+.site-obra .ob-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.site-obra .ob-grid > :last-child:nth-child(odd) { grid-column: span 2; }
+.site-obra .ob-chip { display: inline-flex; align-items: center; gap: 10px; max-width: 100%; padding: 4px 4px 4px 14px; border-radius: 999px; background: color-mix(in srgb, var(--s-text) 14%, transparent); border: 1px solid color-mix(in srgb, var(--s-text) 16%, transparent); font-size: 10.5px; }
+.site-obra .ob-chip.solo { margin-top: 16px; align-self: center; }
+.site-obra .ob-grid .ob-chip.solo { align-self: flex-start; }
+.site-obra .ob-tall { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; min-height: 420px; padding: 16px; border-radius: 26px; border: 1px solid var(--ob-glass-line); overflow: hidden; background: linear-gradient(170deg, var(--ob-warm), var(--ob-card)); }
+.site-obra .ob-tall-img { position: absolute; inset: 0; filter: sepia(0.55) saturate(1.5); }
+.site-obra .ob-tall::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--ob-warm) 35%, transparent) 0%, transparent 40%, color-mix(in srgb, var(--s-bg) 88%, transparent) 82%); }
+.site-obra .ob-tall.bare::after { display: none; }
+.site-obra .ob-tall > span { position: relative; z-index: 1; }
+.site-obra .ob-widget { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; width: 196px; max-width: 100%; padding: 14px; border-radius: 22px; }
+.site-obra .ob-widget-top { display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; font-size: 10.5px; }
+.site-obra .ob-widget-top .ob-ic { border-radius: 50%; }
+.site-obra .ob-widget-top .ob-dot { margin-left: auto; }
+.site-obra .ob-bars { display: flex; align-items: flex-end; justify-content: center; gap: 3px; width: 100%; height: 46px; }
+.site-obra .ob-bars i { width: 2px; border-radius: 2px; background: var(--ob-on-glass); opacity: 0.85; }
+.site-obra .ob-bars i:nth-child(n + 8):nth-child(-n + 11) { background: var(--s-accent); opacity: 1; }
+.site-obra .ob-widget-btn { display: flex; align-items: center; gap: 8px; width: 100%; }
+.site-obra .ob-widget-btn .ob-ic { border-radius: 50%; }
+.site-obra .ob-widget-btn .ob-chip { flex: 1; min-width: 0; justify-content: space-between; }
+.site-obra .ob-tall-body { display: block; margin-top: auto; padding: 0 6px 6px; }
+.site-obra .ob-tall-body b { display: block; font-size: 20px; line-height: 1.15; overflow-wrap: anywhere; }
+.site-obra .ob-tall-body span { display: block; margin-top: 6px; font-size: 12px; line-height: 1.45; opacity: 0.85; }
+.site-obra .ob-pillcard { display: flex; align-items: center; gap: 10px; align-self: stretch; margin-top: 18px; padding: 12px 16px 12px 12px; border-radius: 999px; }
+.site-obra .ob-pillcard .ob-ic { width: 34px; height: 34px; border-radius: 50%; background: color-mix(in srgb, var(--s-bg) 70%, transparent); }
+.site-obra .ob-thumb { flex: none; width: 36px; height: 36px; border-radius: 50%; overflow: hidden; border: 1px solid var(--ob-glass-line); }
+.site-obra .ob-pillcard-txt { min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; line-height: 1.2; }
+.site-obra .ob-pillcard-txt small { font-size: 9.5px; opacity: 0.75; }
+
+/* Big numbers */
+.site-obra .ob-stats { display: flex; flex-direction: row; padding: 44px 14px 30px; }
+.site-obra .ob-stats > div { flex: 1; min-width: 0; padding: 0 9px; }
+.site-obra .ob-stats > div + div { border-left: 1px solid var(--ob-line); }
+.site-obra .ob-stats > div:only-child, .site-obra .ob-stats > div:first-child:nth-last-child(n + 4), .site-obra .ob-stats > div:first-child:nth-last-child(n + 4) ~ div { flex: 1 1 45%; }
+.site-obra .ob-stats:has(> div:nth-child(4)) { flex-wrap: wrap; row-gap: 22px; }
+.site-obra .ob-stats b { display: block; margin-top: 12px; font-size: 28px; font-weight: 500; line-height: 1.05; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.site-obra .ob-stats p { margin-top: 8px; max-width: 280px; font-size: 10px; line-height: 1.45; color: var(--ob-mut); }
+
+/* Client stories */
+.site-obra .ob-stories { padding: 40px 0 30px; }
+.site-obra .ob-stories .ob-center { padding: 0 20px; }
+.site-obra .ob-reel { display: flex; align-items: stretch; justify-content: center; gap: 10px; margin-top: 22px; }
+.site-obra .ob-peek { flex: none; width: 34px; margin: 10px 0; background: linear-gradient(180deg, color-mix(in srgb, var(--s-accent) 45%, var(--s-bg)), var(--ob-card)); border: 1px solid var(--ob-line); }
+.site-obra .ob-peek.l { margin-left: -12px; border-radius: 0 22px 22px 0; filter: hue-rotate(95deg) saturate(0.7); }
+.site-obra .ob-peek.r { margin-right: -12px; border-radius: 22px 0 0 22px; filter: hue-rotate(-35deg); }
+.site-obra .ob-story { position: relative; flex: 1; min-width: 0; height: 236px; border-radius: 26px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--s-text) 45%, transparent); background: var(--ob-warm); }
+.site-obra .ob-story img { filter: sepia(0.6) saturate(1.6) hue-rotate(-8deg) brightness(0.9); }
+.site-obra .ob-story figcaption { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 40px 18px 16px; background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--s-bg) 82%, transparent)); }
+.site-obra .ob-who { min-width: 0; text-align: right; font-size: 11px; line-height: 1.2; }
+.site-obra .ob-who b, .site-obra .ob-who small { display: block; }
+.site-obra .ob-who small { font-size: 9px; opacity: 0.75; }
+.site-obra .ob-ctrl { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 18px; font-size: 13px; color: var(--ob-mut); }
+.site-obra .ob-ctrl > span { display: inline-flex; }
+.site-obra .ob-prev { transform: scaleX(-1); }
+.site-obra .ob-ctrl > i { width: 20px; height: 20px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, var(--s-accent), var(--ob-warm)); border: 1px solid var(--ob-line); }
+.site-obra .ob-play { align-items: center; width: 50px; padding: 3px; border-radius: 999px; background: var(--s-accent); }
+.site-obra .ob-play span { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--s-bg); color: var(--s-text); font-size: 9px; }
+.site-obra .ob-stories blockquote { margin: 22px 26px 0; font-size: 16px; line-height: 1.35; text-align: center; }
+.site-obra .ob-stories cite { display: block; margin-top: 8px; font-style: normal; font-size: 11px; color: var(--ob-mut); }
+
+/* Steps + chart card */
+.site-obra .ob-steps { padding: 44px 22px 30px; }
+.site-obra .ob-steps .ob-h { margin-top: 0; }
+.site-obra .ob-steps ol { list-style: none; margin: 26px 0 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
+.site-obra .ob-steps li { display: flex; gap: 12px; align-items: baseline; }
+.site-obra .ob-steps li i { flex: none; font-style: normal; font-size: 10px; font-weight: 500; color: var(--s-accent); }
+.site-obra .ob-steps li span { min-width: 0; }
+.site-obra .ob-steps li b { display: block; font-size: 14px; }
+.site-obra .ob-steps li small { display: block; margin-top: 3px; font-size: 11px; color: var(--ob-mut); }
+.site-obra .ob-steps li.on b { color: var(--s-accent); }
+.site-obra .ob-steps li.off { opacity: 0.45; }
+.site-obra .ob-chart { position: relative; margin: 30px -6px 0; padding: 22px; border-radius: 26px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--s-text) 35%, transparent); background: linear-gradient(160deg, var(--ob-warm), var(--ob-card)); }
+.site-obra .ob-chart > img { position: absolute; inset: 0; filter: sepia(0.5) saturate(1.4) brightness(0.8); }
+.site-obra .ob-chart-card { position: relative; display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 22px; }
+.site-obra .ob-chart-in { display: flex; flex-direction: column; gap: 6px; padding: 14px 14px 12px; border-radius: 18px; box-shadow: none; }
+.site-obra .ob-chart-in svg { width: 100%; height: 70px; overflow: visible; }
+.site-obra .ob-chart-in path { fill: none; stroke: var(--s-accent); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.site-obra .ob-chart-in path.fill { stroke: none; fill: color-mix(in srgb, var(--s-accent) 22%, transparent); }
+.site-obra .ob-chart-in small { display: flex; align-items: center; gap: 6px; font-size: 10.5px; }
+.site-obra .ob-chart-in small svg { width: 1em; height: 1em; font-size: 13px; }
+.site-obra .ob-chart-in small path { stroke: currentColor; stroke-width: 1.7; }
+
+/* Feature banner */
+.site-obra .ob-feature { position: relative; margin: 20px 0; min-height: 250px; display: flex; background: linear-gradient(180deg, var(--s-bg), var(--ob-warm) 55%, var(--s-bg)); }
+.site-obra .ob-feature-img { position: absolute; inset: 0; filter: sepia(0.5) saturate(1.5); -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent); mask-image: linear-gradient(180deg, #000 55%, transparent); }
+.site-obra .ob-feature::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--ob-warm) 40%, transparent), color-mix(in srgb, var(--s-bg) 55%, transparent) 60%, var(--s-bg)); }
+.site-obra .ob-feature-body { position: relative; z-index: 1; flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 30px 22px; }
+.site-obra .ob-feature-main { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.site-obra .ob-feature-main .ob-brand { font-size: 20px; }
+.site-obra .ob-feature-main strong { font-size: 40px; font-weight: 500; line-height: 1; color: var(--s-accent); overflow-wrap: anywhere; }
+.site-obra .ob-feature-main small { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.8; }
+.site-obra .ob-feature-main p { font-size: 10.5px; line-height: 1.5; opacity: 0.85; }
+.site-obra .ob-feature-one { font-size: 22px; font-weight: 400; line-height: 1.15; overflow-wrap: anywhere; }
+.site-obra .ob-feature-main .ob-btn { margin-top: 6px; }
+.site-obra .ob-words { flex: none; max-width: 46%; display: flex; flex-direction: column; gap: 5px; font-size: 21px; line-height: 1.15; overflow-wrap: anywhere; }
+
+/* FAQ */
+.site-obra .ob-faq { padding: 44px 22px 14px; }
+.site-obra .ob-rows { margin-top: 22px; }
+.site-obra .ob-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--ob-line); }
+.site-obra .ob-row-txt { min-width: 0; }
+.site-obra .ob-row-txt b { display: block; font-size: 13.5px; font-weight: 400; overflow-wrap: anywhere; }
+.site-obra .ob-row-txt small { display: block; margin-bottom: 3px; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--s-accent); }
+.site-obra .ob-row-txt span { display: block; margin-top: 8px; font-size: 11.5px; line-height: 1.5; color: var(--ob-mut); }
+.site-obra .ob-row > i { position: relative; flex: none; width: 22px; height: 22px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--s-text) 28%, transparent); }
+.site-obra .ob-row > i::before, .site-obra .ob-row > i::after { content: ""; position: absolute; left: 50%; top: 50%; width: 8px; height: 1px; margin: -0.5px 0 0 -4px; background: currentColor; }
+.site-obra .ob-row > i::after { transform: rotate(90deg); }
+.site-obra .ob-row > i.open::after { display: none; }
+.site-obra .ob-nav { padding: 12px 22px 30px; }
+.site-obra .ob-nav p { margin-bottom: 12px; max-width: 220px; font-size: 11px; line-height: 1.45; color: var(--ob-mut); }
+.site-obra .ob-nav > div { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+/* Closing call + footer */
+.site-obra .ob-final { padding: 44px 22px 34px; }
+.site-obra .ob-final .ob-h { margin-top: 0; }
+.site-obra .ob-final-btns { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 20px; }
+.site-obra .sp-footer { padding: 22px 0 0; border-top: 1px solid var(--ob-line); }
+.site-obra .ob-foot { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.site-obra .ob-foot > .ob-brand, .site-obra .ob-foot > p, .site-obra .ob-socials, .site-obra .ob-copy { margin-left: 22px; margin-right: 22px; max-width: calc(100% - 44px); }
+.site-obra .ob-foot > p { max-width: 250px; font-size: 11px; line-height: 1.45; color: var(--ob-mut); }
+.site-obra .ob-socials { display: flex; gap: 8px; margin-top: 4px; }
+.site-obra .ob-socials a { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--ob-line); }
+.site-obra .ob-socials svg { width: 15px; height: 15px; }
+.site-obra .ob-copy { font-size: 10.5px; color: var(--ob-mut); }
+.site-obra .ob-giant { align-self: stretch; display: flex; justify-content: center; height: clamp(58px, 19cqi, 92px); margin-top: 18px; overflow: hidden; }
+.site-obra .ob-giant span { flex: none; white-space: nowrap; font-size: clamp(84px, 27cqi, 130px); font-weight: 700; line-height: 0.86; letter-spacing: -0.04em; color: transparent; background: linear-gradient(180deg, color-mix(in srgb, var(--s-text) 42%, var(--s-bg)), color-mix(in srgb, var(--s-text) 8%, var(--s-bg)) 70%); -webkit-background-clip: text; background-clip: text; }
+.site-obra .ob-stats .ob-tag { max-width: 100%; padding: 4px 7px; font-size: 7.5px; letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; }

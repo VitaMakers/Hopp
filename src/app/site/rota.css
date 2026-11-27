@@ -1,0 +1,155 @@
+/* Rota — car rental (graphite / cream / red). Dark sections take the text
+   colour as surface and the background colour as ink. */
+.site-rota { font-family: "Manrope Variable", system-ui, sans-serif; --ro-dark: var(--s-text); --ro-ink: var(--s-bg); --ro-dark2: color-mix(in srgb, var(--s-bg) 9%, var(--s-text)); --ro-dline: color-mix(in srgb, var(--s-bg) 22%, transparent); --ro-dmut: color-mix(in srgb, var(--s-bg) 68%, var(--s-text)); --ro-card: color-mix(in srgb, var(--s-text) 7%, var(--s-bg)); --ro-line: color-mix(in srgb, var(--s-text) 14%, transparent); --ro-mut: color-mix(in srgb, var(--s-text) 72%, var(--s-bg)); }
+
+/* Shared pieces */
+.site-rota .ro-brand { display: flex; align-items: center; min-width: 0; font-size: 15px; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase; line-height: 1; }
+.site-rota .ro-brand b { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.site-rota .ro-brand i { font-style: normal; color: var(--s-accent); white-space: nowrap; }
+.site-rota .ro-logo { width: 26px; height: 26px; object-fit: contain; margin-right: 7px; flex: none; }
+.site-rota .ro-socials { display: flex; gap: 8px; flex: none; }
+.site-rota .ro-socials a { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--ro-dline); }
+.site-rota .ro-socials a:first-child { border-color: var(--s-accent); color: var(--s-accent); }
+.site-rota .ro-socials svg { width: 14px; height: 14px; }
+.site-rota .ro-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; max-width: 100%; padding: 10px 18px; border-radius: 999px; background: var(--s-accent); color: var(--s-on-accent); border: 1.5px solid var(--s-accent); font-size: 12.5px; font-weight: 600; line-height: 1.1; }
+.site-rota .ro-btn svg { font-size: 14px; }
+.site-rota .ro-btn.line { background: transparent; color: inherit; border-color: currentColor; }
+.site-rota .ro-btn.sm { padding: 8px 14px; font-size: 11.5px; }
+.site-rota .ro-btn.wide { display: flex; padding: 13px 18px; }
+.site-rota .ro-tag { display: inline-block; max-width: 100%; padding: 3px 10px; border: 1px solid var(--s-accent); border-radius: 999px; color: var(--s-accent); font-size: 10px; font-weight: 600; line-height: 1.3; }
+.site-rota .ro-label { display: block; margin-bottom: 8px; color: var(--s-accent); font-size: 11.5px; font-weight: 600; }
+.site-rota .ro-h2 { font-size: clamp(25px, 7.4cqi, 31px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.04; overflow-wrap: anywhere; }
+.site-rota .ro-ac .ac { color: var(--s-accent); }
+.site-rota .ro-p { margin-top: 10px; font-size: 13.5px; line-height: 1.5; color: var(--ro-mut); }
+.site-rota .ro-stars { display: flex; gap: 2px; color: var(--s-accent); font-size: 12px; }
+.site-rota em { font-style: normal; font-weight: 700; }
+.site-rota em small { font-size: 10.5px; font-weight: 500; color: var(--ro-mut); }
+.site-rota .ro-giant { font-weight: 800; font-size: clamp(20px, calc((100cqi - 28px) / (var(--n) * 0.66)), 132px); line-height: 0.82; letter-spacing: -0.055em; text-transform: uppercase; text-align: center; white-space: nowrap; }
+
+/* Hero */
+.site-rota .ro-hero { position: relative; background: var(--ro-dark); color: var(--ro-ink); border-bottom: 3px solid var(--s-accent); overflow: hidden; }
+.site-rota .ro-bar { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 18px 12px; }
+.site-rota .ro-stage { position: relative; height: 268px; }
+.site-rota .ro-stage .ro-giant { position: absolute; left: 0; right: 0; top: 4px; }
+.site-rota .ro-band { position: absolute; left: 0; right: 0; bottom: 0; height: 54%; background: linear-gradient(180deg, var(--s-accent) 55%, color-mix(in srgb, var(--s-accent) 35%, var(--ro-dark)) 88%, var(--ro-dark)); clip-path: polygon(0 96%, 100% 0, 100% 100%, 0 100%); }
+.site-rota .ro-photo { position: absolute; left: 0; right: 0; top: 56px; bottom: 0; -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 54%, #000 46%, transparent 96%); mask-image: radial-gradient(ellipse 50% 50% at 50% 54%, #000 46%, transparent 96%); }
+.site-rota .ro-head { position: relative; padding: 14px 18px 22px; }
+.site-rota .ro-head .ro-tag { margin-bottom: 8px; }
+.site-rota .ro-h1 { font-size: clamp(23px, 6.7cqi, 28px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; overflow-wrap: anywhere; }
+.site-rota .ro-h1 .ac { color: var(--s-accent); }
+.site-rota .ro-sub { margin-top: 6px; max-width: 320px; font-size: 12px; line-height: 1.45; color: var(--ro-dmut); }
+.site-rota .ro-btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.site-rota .ro-herocard { display: flex; gap: 10px; align-items: center; margin-top: 20px; padding: 6px; border-radius: 12px; background: var(--ro-ink); color: var(--ro-dark); box-shadow: 0 8px 24px rgb(0 0 0 / 0.28); }
+.site-rota .ro-herocard-img { flex: none; width: 104px; height: 74px; border-radius: 8px; overflow: hidden; background: var(--ro-dark); }
+.site-rota .ro-herocard-body { min-width: 0; padding: 2px 8px 2px 0; }
+.site-rota .ro-herocard-body > small { display: block; font-size: 10px; color: var(--ro-mut); }
+.site-rota .ro-herocard b { display: block; font-size: 16px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.15; overflow-wrap: anywhere; }
+.site-rota .ro-herocard em { display: block; margin-top: 3px; font-size: 12px; }
+
+/* About + tiles + testimonial */
+.site-rota .ro-about { padding: 28px 18px 24px; }
+.site-rota .ro-about-img { height: 262px; margin-bottom: 20px; border-radius: 22px; overflow: hidden; background: var(--ro-card); }
+.site-rota .ro-about .ro-btn { margin-top: 16px; }
+.site-rota .ro-tiles { display: flex; gap: 8px; margin-top: 24px; }
+.site-rota .ro-tiles span { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px 10px; border: 1px solid var(--ro-line); border-radius: 10px; background: color-mix(in srgb, #fff 45%, var(--s-bg)); font-size: 9.5px; font-weight: 800; letter-spacing: 0.02em; line-height: 1.15; text-transform: uppercase; text-align: center; overflow-wrap: anywhere; }
+.site-dark.site-rota .ro-tiles span { background: var(--ro-card); }
+.site-rota .ro-tiles svg { font-size: 20px; }
+.site-rota .ro-quote { padding: 30px 18px; background: var(--ro-dark); color: var(--ro-ink); }
+.site-rota .ro-quote blockquote { margin: 0; font-size: 15px; font-weight: 500; line-height: 1.45; }
+.site-rota .ro-quote blockquote i { font-style: normal; font-weight: 800; color: var(--s-accent); }
+.site-rota .ro-quote blockquote i:first-child { margin-right: 4px; }
+.site-rota .ro-quote figcaption { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--ro-dline); }
+.site-rota .ro-quote b { display: block; font-size: 16px; font-weight: 600; }
+.site-rota .ro-quote small { display: block; margin: 2px 0 8px; font-size: 10.5px; color: var(--ro-dmut); }
+
+/* Numbers */
+.site-rota .ro-stats { display: flex; gap: 8px; padding: 6px 16px 24px; }
+.site-rota .ro-stats > div { flex: 1; min-width: 0; padding: 14px 8px; border-radius: 12px; background: var(--ro-card); text-align: center; }
+.site-rota .ro-stats b { display: block; font-size: 21px; font-weight: 700; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.site-rota .ro-stats span { display: block; font-size: 10px; color: var(--ro-mut); }
+
+/* Offer + categories (one dark section when they follow each other) */
+.site-rota .ro-offer { padding: 22px 16px; background: var(--ro-dark); color: var(--ro-ink); }
+.site-rota .ro-offer-card { position: relative; display: flex; align-items: flex-end; min-height: 330px; border-radius: 18px; overflow: hidden; background: #26282a; }
+.site-rota .ro-offer-img { position: absolute; inset: 0; }
+.site-rota .ro-offer-card::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 30%, rgb(0 0 0 / 0.78)); }
+.site-rota .ro-offer-body { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 20px; min-width: 0; color: #fff; }
+.site-rota .ro-offer-body strong { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; color: var(--s-accent); }
+.site-rota .ro-offer-body small { font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.8; }
+.site-rota .ro-offer-body h2 { font-size: clamp(22px, 6.6cqi, 27px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.08; overflow-wrap: anywhere; }
+.site-rota .ro-offer-body p { max-width: 240px; font-size: 11.5px; line-height: 1.4; opacity: 0.85; }
+.site-rota .ro-offer-body .ro-btn { margin-top: 6px; }
+.site-rota .ro-cats { padding: 22px 16px 26px; background: var(--ro-dark); color: var(--ro-ink); }
+.site-rota .sp-feature + .sp-nav .ro-cats { padding-top: 0; }
+.site-rota .ro-cats-h { margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--ro-dmut); }
+.site-rota .ro-cat { display: flex; align-items: center; gap: 14px; }
+.site-rota .ro-cat-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 42px; height: 34px; border: 1px solid var(--ro-dline); border-radius: 8px; background: var(--ro-dark2); }
+.site-rota .ro-cat-ic svg { width: 24px; height: 15px; }
+.site-rota .ro-cat-tx { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 2px; border-bottom: 1px solid var(--ro-dline); font-size: 16px; }
+.site-rota .ro-cat:last-child .ro-cat-tx { border-bottom: 0; }
+.site-rota .ro-cat-tx b { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+
+/* Catalogue */
+.site-rota .ro-catalog { padding: 32px 16px 28px; }
+.site-rota .ro-catalog > .ro-label, .site-rota .ro-catalog > .ro-h2 { margin-left: 2px; }
+.site-rota .ro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+.site-rota .ro-car { position: relative; display: flex; flex-direction: column; min-width: 0; padding: 10px; border-radius: 14px; background: var(--ro-card); }
+.site-rota .ro-car:only-child { grid-column: span 2; }
+.site-rota .ro-car-tag { align-self: flex-start; max-width: 100%; padding: 2px 9px; border-radius: 999px; background: var(--ro-dark); color: var(--ro-ink); font-size: 9.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.site-rota .ro-car-img { display: block; height: 96px; margin: 8px 0 2px; border-radius: 10px; overflow: hidden; background: color-mix(in srgb, var(--s-text) 12%, var(--s-bg)); }
+.site-rota .ro-car:only-child .ro-car-img { height: 170px; }
+.site-rota .ro-car > b { margin-top: 6px; font-size: 13.5px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; overflow-wrap: anywhere; }
+.site-rota .ro-car-specs { margin-top: 3px; font-size: 9.5px; line-height: 1.3; color: var(--ro-mut); }
+.site-rota .ro-car-foot { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: auto; padding-top: 8px; }
+.site-rota .ro-car-foot em { min-width: 0; font-size: 16px; letter-spacing: -0.02em; }
+.site-rota .ro-round { flex: none; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--ro-line); font-size: 14px; }
+.site-rota .ro-round.on { background: var(--s-accent); border-color: var(--s-accent); color: var(--s-on-accent); }
+.site-rota .ro-detail { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin-top: 30px; padding-top: 26px; border-top: 1px solid var(--ro-line); }
+.site-rota .ro-detail-img { position: relative; align-self: stretch; height: 206px; margin-bottom: 10px; }
+.site-rota .ro-detail-img i { position: absolute; left: 20%; right: 16%; top: 0; bottom: 40%; border-radius: 14px; background: var(--s-accent); transform: skewX(-32deg); }
+.site-rota .ro-detail-img img { position: relative; -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 54%, #000 52%, transparent 96%); mask-image: radial-gradient(ellipse 50% 50% at 50% 54%, #000 52%, transparent 96%); }
+.site-rota .ro-detail > b { font-size: 26px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.08; overflow-wrap: anywhere; }
+.site-rota .ro-detail > em { font-size: 21px; letter-spacing: -0.02em; }
+.site-rota .ro-detail-specs { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
+.site-rota .ro-detail-specs span { padding: 6px 11px; border: 1px solid var(--ro-line); border-radius: 6px; font-size: 10.5px; font-weight: 500; }
+.site-rota .ro-detail .ro-btn { align-self: stretch; }
+
+/* FAQ rows */
+.site-rota .ro-faq { padding: 34px 16px 30px; text-align: center; }
+.site-rota .ro-faq .ro-tag { margin-bottom: 10px; }
+.site-rota .ro-faq-list { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; text-align: left; }
+.site-rota .ro-q { display: block; border: 1px solid var(--ro-line); border-radius: 8px; overflow: hidden; }
+.site-rota .ro-q-top { display: flex; align-items: center; gap: 12px; padding: 11px 12px; }
+.site-rota .ro-q-top svg { font-size: 15px; }
+.site-rota .ro-q-top b { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+.site-rota .ro-q-top i { flex: none; display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--ro-line); font-style: normal; font-size: 13px; line-height: 1; }
+.site-rota .ro-q.open { border-color: transparent; border-radius: 10px; background: var(--ro-card); }
+.site-rota .ro-q.open .ro-q-top { border-radius: 10px; background: var(--ro-dark); color: var(--ro-ink); }
+.site-rota .ro-q.open .ro-q-top i { background: var(--ro-ink); border-color: var(--ro-ink); color: var(--ro-dark); }
+.site-rota .ro-q-body { display: block; padding: 12px 14px 13px 39px; font-size: 11.5px; line-height: 1.5; color: var(--ro-mut); }
+
+/* Closing call + form-like card */
+.site-rota .ro-final { padding: 30px 18px 28px; }
+.site-rota .ro-final .ro-btn { margin-top: 16px; }
+.site-rota .ro-form { padding: 0 16px 30px; }
+.site-rota .ro-form-card { display: flex; flex-direction: column; gap: 10px; padding: 18px 16px; border-radius: 14px; background: var(--ro-dark); color: var(--ro-ink); }
+.site-rota .ro-form-card h2 { margin-bottom: 2px; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.site-rota .ro-field small { display: block; margin-bottom: 5px; font-size: 10px; font-weight: 600; }
+.site-rota .ro-field span { display: block; min-height: 38px; padding: 10px 12px; border: 1px solid var(--ro-dline); border-radius: 6px; background: var(--ro-dark2); font-size: 12px; color: var(--ro-dmut); overflow-wrap: anywhere; }
+.site-rota .ro-field.on span { border-color: var(--s-accent); color: var(--ro-ink); }
+.site-rota .ro-field.off { opacity: 0.45; }
+.site-rota .ro-form-card p { font-size: 10.5px; color: var(--ro-dmut); }
+
+/* Footer */
+.site-rota .sp-footer { background: var(--ro-dark); color: var(--ro-ink); }
+.site-rota .ro-foot { padding: 28px 18px 0; overflow: hidden; }
+.site-rota .ro-foot p { margin: 8px 0 14px; font-size: 11px; line-height: 1.45; color: var(--ro-dmut); }
+.site-rota .ro-foot .ro-giant { height: 0.56em; margin: 26px -18px 0; font-size: clamp(22px, calc((100cqi - 12px) / (var(--n) * 0.66)), 112px); font-style: italic; color: transparent; background: linear-gradient(180deg, color-mix(in srgb, var(--s-bg) 46%, var(--s-text)), color-mix(in srgb, var(--s-bg) 6%, var(--s-text)) 62%); -webkit-background-clip: text; background-clip: text; overflow: hidden; }
+
+/* Cut-out cars (PNG or our "recorte" samples): shown whole, without fading,
+   so the giant word and the red shapes appear behind them. */
+.site-rota .ro-photo:has(img:is([src*="recorte"], [src*=".png"])) { left: 3%; right: 3%; top: 92px; bottom: 6px; -webkit-mask-image: none; mask-image: none; }
+.site-rota img:is([src*="recorte"], [src*=".png"]) { object-fit: contain; -webkit-mask-image: none; mask-image: none; }
+.site-rota .ro-photo img:is([src*="recorte"], [src*=".png"]) { object-position: center 38% !important; filter: drop-shadow(0 22px 18px rgba(0, 0, 0, 0.45)); }
+.site-rota .ro-car-img:has(img:is([src*="recorte"], [src*=".png"])) { background: transparent; overflow: visible; }
+.site-rota .ro-car-img img:is([src*="recorte"], [src*=".png"]) { filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.25)); }

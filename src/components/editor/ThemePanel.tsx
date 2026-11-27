@@ -98,6 +98,21 @@ const PREMIUM_NAMES: Record<Exclude<Theme["premium"], "">, string> = {
   bar: "Restaurante / Bar Noturno",
   casa: "Restaurante Elegante",
   clinic: "Clínica / Profissional de saúde",
+  nautica: "Náutica / Turismo",
+  neon: "Neon / Agência",
+  morada: "Morada / Imobiliária",
+  reforma: "Reforma / Serviços",
+  obra: "Obra / Construtora",
+  atelier: "Atelier / Moda",
+  forja: "Forja / Academia",
+  rota: "Rota / Veículos",
+  patinha: "Patinha / Pet shop",
+  casapet: "Casa Pet / Pet shop",
+  vetta: "Vetta / Veículos",
+  lume: "Lume / Imóveis",
+  vigor: "Vigor / Suplementos",
+  aurea: "Áurea / Imóveis",
+  navalha: "Navalha / Barbearia",
 };
 
 export function ThemePanel({ doc, onChange, onGoColors }: PanelProps) {

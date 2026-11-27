@@ -1,0 +1,138 @@
+/* Vigor — sports nutrition store (black / deep red, tall condensed titles, square buttons). */
+.site-vigor { font-family: "Manrope Variable", system-ui, sans-serif; --vg-panel: color-mix(in srgb, var(--s-text) 5%, var(--s-bg)); --vg-card: color-mix(in srgb, var(--s-text) 9%, var(--s-bg)); --vg-line: color-mix(in srgb, var(--s-text) 22%, transparent); --vg-mut: color-mix(in srgb, var(--s-text) 72%, var(--s-bg)); --vg-deep: color-mix(in srgb, var(--s-accent) 46%, var(--s-bg)); --vg-glow: color-mix(in srgb, var(--s-accent) 62%, #000); }
+
+/* Shared pieces */
+.site-vigor .vg-label { display: flex; align-items: center; gap: 9px; font: 700 12px/1.1 "Barlow Condensed", sans-serif; letter-spacing: 0.08em; text-transform: uppercase; min-width: 0; overflow-wrap: anywhere; }
+.site-vigor .vg-label::before { content: ""; flex: none; width: 24px; height: 3px; background: var(--s-accent); }
+.site-vigor .vg-title { font: 400 clamp(46px, 14.6cqi, 62px)/0.98 "Anton", "Barlow Condensed", sans-serif; text-transform: uppercase; letter-spacing: 0.005em; overflow-wrap: anywhere; }
+.site-vigor .vg-title .ac { color: var(--s-accent); font-style: italic; }
+.site-vigor .vg-title2 { font-size: clamp(30px, 9.4cqi, 40px); line-height: 1.04; }
+.site-vigor .vg-title3 { font-size: clamp(38px, 11.8cqi, 50px); }
+.site-vigor .vg-h { font: 700 21px/1.05 "Barlow Condensed", sans-serif; text-transform: uppercase; min-width: 0; overflow-wrap: anywhere; }
+.site-vigor .vg-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 42px; padding: 10px 18px; background: var(--s-accent); color: var(--s-on-accent); border: 1.5px solid var(--s-accent); font: 700 15px/1.1 "Barlow Condensed", sans-serif; letter-spacing: 0.05em; text-transform: uppercase; text-align: center; max-width: 100%; }
+.site-vigor .vg-btn.line { background: color-mix(in srgb, var(--s-bg) 35%, transparent); color: var(--s-text); border-color: var(--s-text); }
+.site-vigor .vg-btn svg { font-size: 15px; }
+.site-vigor .vg-more { display: inline-flex; align-items: center; gap: 7px; flex: none; max-width: 60%; color: var(--s-accent); font: 700 13px/1.1 "Barlow Condensed", sans-serif; letter-spacing: 0.06em; text-transform: uppercase; }
+.site-vigor .vg-more svg { font-size: 14px; }
+.site-vigor .vg-row-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+.site-vigor em { font-style: normal; font-weight: 800; }
+.site-vigor em small { font-size: 11px; font-weight: 500; color: var(--vg-mut); }
+/* Red duotone over photos, so any picture joins the palette. */
+.site-vigor :is(.vg-tile, .vg-shot, .vg-feature-img)::after { content: ""; position: absolute; inset: 0; background: var(--s-accent); mix-blend-mode: multiply; pointer-events: none; }
+.site-vigor :is(.vg-tile, .vg-shot, .vg-feature-img) img { filter: grayscale(1) contrast(1.25) brightness(1.05); }
+
+/* Cover */
+.site-vigor .vg-hero { position: relative; min-height: 548px; overflow: hidden; display: flex; flex-direction: column; background: radial-gradient(ellipse 75% 70% at 92% 34%, var(--vg-glow), transparent 72%), linear-gradient(100deg, var(--s-bg) 34%, var(--vg-deep)); }
+.site-vigor .vg-photo { position: absolute; right: -56px; top: 44px; bottom: 0; width: 86%; -webkit-mask-image: linear-gradient(90deg, transparent 4%, #000 58%); mask-image: linear-gradient(90deg, transparent 4%, #000 58%); }
+.site-vigor .vg-photo img { filter: sepia(0.5) saturate(1.7) hue-rotate(-16deg) brightness(0.86) contrast(1.12); }
+.site-vigor .vg-hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--s-bg) 78%, transparent), transparent 62%), linear-gradient(0deg, color-mix(in srgb, var(--s-bg) 70%, transparent), transparent 26%); pointer-events: none; }
+.site-vigor .vg-bar { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 20px 20px 0; }
+.site-vigor .vg-brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.site-vigor .vg-brand b { display: block; font: 800 23px/0.9 "Sora Variable", "Manrope Variable", sans-serif; letter-spacing: 0.02em; text-transform: uppercase; overflow-wrap: anywhere; }
+.site-vigor .vg-brand small { display: block; margin-top: 4px; font: 600 6.5px/1 "Manrope Variable", sans-serif; letter-spacing: 0.4em; text-transform: uppercase; }
+.site-vigor .vg-logo { width: 34px; height: 34px; flex: none; object-fit: contain; }
+.site-vigor .vg-socials { display: flex; gap: 14px; flex: none; }
+.site-vigor .vg-socials a { display: flex; }
+.site-vigor .vg-socials svg { width: 18px; height: 18px; }
+.site-vigor .vg-head { position: relative; z-index: 1; margin-top: auto; padding: 84px 20px 34px; display: flex; flex-direction: column; align-items: flex-start; }
+.site-vigor .vg-head .vg-title { margin-top: 16px; text-shadow: 0 2px 18px color-mix(in srgb, var(--s-bg) 60%, transparent); }
+.site-vigor .vg-sub { margin-top: 16px; max-width: 236px; font-size: 13.5px; line-height: 1.42; opacity: 0.92; }
+.site-vigor .vg-btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.site-vigor .vg-herocard { display: flex; align-items: center; gap: 16px; margin-top: 16px; max-width: 100%; padding: 10px 14px; border: 1px solid var(--vg-line); background: color-mix(in srgb, var(--s-bg) 62%, transparent); backdrop-filter: blur(8px); }
+.site-vigor .vg-herocard span { min-width: 0; }
+.site-vigor .vg-herocard small { display: block; font: 700 10.5px/1.2 "Barlow Condensed", sans-serif; letter-spacing: 0.1em; text-transform: uppercase; color: var(--s-accent); }
+.site-vigor .vg-herocard b { display: block; font: 700 16px/1.1 "Barlow Condensed", sans-serif; text-transform: uppercase; }
+.site-vigor .vg-herocard em { flex: none; font-size: 15px; }
+
+/* Approach block */
+.site-vigor .vg-about { padding: 26px 20px 28px; background: var(--vg-panel); border-top: 1px solid color-mix(in srgb, var(--s-text) 7%, transparent); display: flex; flex-direction: column; align-items: flex-start; }
+.site-vigor .vg-about-img { align-self: stretch; height: 226px; margin-bottom: 22px; overflow: hidden; background: var(--vg-card); }
+.site-vigor .vg-about-img img { filter: sepia(0.45) saturate(1.2) brightness(0.8) contrast(1.18); }
+.site-vigor .vg-about .vg-title { margin-top: 14px; }
+.site-vigor .vg-about p { margin-top: 12px; font-size: 13.5px; line-height: 1.45; color: var(--vg-mut); }
+.site-vigor .vg-about blockquote { margin: 14px 0 0; padding-left: 12px; border-left: 3px solid var(--s-accent); font-size: 14px; line-height: 1.4; }
+.site-vigor .vg-about .vg-more { margin-top: 16px; max-width: 100%; font-size: 14px; }
+
+/* Category tiles */
+.site-vigor .vg-links { padding: 26px 20px; border-top: 1px solid color-mix(in srgb, var(--s-text) 7%, transparent); }
+.site-vigor .vg-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.site-vigor .vg-tile { position: relative; display: block; min-width: 0; aspect-ratio: 1 / 1.14; overflow: hidden; background: linear-gradient(160deg, var(--vg-glow), color-mix(in srgb, var(--s-accent) 16%, var(--s-bg))); outline: 1px solid color-mix(in srgb, var(--s-text) 8%, transparent); outline-offset: -1px; }
+.site-vigor .vg-tile:last-child:nth-child(odd) { grid-column: span 2; aspect-ratio: 2.1 / 1; }
+.site-vigor .vg-tile img { position: absolute; inset: 0; }
+/* Outer tiles of each row of four keep a more natural, less saturated tone. */
+.site-vigor .vg-tile:is(:nth-child(4n + 1), :nth-child(4n))::after { background: color-mix(in srgb, var(--s-accent) 38%, #b9a48f); }
+.site-vigor .vg-tile-tag { position: absolute; z-index: 1; left: 10px; top: 10px; padding: 3px 7px; background: var(--s-accent); color: var(--s-on-accent); font: 700 11px/1.1 "Barlow Condensed", sans-serif; letter-spacing: 0.06em; text-transform: uppercase; }
+.site-vigor .vg-tile-body { position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; padding: 44px 12px 12px; background: linear-gradient(0deg, color-mix(in srgb, var(--s-bg) 92%, transparent) 30%, transparent); }
+.site-vigor .vg-tile-body > span { min-width: 0; max-width: 118px; }
+.site-vigor .vg-tile-body b { display: block; font: 700 19px/1 "Barlow Condensed", sans-serif; text-transform: uppercase; overflow-wrap: anywhere; }
+.site-vigor .vg-tile-body small { display: block; margin-top: 3px; font-size: 10.5px; color: var(--vg-mut); }
+.site-vigor .vg-tile-body svg { font-size: 15px; margin-bottom: 1px; }
+
+/* Banner */
+.site-vigor .vg-feature { position: relative; min-height: 306px; overflow: hidden; display: flex; align-items: center; background: radial-gradient(ellipse 60% 80% at 96% 30%, var(--vg-glow), transparent 75%), linear-gradient(105deg, var(--s-bg) 38%, var(--vg-deep)); border-top: 1px solid color-mix(in srgb, var(--s-text) 7%, transparent); }
+.site-vigor .vg-feature-img { position: absolute; right: 0; top: 0; bottom: 0; width: 64%; -webkit-mask-image: linear-gradient(90deg, transparent, #000 62%); mask-image: linear-gradient(90deg, transparent, #000 62%); }
+.site-vigor .vg-feature-body { position: relative; z-index: 1; padding: 34px 20px; max-width: 74%; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.site-vigor .vg-feature strong { font: 400 34px/1 "Anton", sans-serif; text-transform: uppercase; color: var(--s-accent); overflow-wrap: anywhere; }
+.site-vigor .vg-feature small { font: 700 12px/1.1 "Barlow Condensed", sans-serif; letter-spacing: 0.08em; text-transform: uppercase; }
+.site-vigor .vg-feature p { margin: 6px 0 10px; max-width: 200px; font-size: 13px; line-height: 1.4; opacity: 0.92; }
+
+/* Product detail + related cards */
+.site-vigor .vg-catalog { padding: 26px 20px; border-top: 1px solid color-mix(in srgb, var(--s-text) 7%, transparent); }
+.site-vigor .vg-shot { position: relative; display: block; overflow: hidden; background: radial-gradient(circle at 50% 38%, var(--s-accent), var(--vg-glow) 70%); }
+.site-vigor .vg-pdp { display: block; }
+.site-vigor .vg-pdp .vg-shot { aspect-ratio: 1 / 1.02; }
+.site-vigor .vg-pdp-body { display: flex; flex-direction: column; align-items: flex-start; padding-top: 20px; }
+.site-vigor .vg-pdp-body .vg-title { margin-top: 12px; font-size: clamp(36px, 11cqi, 46px); line-height: 1; }
+.site-vigor .vg-pdp-text { display: block; margin-top: 10px; font-size: 13px; line-height: 1.45; color: var(--vg-mut); }
+.site-vigor .vg-pdp-body > em { margin-top: 12px; font-size: 23px; }
+.site-vigor .vg-stars { display: flex; gap: 3px; margin-top: 8px; color: var(--s-accent); font-size: 14px; }
+.site-vigor .vg-sizes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; align-self: stretch; }
+.site-vigor .vg-sizes > * { flex: 1 1 0; min-width: 64px; display: flex; align-items: center; justify-content: center; min-height: 36px; padding: 6px 8px; border: 1px solid color-mix(in srgb, var(--s-text) 55%, transparent); font-size: 11.5px; font-weight: 600; text-align: center; }
+.site-vigor .vg-sizes > .on { background: var(--s-accent); border-color: var(--s-accent); color: var(--s-on-accent); }
+.site-vigor .vg-buy { display: flex; gap: 10px; align-self: stretch; margin-top: 12px; }
+.site-vigor .vg-buy .vg-btn { flex: 1; min-width: 0; min-height: 44px; font-size: 16px; }
+.site-vigor .vg-qty { flex: none; display: flex; align-items: center; border: 1px solid color-mix(in srgb, var(--s-text) 55%, transparent); }
+.site-vigor .vg-qty i { width: 30px; text-align: center; font-style: normal; font-size: 13px; font-weight: 600; }
+.site-vigor .vg-pdp + .vg-row-head { margin-top: 34px; }
+.site-vigor .vg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.site-vigor .vg-card { display: flex; flex-direction: column; min-width: 0; background: var(--vg-card); }
+.site-vigor .vg-card .vg-shot { aspect-ratio: 1 / 1.06; }
+.site-vigor .vg-card-body { flex: 1; display: flex; flex-direction: column; padding: 12px 12px 10px; }
+.site-vigor .vg-card-body small { font: 700 10.5px/1.2 "Barlow Condensed", sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: var(--s-accent); margin-bottom: 3px; }
+.site-vigor .vg-card-body b { font: 700 16px/1.08 "Barlow Condensed", sans-serif; text-transform: uppercase; overflow-wrap: anywhere; }
+.site-vigor .vg-card-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: auto; padding-top: 14px; }
+.site-vigor .vg-card-foot em { min-width: 0; font-size: 13px; }
+.site-vigor .vg-card-foot i { flex: none; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1px solid color-mix(in srgb, var(--s-text) 55%, transparent); font-size: 14px; }
+
+/* Spec icons row */
+.site-vigor .vg-stats { display: flex; padding: 24px 12px; background: var(--vg-panel); border-top: 1px solid color-mix(in srgb, var(--s-text) 7%, transparent); }
+.site-vigor .vg-stats > div { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 0 6px; text-align: center; }
+.site-vigor .vg-stats > div + div { border-left: 1px solid var(--vg-line); }
+.site-vigor .vg-stats svg { font-size: 27px; margin-bottom: 8px; }
+.site-vigor .vg-stats b { font-size: 15px; font-weight: 800; line-height: 1.15; overflow-wrap: anywhere; }
+.site-vigor .vg-stats span { margin-top: 2px; font-size: 10.5px; line-height: 1.25; color: var(--vg-mut); overflow-wrap: anywhere; }
+
+/* Accordion-like rows */
+.site-vigor .vg-acc { padding: 24px 20px; background: var(--vg-panel); border-top: 1px solid color-mix(in srgb, var(--s-text) 7%, transparent); }
+.site-vigor .vg-acc > p { margin-top: 6px; font-size: 13px; color: var(--vg-mut); }
+.site-vigor .vg-acc-rows { border-bottom: 1px solid color-mix(in srgb, var(--s-text) 45%, transparent); }
+.site-vigor .vg-acc > * + .vg-acc-rows { margin-top: 14px; }
+.site-vigor .vg-acc-rows > div { display: flex; align-items: center; gap: 12px; padding: 13px 10px; border-top: 1px solid color-mix(in srgb, var(--s-text) 45%, transparent); }
+.site-vigor .vg-acc-rows b { flex: 1; min-width: 0; font: 700 16px/1.1 "Barlow Condensed", sans-serif; letter-spacing: 0.03em; text-transform: uppercase; overflow-wrap: anywhere; }
+.site-vigor .vg-acc-rows span { min-width: 0; font-size: 12px; color: var(--vg-mut); text-align: right; }
+.site-vigor .vg-acc-rows i { flex: none; font-style: normal; font-size: 18px; font-weight: 500; line-height: 1; }
+.site-vigor .vg-acc-rows .on b { color: var(--s-accent); }
+.site-vigor .vg-acc-rows .off { opacity: 0.45; }
+
+/* Chips (drawn as option boxes) */
+.site-vigor .vg-nav { padding: 22px 20px; border-top: 1px solid color-mix(in srgb, var(--s-text) 7%, transparent); }
+.site-vigor .vg-nav .vg-sizes { margin-top: 12px; }
+.site-vigor .vg-nav .vg-sizes > * { flex: 0 1 auto; padding: 6px 14px; font: 700 14px/1.1 "Barlow Condensed", sans-serif; letter-spacing: 0.05em; text-transform: uppercase; }
+
+/* Closing call */
+.site-vigor .vg-final { padding: 38px 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; background: radial-gradient(ellipse 70% 90% at 100% 0%, var(--vg-glow), transparent 75%), var(--s-bg); border-top: 1px solid color-mix(in srgb, var(--s-text) 7%, transparent); }
+.site-vigor .vg-final p { max-width: 290px; font-size: 13.5px; line-height: 1.42; color: var(--vg-mut); }
+.site-vigor .vg-final .vg-btn { margin-top: 6px; }
+
+.site-vigor .sp-footer { padding: 18px 20px 22px; border-top: 1px solid color-mix(in srgb, var(--s-text) 12%, transparent); }
+.site-vigor .vg-footer { font-size: 11px; color: var(--vg-mut); }

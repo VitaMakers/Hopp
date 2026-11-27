@@ -1,0 +1,135 @@
+/* Náutica — boat tours / yacht charter (white page, navy accents, sea cover). */
+.site-nautica { font-family: "Manrope Variable", system-ui, sans-serif; --na-navy: color-mix(in srgb, var(--s-accent) 62%, #000); --na-deep: color-mix(in srgb, var(--s-accent) 86%, #000); --na-ink: color-mix(in srgb, var(--s-accent) 30%, #000); --na-mut: color-mix(in srgb, var(--s-text) 52%, var(--s-bg)); --na-soft: color-mix(in srgb, var(--s-text) 4.5%, var(--s-bg)); --na-line: color-mix(in srgb, var(--s-text) 14%, transparent); padding-top: 8px; }
+.site-nautica.site-dark { --na-navy: var(--s-accent); }
+
+/* Cover: rounded sea card with a notch that holds the white pill button. */
+.site-nautica .na-hero { position: relative; display: flex; flex-direction: column; margin: 0 8px; min-height: 540px; padding: 0 0 22px; color: #fff; }
+.site-nautica .na-hero.has-cta { margin-bottom: 26px; padding-bottom: 40px; }
+.site-nautica .na-cover { position: absolute; inset: 0; border-radius: 18px; overflow: hidden; background: linear-gradient(180deg, var(--s-accent), var(--na-deep)); }
+.site-nautica .na-cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--s-accent) 88%, transparent) 0%, color-mix(in srgb, var(--s-accent) 62%, transparent) 26%, color-mix(in srgb, var(--s-accent) 8%, transparent) 50%, color-mix(in srgb, var(--na-deep) 30%, transparent) 78%, var(--na-deep) 100%); }
+.site-nautica .na-bar { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 14px 0 18px; min-height: 52px; }
+.site-nautica .na-brand { display: flex; align-items: center; gap: 8px; min-width: 0; font-family: "Outfit Variable", sans-serif; }
+.site-nautica .na-brand > svg { font-size: 28px; }
+.site-nautica .na-brand span { min-width: 0; }
+.site-nautica .na-brand b { display: block; font-size: 16px; font-weight: 600; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.site-nautica .na-brand small { display: block; font-size: 9.5px; font-weight: 400; opacity: 0.8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.site-nautica .na-logo { width: 34px; height: 34px; object-fit: contain; flex: none; }
+.site-nautica .na-pillbtn { display: inline-flex; align-items: center; gap: 22px; max-width: 100%; padding: 5px 5px 5px 22px; border-radius: 999px; background: #fff; color: var(--na-ink); font-size: 13px; font-weight: 600; box-shadow: 0 6px 18px color-mix(in srgb, var(--na-ink) 28%, transparent); }
+.site-nautica .na-pillbtn span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.site-nautica .na-pillbtn i { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: var(--na-ink); color: #fff; font-size: 15px; flex: none; }
+.site-nautica .na-pillbtn.sm { flex: none; max-width: 60%; gap: 10px; padding: 3px 3px 3px 13px; font-size: 11px; box-shadow: none; }
+.site-nautica .na-pillbtn.sm i { width: 24px; height: 24px; font-size: 12px; }
+.site-nautica .na-head { position: relative; padding: 26px 18px 0; }
+.site-nautica .na-heropill { display: inline-block; margin-bottom: 10px; padding: 4px 10px; border-radius: 6px; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.35); font-size: 10px; font-weight: 600; }
+.site-nautica .na-title { font: 600 clamp(30px, 9.2cqi, 40px)/1 "Outfit Variable", sans-serif; letter-spacing: -0.01em; text-transform: uppercase; overflow-wrap: anywhere; }
+.site-nautica .na-title span:first-child:not(:last-child) { font-weight: 200; font-style: italic; text-transform: none; font-size: 1.08em; line-height: 1.05; }
+.site-nautica .na-title .ac { background: linear-gradient(180deg, #fff 30%, color-mix(in srgb, var(--s-accent) 22%, #fff) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.site-nautica .na-sub { margin-top: 14px; max-width: 220px; padding-left: 10px; border-left: 1px solid rgba(255, 255, 255, 0.55); font-size: 11.5px; line-height: 1.4; text-shadow: 0 1px 6px color-mix(in srgb, var(--na-deep) 70%, transparent); }
+.site-nautica .na-side { position: relative; display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; margin-top: auto; padding: 22px 12px 0 18px; }
+.site-nautica .na-chips { display: flex; flex-direction: column; gap: 7px; width: 108px; flex: none; }
+.site-nautica .na-chips > div { padding: 9px 12px 10px; border-radius: 12px; background: color-mix(in srgb, #fff 80%, transparent); border: 1px solid rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px); color: var(--na-ink); }
+.site-nautica .na-chips b { display: block; font-size: 19px; font-weight: 700; line-height: 1.1; overflow-wrap: anywhere; }
+.site-nautica .na-chips span { display: block; margin-top: 2px; font-size: 9.5px; line-height: 1.2; opacity: 0.8; }
+.site-nautica .na-herocard { display: flex; flex-direction: column; gap: 2px; min-width: 0; max-width: 170px; margin-bottom: 4px; padding: 10px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.4); backdrop-filter: blur(8px); font-size: 13px; }
+.site-nautica .na-herocard small { font-size: 9.5px; opacity: 0.85; }
+.site-nautica .na-herocard em { font-style: normal; font-weight: 700; }
+.site-nautica .na-herocard em small { margin-left: 3px; font-weight: 400; }
+.site-nautica .na-notch { position: absolute; left: 50%; bottom: -26px; transform: translateX(-50%); display: flex; justify-content: center; width: max-content; max-width: calc(100% - 72px); padding: 0 22px 14px; border-radius: 0 0 26px 26px; background: var(--na-deep); }
+.site-nautica .na-notch::before, .site-nautica .na-notch::after { content: ""; position: absolute; bottom: 8px; width: 18px; height: 18px; }
+.site-nautica .na-notch::before { right: 100%; background: radial-gradient(circle at 0 100%, transparent 17.5px, var(--na-deep) 18px); }
+.site-nautica .na-notch::after { left: 100%; background: radial-gradient(circle at 100% 100%, transparent 17.5px, var(--na-deep) 18px); }
+.site-nautica .na-notch .na-pillbtn { margin-top: -12px; min-width: 0; }
+
+/* Shared pieces: section tag, titles, navy button. */
+.site-nautica .na-tag { display: inline-flex; align-items: center; gap: 7px; margin-bottom: 8px; font-size: 10.5px; font-weight: 500; }
+.site-nautica .na-tag i { display: flex; align-items: center; justify-content: center; width: 17px; height: 17px; border-radius: 5px; background: var(--na-navy); color: var(--s-on-accent); font-size: 11px; flex: none; }
+.site-nautica .na-h { font-size: 23px; font-weight: 600; line-height: 1.12; letter-spacing: -0.035em; overflow-wrap: anywhere; }
+.site-nautica .na-btn { display: inline-flex; justify-content: center; max-width: 100%; padding: 9px 16px; border-radius: 8px; background: var(--na-navy); color: var(--s-on-accent); font-size: 11.5px; font-weight: 700; letter-spacing: -0.01em; }
+.site-nautica .na-center { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.site-nautica em { font-style: normal; }
+
+.site-nautica .na-nav { padding: 14px 18px 0; text-align: center; }
+.site-nautica .na-nav-title { display: block; margin-bottom: 6px; font-size: 10.5px; color: var(--na-mut); }
+.site-nautica .na-nav-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 22px; font-size: 12px; font-weight: 500; }
+.site-nautica .na-nav-row a { padding-bottom: 5px; border-bottom: 1.5px solid transparent; color: var(--na-mut); }
+.site-nautica .na-nav-row a.on { color: var(--s-text); border-color: currentColor; }
+
+/* Image cards (the middle one is wider, as in the reference). */
+.site-nautica .na-why { padding: 40px 18px 18px; }
+.site-nautica .na-cards { display: grid; grid-template-columns: 1fr 1.62fr 1fr; gap: 14px 6px; margin-top: 16px; }
+.site-nautica .na-cards.n1 { grid-template-columns: 1fr; }
+.site-nautica .na-cards.n2 { grid-template-columns: 1fr 1fr; }
+.site-nautica .na-card { display: flex; flex-direction: column; min-width: 0; }
+.site-nautica .na-card-img { position: relative; display: block; height: 124px; margin-bottom: 9px; border-radius: 6px; overflow: hidden; background: var(--na-soft); }
+.site-nautica .na-cards.n1 .na-card-img { height: 180px; }
+.site-nautica .na-more { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: 4px; max-width: calc(100% - 12px); padding: 5px 10px; border-radius: 7px; background: #fff; color: var(--na-ink); font-size: 9.5px; font-weight: 700; white-space: nowrap; overflow: hidden; }
+.site-nautica .na-card b { font-size: 11.5px; font-weight: 600; line-height: 1.2; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.site-nautica .na-card small, .site-nautica .na-card-text { display: block; margin-top: 3px; font-size: 9.5px; line-height: 1.3; color: var(--na-mut); overflow-wrap: anywhere; }
+.site-nautica .na-card em { margin-top: 4px; font-size: 12.5px; font-weight: 700; }
+.site-nautica .na-card em small { display: inline; margin-left: 3px; font-weight: 400; }
+
+/* Centred call (heads the featured trip in the sample page). */
+.site-nautica .na-final { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 36px 26px 16px; text-align: center; }
+.site-nautica .na-final p { max-width: 300px; font-size: 11.5px; color: var(--na-mut); }
+.site-nautica .na-final .na-btn { margin-top: 6px; }
+
+/* Featured trip: big rounded photo, spec chips, name and price. */
+.site-nautica .na-feature { display: flex; flex-direction: column; align-items: flex-start; padding: 10px 18px 26px; }
+.site-nautica .na-feature .na-tag { color: var(--na-mut); font-weight: 700; }
+.site-nautica .na-feature-img { align-self: stretch; aspect-ratio: 1 / 1.04; margin-bottom: 14px; border-radius: 12px; overflow: hidden; background: var(--na-soft); }
+.site-nautica .na-specs { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.site-nautica .na-specs span { padding: 3px 8px; border-radius: 5px; background: var(--na-soft); border: 1px solid var(--na-line); font-size: 10px; font-weight: 500; }
+.site-nautica .na-feature-row { align-self: stretch; display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+.site-nautica .na-feature-row > div { flex: 1; min-width: 0; }
+.site-nautica .na-feature-row b { display: block; font-size: 19px; font-weight: 600; line-height: 1.15; letter-spacing: -0.03em; overflow-wrap: anywhere; }
+.site-nautica .na-feature-row p { margin-top: 5px; font-size: 11.5px; line-height: 1.4; color: var(--na-mut); }
+.site-nautica .na-feature-row strong { flex: none; max-width: 48%; text-align: right; font-size: 25px; font-weight: 700; line-height: 1.1; letter-spacing: -0.03em; }
+.site-nautica .na-feature-row strong small { display: block; margin-top: 5px; font-size: 10.5px; font-weight: 400; letter-spacing: 0; color: var(--na-mut); }
+
+/* Steps: text and photo alternate around a centre line. */
+.site-nautica .na-steps { display: flex; flex-direction: column; align-items: center; padding: 30px 18px 24px; }
+.site-nautica .na-timeline { position: relative; align-self: stretch; display: flex; flex-direction: column; gap: 18px; margin: 22px 0 22px; }
+.site-nautica .na-timeline::before { content: ""; position: absolute; left: 50%; top: 26px; bottom: 26px; width: 1px; background: var(--na-line); }
+.site-nautica .na-step { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: center; }
+.site-nautica .na-step > span { min-width: 0; }
+.site-nautica .na-step:nth-child(even) .na-step-body { order: 2; }
+.site-nautica .na-step-body { display: block; padding: 4px 0 4px 6px; }
+.site-nautica .na-step-body i { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 5px; margin-bottom: 8px; border-radius: 5px; background: var(--na-soft); border: 1px solid var(--na-line); font-size: 9.5px; font-style: normal; font-weight: 600; color: var(--na-mut); }
+.site-nautica .na-step-body b { display: block; font-size: 15.5px; font-weight: 600; line-height: 1.15; letter-spacing: -0.03em; overflow-wrap: anywhere; }
+.site-nautica .na-step-body small { display: block; margin-top: 5px; font-size: 10.5px; line-height: 1.4; color: var(--na-mut); }
+.site-nautica .na-step-img { display: block; height: 112px; border-radius: 10px; overflow: hidden; }
+.site-nautica .na-step-img:empty { visibility: hidden; height: 0; }
+
+/* Testimonial. */
+.site-nautica .na-about { padding: 36px 22px 20px; }
+.site-nautica .na-body { margin-top: 8px; font-size: 12px; color: var(--na-mut); }
+.site-nautica .na-about-img { height: 190px; margin-top: 16px; border-radius: 12px; overflow: hidden; }
+.site-nautica .na-about blockquote { margin: 22px 0 0; text-align: center; font-size: 15.5px; font-weight: 600; line-height: 1.32; letter-spacing: -0.03em; }
+.site-nautica .na-author { display: flex; align-items: center; gap: 9px; margin-top: 18px; }
+.site-nautica .na-avatar { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex: none; }
+.site-nautica .na-author b { display: block; font-size: 11.5px; font-weight: 700; }
+.site-nautica .na-author small { display: block; font-size: 10px; color: var(--na-mut); }
+
+.site-nautica .na-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; padding: 8px 18px 34px; }
+.site-nautica .na-stats.n1 { grid-template-columns: 1fr; }
+.site-nautica .na-stats.n2, .site-nautica .na-stats.n4 { grid-template-columns: 1fr 1fr; }
+.site-nautica .na-stats > div { min-width: 0; padding: 14px 8px 13px; border-radius: 6px; background: var(--na-soft); text-align: center; }
+.site-nautica .na-stats b { display: block; font-size: 19px; font-weight: 700; letter-spacing: -0.03em; overflow-wrap: anywhere; }
+.site-nautica .na-stats span { display: block; margin-top: 3px; font-size: 9.5px; line-height: 1.3; color: var(--na-mut); }
+
+.site-nautica .na-hours { padding: 22px 18px 26px; }
+.site-nautica .na-hours > p { margin-top: 5px; font-size: 11.5px; color: var(--na-mut); }
+.site-nautica .na-hours-list { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 14px; }
+.site-nautica .na-hours-list > div { min-width: 0; padding: 11px 12px; border-radius: 6px; background: var(--na-soft); }
+.site-nautica .na-hours-list span { display: block; font-size: 10px; color: var(--na-mut); }
+.site-nautica .na-hours-list b { display: block; margin-top: 2px; font-size: 13.5px; font-weight: 700; overflow-wrap: anywhere; }
+.site-nautica .na-hours-list .on { background: var(--na-navy); color: var(--s-on-accent); }
+.site-nautica .na-hours-list .on span { color: inherit; opacity: 0.75; }
+.site-nautica .na-hours-list .off { opacity: 0.45; }
+
+/* Navy footer with a lighter band of water on top. */
+.site-nautica .sp-footer { margin-top: 10px; padding: 26px 18px 16px; background: linear-gradient(180deg, color-mix(in srgb, var(--s-accent) 80%, #fff) 0, var(--s-accent) 12px, var(--na-navy) 24px); color: #fff; }
+.site-nautica .na-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 10.5px; }
+.site-nautica .na-footer > span { min-width: 0; opacity: 0.85; overflow-wrap: anywhere; }
+.site-nautica .na-socials { display: flex; gap: 12px; flex: none; }
+.site-nautica .na-socials svg { width: 15px; height: 15px; }

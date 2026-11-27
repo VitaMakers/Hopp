@@ -1,6 +1,7 @@
 import { nanoid } from "nanoid";
 import { PREMIUM_DEFAULTS, type Block, type PageDoc, type SocialLink, type Theme } from "./schema";
 import { ESSENTIAL_COLLECTIONS, ESSENTIAL_TEMPLATES } from "./essentials";
+import { SITE_TEMPLATES } from "./site";
 
 // Ready-made pages. Applying one replaces the whole page; the person then
 // swaps the sample texts, links and images for theirs.
@@ -33,6 +34,23 @@ export type TemplateCollection = {
   requiresPlan?: "free" | "essencial" | "profissional";
 };
 
+// The "site" family: one collection per line of business, in this order.
+const SITE_CATEGORY_NOTES: [string, string][] = [
+  ["Imóveis", "Modelos para imobiliárias, corretores e imóveis de alto padrão."],
+  ["Veículos", "Modelos para locadoras e lojas de carros."],
+  ["Pet", "Modelos para pet shops, banho e tosa e veterinários."],
+  ["Fitness", "Modelos para academias, personal trainers e suplementos."],
+  ["Beleza", "Modelos para barbearias e salões."],
+  ["Lojas", "Modelos para lojas de moda e roupas."],
+  ["Serviços", "Modelos para reformas, pintura, construção e serviços para casa."],
+  ["Negócios", "Modelos para agências, tecnologia e consultorias."],
+  ["Turismo", "Modelos para passeios, locação de barcos e pousadas."],
+];
+const SITE_COLLECTIONS: TemplateCollection[] = SITE_CATEGORY_NOTES.map(([name, description]) => {
+  const models = SITE_TEMPLATES.filter((t) => t.category === name);
+  return { id: `site-${name.toLowerCase().normalize("NFD").replace(/[^a-z]/g, "")}`, tab: "premium", name, description, swatch: models[0]?.theme ?? { background: "#111111", accent: "#ffffff", text: "#ffffff" }, templateIds: models.map((t) => t.id) };
+}).filter((collection) => collection.templateIds.length > 0);
+
 export const TEMPLATE_COLLECTIONS: TemplateCollection[] = [
   ...ESSENTIAL_COLLECTIONS,
   {
@@ -54,6 +72,7 @@ export const TEMPLATE_COLLECTIONS: TemplateCollection[] = [
   { id: "presenca", tab: "premium", name: "Presença", description: "Perfil profissional com público duplo.", swatch: { background: "#0a0a0f", accent: "#a78bfa", text: "#f5f5f5" }, templateIds: ["experiencia"] },
   { id: "ecossistema", tab: "premium", name: "Restaurante", description: "Modelos de cardápio para restaurantes, bares e delivery.", swatch: { background: "#1c0f0b", accent: "#d8a24a", text: "#f3e9df" }, templateIds: ["resto-menu", "resto-bistro", "resto-bar", "resto-casa"] },
   { id: "saude", tab: "premium", name: "Saúde", description: "Modelos para médicos, dentistas, psicólogos e clínicas.", swatch: { background: "#dfe9ee", accent: "#5aa7bf", text: "#0b3147" }, templateIds: ["saude-clinica"] },
+  ...SITE_COLLECTIONS,
   { id: "vitrine", tab: "premium", name: "Vitrine", description: "Em breve.", swatch: { background: "#111d1f", accent: "#e6ff35", text: "#e7e9e8" }, templateIds: [], requiresPlan: "essencial" },
 ];
 
@@ -156,6 +175,18 @@ export function page(
 // essential (plan "basic") models grouped by category.
 export const TEMPLATES: PageTemplate[] = [
   ...ESSENTIAL_TEMPLATES,
+  ...SITE_TEMPLATES.map(
+    (t): PageTemplate => ({
+      id: t.id,
+      name: t.name,
+      category: t.category,
+      plan: "premium",
+      tab: "premium",
+      description: t.description,
+      swatch: t.theme,
+      build: (name) => page(name, { profile: { bio: t.bio, floatingWhatsapp: "" }, socials: t.socials ?? [], theme: { premium: t.design as Theme["premium"], ...t.theme, font: "sans" }, premium: t.premium, blocks: t.blocks() }),
+    }),
+  ),
   {
     id: "saude-clinica",
     name: "Clínica",

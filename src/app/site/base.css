@@ -1,0 +1,17 @@
+/* Shared base of the "site" family (landing-style premium models).
+   Every design scopes its own rules under .site-<id> and builds its colours
+   from the three theme colours the owner can change:
+     --s-bg (Fundo)  --s-text (Texto)  --s-accent (Destaque)
+   --s-on-accent is the readable text colour over the accent. */
+.site { box-sizing: border-box; width: 100%; min-height: 100vh; background: var(--s-bg); color: var(--s-text); font-size: 14px; line-height: 1.35; overflow: hidden; }
+.site *, .site *::before, .site *::after { box-sizing: border-box; }
+.site :is(h1, h2, h3, p, figure) { margin: 0; }
+.site a { color: inherit; text-decoration: none; }
+.site img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.site button { font: inherit; color: inherit; }
+.site .sp { position: relative; }
+.site .sp-extra { padding: 8px 16px; }
+.site svg { flex: none; }
+/* On wide screens the page stays a phone-width column, centred. */
+.site-wrap { background: var(--s-bg); min-height: 100vh; }
+.site-wrap > .site { max-width: 480px; margin: 0 auto; }
