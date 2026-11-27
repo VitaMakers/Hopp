@@ -283,6 +283,24 @@ export const reforma: SiteRender = (c) => {
               </i>
             </Act>
           ))}
+          {/* The two photos beside the list in the reference: the first two showcase items. */}
+          {c.chips.length && c.catalog.items.filter((b) => b.imageUrl).length >= 2 ? (
+            <div className="rf-svc-shots">
+              {c.catalog.items
+                .filter((b) => b.imageUrl)
+                .slice(0, 2)
+                .map((b, i) => (
+                  <span key={b.id}>
+                    <Img src={b.imageUrl} alt={b.title} />
+                    {i === 1 ? (
+                      <em>
+                        01 / {String(c.catalog.items.length).padStart(2, "0")}
+                      </em>
+                    ) : null}
+                  </span>
+                ))}
+            </div>
+          ) : null}
         </div>
       ) : null,
     feature:

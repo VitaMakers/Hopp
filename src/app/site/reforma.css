@@ -30,9 +30,9 @@
 /* Cover: photo under a blue wash, title with the lime underline. */
 .site-reforma .rf-hero { position: relative; min-height: 440px; overflow: hidden; background: linear-gradient(165deg, var(--s-accent), color-mix(in srgb, var(--s-accent) 62%, #fff)); color: var(--s-on-accent); }
 /* Room at the bottom of the cover for the estimate card that overlaps it. */
-.site-reforma .sp-hero:has(+ .sp-hours) .rf-head { padding-bottom: 336px; }
+.site-reforma .sp-hero:has(+ .sp-hours) .rf-head { padding-bottom: 430px; }
 .site-reforma .rf-photo { position: absolute; inset: 0; }
-.site-reforma .rf-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(168deg, var(--s-accent) 0%, color-mix(in srgb, var(--s-accent) 90%, transparent) 24%, color-mix(in srgb, var(--s-accent) 48%, transparent) 46%, transparent 68%); }
+.site-reforma .rf-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(172deg, var(--s-accent) 0%, color-mix(in srgb, var(--s-accent) 88%, transparent) 20%, color-mix(in srgb, var(--s-accent) 40%, transparent) 36%, transparent 50%); }
 .site-reforma .rf-bar { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 18px 0 20px; }
 .site-reforma .rf-brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .site-reforma .rf-brand b { font-size: 17px; font-weight: 800; letter-spacing: -0.01em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -156,3 +156,10 @@
 .site-reforma .rf-footer b { display: block; font-size: 18px; font-weight: 800; letter-spacing: -0.01em; text-transform: uppercase; overflow-wrap: anywhere; }
 .site-reforma .rf-footer small { display: block; margin-top: 3px; font-size: 11px; opacity: 0.7; }
 .site-reforma .rf-footer > span { padding-top: 14px; border-top: 1px solid color-mix(in srgb, currentColor 16%, transparent); font-size: 11px; opacity: 0.7; }
+
+/* Two showcase photos under the numbered services, the second with a pager. */
+.site-reforma .rf-svc-shots { display: grid; grid-template-columns: 1.45fr 1fr; gap: 10px; margin-top: 8px; }
+.site-reforma .rf-svc-shots span { position: relative; height: 170px; border-radius: 14px; overflow: hidden; }
+.site-reforma .rf-svc-shots span + span { height: 124px; overflow: visible; }
+.site-reforma .rf-svc-shots span + span img { border-radius: 14px; }
+.site-reforma .rf-svc-shots em { position: absolute; left: 0; right: 0; top: 136px; text-align: center; font-style: normal; font-size: 12px; font-weight: 700; color: var(--s-text); }
