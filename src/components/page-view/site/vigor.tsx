@@ -190,7 +190,7 @@ export const vigor: SiteRender = (c) => {
                   <Star />
                   <Star />
                 </span>
-                {c.strip.length ? (
+                {c.strip.length && !c.hidden("premium:nav") ? (
                   <span className="vg-sizes">
                     {c.strip.map((word, i) => (
                       <span key={i} className={i === 0 ? "on" : undefined}>
