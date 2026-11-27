@@ -2,10 +2,10 @@
 
 import { Act, ArrowUp, Cart, Img, Item, Lines, Socials, split, Star, type SiteRender } from "./kit";
 
-// Spec icons of the numbers row (strength, layers, energy, lab), by position.
+// Spec icons of the numbers row (dumbbell, layers, energy, lab), by position.
 function SpecIcon({ index }: { index: number }) {
   const paths = [
-    <path key="a" d="M6 20c-1.7-2.5-2-5.5-.5-8 1-1.7 2.7-2.5 4.5-2.5V5.5C10 4.1 11.1 3 12.5 3S15 4.1 15 5.5V8M10 9.5c2.2-1.2 4.8-.9 6.7.7 2.7 2.3 3 6.4 1.3 9.8H6M10 14c1.3-.9 2.8-.9 4 0" />,
+    <path key="a" d="M6.5 7.5v9M3.5 10v4M17.5 7.5v9M20.5 10v4M6.5 12h11" />,
     <path key="b" d="m12 3 9 4.5-9 4.5-9-4.5zM3 12l9 4.5 9-4.5M3 16.5 12 21l9-4.5" />,
     <path key="c" d="M13 2 5 13.5h6L10 22l9-12.5h-6.5z" />,
     <path key="d" d="M9.5 3h5M10.5 3v6L5 18.5c-.6 1.1.2 2.5 1.5 2.5h11c1.3 0 2.1-1.4 1.5-2.5L13.5 9V3M8 15h8" />,
