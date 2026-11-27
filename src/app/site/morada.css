@@ -32,6 +32,10 @@
 .site-morada .mo-giant { margin: 10px -12px 0; font-weight: 800; line-height: 0.84; letter-spacing: -0.065em; text-align: center; text-transform: uppercase; white-space: nowrap; color: var(--s-accent); }
 .site-morada .mo-house { position: relative; height: 300px; margin-top: -11%; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 24%, #000 80%, transparent); mask-image: linear-gradient(180deg, transparent 0, #000 24%, #000 80%, transparent); }
 .site-morada .mo-house.solo { margin-top: 0; }
+/* Cut-out photo: no fading, the giant word shows behind and around the house. */
+.site-morada .mo-house.cut { height: auto; margin: -17% 6px 0; -webkit-mask-image: none; mask-image: none; }
+.site-morada .mo-house.cut img { height: auto; object-fit: contain; filter: drop-shadow(0 18px 22px rgba(60, 30, 10, 0.28)); }
+.site-morada .mo-house.cut + .mo-card.up { margin-top: -34px; }
 .site-morada .mo-card { position: relative; display: block; margin: 18px 16px 0; padding: 14px; border-radius: 16px; background: var(--mo-dark); color: var(--mo-ond); box-shadow: 0 14px 30px color-mix(in srgb, var(--mo-dark) 28%, transparent); }
 .site-morada .mo-card.up { margin-top: -78px; }
 .site-morada .mo-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
@@ -86,6 +90,8 @@
 .site-morada .mo-art > i { position: absolute; top: 0; left: 50%; width: 250px; height: 250px; margin-left: -90px; border-radius: 50%; background: var(--s-accent); }
 .site-morada .mo-art > span { position: absolute; left: 0; right: 0; bottom: 0; height: 205px; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 38%); mask-image: linear-gradient(180deg, transparent 0, #000 38%); }
 .site-morada .mo-art.bare { height: 120px; }
+.site-morada .mo-art.cut > span { left: 8px; right: 8px; height: 230px; -webkit-mask-image: none; mask-image: none; }
+.site-morada .mo-art.cut img { object-fit: contain; object-position: center bottom; }
 
 /* About, rating and numbers. */
 .site-morada .mo-duo { position: relative; margin: 8px 0 20px; }

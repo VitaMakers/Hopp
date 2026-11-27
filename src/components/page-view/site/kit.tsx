@@ -31,6 +31,8 @@ export type SiteCtx = {
     photoStyle: CSSProperties;
     // Cover height chosen in the editor (undefined = the design's own).
     coverStyle: CSSProperties | undefined;
+    // The cover photo is a cut-out (no background).
+    cutout: boolean;
     showName: boolean;
     pill: string;
     // Title lines (the editor splits by line break).
@@ -62,6 +64,8 @@ export type SiteNodes = Partial<Record<"hero" | "stats" | "nav" | "text" | "cata
 export type SiteRender = (c: SiteCtx) => SiteNodes;
 
 const img = (src: string) => imageSrc(src) ?? "";
+// A picture without background: a PNG, or one of our own "recorte" samples.
+export const isCutout = (src: string) => /\.png(\?|$)|recorte/i.test(src);
 const lines = (text: string) => text.split("\n").map((s) => s.trim()).filter(Boolean);
 const visible = <T extends Block["type"]>(doc: PageDoc, type: T) => doc.blocks.filter((b): b is Extract<Block, { type: T }> => b.enabled && b.type === type);
 
@@ -79,6 +83,7 @@ export function buildSiteCtx(doc: PageDoc, handle: string | undefined, brand: st
       photo: img(slide?.imageUrl || doc.profile.coverUrl),
       photoStyle: { objectPosition: `${p.heroPosX}% ${p.heroPosY}%` },
       coverStyle: p.coverHeight ? { height: p.coverHeight, minHeight: 0 } : undefined,
+      cutout: p.heroCutout || isCutout(slide?.imageUrl || doc.profile.coverUrl),
       showName: !p.hideName,
       pill: t(p.heroPill),
       lines: lines(p.heading),

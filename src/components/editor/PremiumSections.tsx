@@ -867,6 +867,8 @@ function SiteFields({ id, doc, onChange, setPremium }: { id: string; doc: PageDo
           <input type="range" min={0} max={900} step={1} value={p.coverHeight} onChange={(e) => setPremium({ coverHeight: Number(e.target.value) })} />
           <span className="text-xs text-stone-500">{p.coverHeight ? `${p.coverHeight}px` : "Automático (padrão)"}</span>
         </label>
+        <Toggle label="A foto é recortada (sem fundo)" checked={p.heroCutout} onChange={(heroCutout) => setPremium({ heroCutout })} />
+        {hint("Nos modelos com o nome gigante, uma foto recortada (PNG sem fundo) deixa o nome aparecer por trás dela.")}
         <Toggle label="Mostrar o nome / marca" checked={!p.hideName} onChange={(on) => setPremium({ hideName: !on })} />
         <TextField label="Linha pequena da marca (ex.: RENTALS, BARBEARIA)" value={p.tagline} maxLength={120} onChange={(tagline) => setPremium({ tagline })} />
         <TextField label="Etiqueta acima do título" value={p.heroPill} maxLength={40} onChange={(heroPill) => setPremium({ heroPill })} />

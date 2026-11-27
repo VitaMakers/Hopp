@@ -1,6 +1,6 @@
 "use client";
 
-import { Act, ArrowUp, Img, Item, Lines, Pin, Socials, Star, split, type SiteRender } from "./kit";
+import { Act, ArrowUp, Img, Item, Lines, Pin, Socials, Star, isCutout, split, type SiteRender } from "./kit";
 
 const line = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, width: "1em", height: "1em", "aria-hidden": true };
 // One line icon per row of the benefits list (house, shield, layers, headset).
@@ -22,6 +22,8 @@ export const morada: SiteRender = (c) => {
   const rows = c.links.items.filter((b) => !b.label.trim());
   const art = rows.find((b) => b.imageUrl)?.imageUrl ?? "";
   const thumb = items[0]?.imageUrl || c.hero.photo;
+  // Second photo of the about block: a framed picture, so never the cut-out.
+  const second = c.hero.cutout ? items[1]?.imageUrl || items[0]?.imageUrl || "" : c.hero.photo;
   const details = items[0]?.buttonText ?? "";
   const thumbs = items.slice(1, 3).filter((b) => b.imageUrl);
   const price = (text: string) => {
@@ -58,7 +60,7 @@ export const morada: SiteRender = (c) => {
           </div>
         ) : null}
         {c.hero.photo ? (
-          <div className={`mo-house ${c.hero.showName ? "" : "solo"}`} style={c.hero.coverStyle}>
+          <div className={`mo-house ${c.hero.showName ? "" : "solo"} ${c.hero.cutout ? "cut" : ""}`} style={c.hero.coverStyle}>
             <Img src={c.hero.photo} alt={c.brand} style={c.hero.photoStyle} />
           </div>
         ) : null}
@@ -175,7 +177,7 @@ export const morada: SiteRender = (c) => {
             </div>
           ) : null}
           {art ? (
-            <div className="mo-art">
+            <div className={`mo-art ${isCutout(art) ? "cut" : ""}`}>
               <i />
               <span>
                 <Img src={art} />
@@ -189,13 +191,13 @@ export const morada: SiteRender = (c) => {
         <div className="mo-sec card">
           {c.about.label ? <span className="mo-label">{c.about.label}</span> : null}
           {c.about.image ? (
-            <div className={`mo-duo ${c.hero.photo ? "two" : ""}`}>
+            <div className={`mo-duo ${second ? "two" : ""}`}>
               <span>
                 <Img src={c.about.image} />
               </span>
-              {c.hero.photo ? (
+              {second ? (
                 <span>
-                  <Img src={c.hero.photo} />
+                  <Img src={second} />
                 </span>
               ) : null}
             </div>
@@ -348,7 +350,7 @@ export const morada: SiteRender = (c) => {
               </Act>
             </div>
           </div>
-          <div className={`mo-art ${c.hero.photo ? "" : "bare"}`}>
+          <div className={`mo-art ${c.hero.photo ? "" : "bare"} ${c.hero.cutout ? "cut" : ""}`}>
             <i />
             {c.hero.photo ? (
               <span>

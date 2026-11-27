@@ -416,6 +416,9 @@ export const premiumFieldsSchema = z.object({
     .max(6)
     .default([]),
   // "site" family: titles and texts of the parts the older designs don't have.
+  // The cover photo has no background (a cut-out): designs with a giant word
+  // let the word show behind it instead of fading the photo edges.
+  heroCutout: z.boolean().default(false),
   navTitle: z.string().max(60).default(""),
   aboutTitle: z.string().max(240).default(""),
   aboutImageUrl: z.string().max(1000).default(""),
