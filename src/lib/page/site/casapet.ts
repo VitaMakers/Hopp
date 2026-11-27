@@ -22,7 +22,7 @@ export const casapetTemplate: SiteTemplate = {
     siteUrl: WHATS,
     heroPosX: 50,
     heroPosY: 38,
-    heroSlides: slide(photo("1552053831-71594a27632d"), { productLabel: "Destaque", productName: "Roupinha de inverno", price: "R$ 59,90", url: WHATS }),
+    heroSlides: slide("/assets/modelo-cao-recorte.webp", { productLabel: "Destaque", productName: "Roupinha de inverno", price: "R$ 59,90", url: WHATS }),
     featureImageUrl: photo("1514888286974-6c03e2ca1dba"),
     featureUrl: WHATS,
     promoBadge: "",

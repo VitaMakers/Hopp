@@ -144,3 +144,10 @@
 .site-casapet .sp-footer { padding: 22px 18px 24px; background: var(--cp-deep); color: var(--cp-on); }
 .site-casapet .cp-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 .site-casapet .cp-footer > span { flex-basis: 100%; font-size: 11px; opacity: 0.75; }
+/* Cut-out pet (PNG or our "recorte" samples): shown whole over the giant word,
+   without the fading mask. */
+.site-casapet .cp-photo:has(img:is([src*="recorte"], [src*=".png"])) { left: 24%; right: -14%; top: 96px; height: 470px; -webkit-mask-image: linear-gradient(180deg, #000 90%, transparent); mask-image: linear-gradient(180deg, #000 90%, transparent); }
+.site-casapet .cp-photo img:is([src*="recorte"], [src*=".png"]) { object-fit: contain; object-position: center bottom !important; }
+.site-casapet .cp-hero:has(.cp-photo img:is([src*="recorte"], [src*=".png"]))::after { inset: 78% 0 0; }
+.site-casapet .cp-hero:has(.cp-photo img:is([src*="recorte"], [src*=".png"])) .cp-copy { max-width: 52%; }
+.site-casapet .cp-hero:has(.cp-photo img:is([src*="recorte"], [src*=".png"])) .cp-copy :is(h1, p) { text-shadow: 0 1px 10px var(--cp-deep), 0 0 4px var(--cp-deep); }
