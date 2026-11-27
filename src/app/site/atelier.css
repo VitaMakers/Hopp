@@ -33,6 +33,9 @@
 .site-atelier .at-stage.nop { min-height: 0; padding-top: 120px; }
 .site-atelier .at-ghost { position: absolute; left: 0; right: 0; top: 34px; overflow: hidden; text-align: center; white-space: nowrap; font-weight: 800; font-size: clamp(40px, calc(150cqi / var(--n)), 108px); line-height: 1; letter-spacing: -0.05em; text-transform: uppercase; color: color-mix(in srgb, var(--s-text) 7%, var(--s-bg)); pointer-events: none; }
 .site-atelier .at-photo { position: absolute; left: 26%; right: 0; top: 0; bottom: 0; -webkit-mask-image: linear-gradient(90deg, transparent, #000 44%, #000 90%, transparent), linear-gradient(180deg, transparent, #000 16%, #000 80%, transparent); -webkit-mask-composite: source-in; mask-image: linear-gradient(90deg, transparent, #000 44%, #000 90%, transparent), linear-gradient(180deg, transparent, #000 16%, #000 80%, transparent); mask-composite: intersect; }
+/* Cut-out model: no blending or fading, the ghost word shows behind. */
+.site-atelier .at-photo.cut { left: 14%; right: 6%; top: 6px; -webkit-mask-image: linear-gradient(180deg, #000 86%, transparent); mask-image: linear-gradient(180deg, #000 86%, transparent); -webkit-mask-composite: initial; }
+.site-atelier .at-photo.cut img { object-fit: contain; object-position: center bottom; filter: grayscale(1) contrast(1.1) !important; mix-blend-mode: normal !important; }
 .site-atelier.site-light .at-photo img { filter: grayscale(1) contrast(1.28) brightness(1.24); mix-blend-mode: multiply; }
 .site-atelier .at-card { position: absolute; z-index: 2; right: 14px; top: 92px; width: 94px; display: flex; flex-direction: column; gap: 1px; padding: 8px; border-radius: 16px; background: color-mix(in srgb, var(--s-bg) 78%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); overflow-wrap: anywhere; }
 .site-atelier .at-card-img { display: block; height: 82px; margin-bottom: 6px; border-radius: 10px; overflow: hidden; background: var(--at-soft); }
@@ -150,3 +153,5 @@
 .site-atelier .at-link-img { flex: none; width: 30px; height: 30px; border-radius: 8px; overflow: hidden; }
 .site-atelier .sp-footer { margin-top: 12px; padding: 16px 22px 22px; border-top: 1px solid var(--at-line); }
 .site-atelier .at-footer { font-size: 11px; color: var(--at-mut); }
+/* Over a dark cut-out the title keeps a soft halo of the page colour to stay readable. */
+.site-atelier .at-hero:has(.at-photo.cut) :is(h1, p) { text-shadow: 0 0 10px var(--s-bg), 0 0 18px var(--s-bg), 0 0 3px var(--s-bg); }

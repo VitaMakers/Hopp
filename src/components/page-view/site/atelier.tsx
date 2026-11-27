@@ -50,7 +50,7 @@ export const atelier: SiteRender = (c) => {
             </span>
           ) : null}
           {c.hero.photo ? (
-            <div className="at-photo">
+            <div className={`at-photo ${c.hero.cutout ? "cut" : ""}`}>
               <Img src={c.hero.photo} alt={c.brand} style={c.hero.photoStyle} />
             </div>
           ) : null}
