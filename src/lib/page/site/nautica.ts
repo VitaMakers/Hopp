@@ -21,7 +21,7 @@ export const nauticaTemplate: SiteTemplate = {
     siteLabel: "Reservar",
     siteUrl: WHATS,
     heroSlides: slide(photo("1605281317010-fe5ffe798166")),
-    benefits: ["250+ Passeios realizados", "50+ Destinos", "10+ Anos no mar"],
+    benefits: [],
     navTitle: "",
     navLinks: [
       { label: "Início", url: WHATS },
@@ -64,9 +64,9 @@ export const nauticaTemplate: SiteTemplate = {
     link({ title: "Reserve a data", subtitle: "Informe o dia, o roteiro e os convidados e garanta sua vaga.", imageUrl: photo("1533105079780-92b9be482077", 500) }),
     link({ title: "Zarpe", subtitle: "Embarque e aproveite cada minuto em mar aberto.", imageUrl: photo("1540946485063-a40da27545f8", 500) }),
     stats([
-      ["24/7", "Suporte ao cliente, sempre por perto"],
-      ["100%", "Melhor preço garantido"],
-      ["0", "Taxas ocultas, tudo transparente"],
+      ["250+", "Passeios realizados"],
+      ["50+", "Destinos"],
+      ["10+", "Anos no mar"],
     ]),
   ],
 };

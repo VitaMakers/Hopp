@@ -68,7 +68,7 @@ export const nautica: SiteRender = (c) => {
           ) : null}
           {c.hero.sub ? <p className="na-sub">{c.hero.sub}</p> : null}
         </div>
-        {c.strip.length || c.hero.card.name ? (
+        {c.stats.length || c.hero.card.name ? (
           <div className="na-side">
             {c.hero.card.name ? (
               <Act c={c} to={{ label: c.hero.card.name, href: c.hero.card.href }} id="hero-card" className="na-herocard">
@@ -79,18 +79,16 @@ export const nautica: SiteRender = (c) => {
             ) : (
               <span />
             )}
-            {c.strip.length ? (
-              <div className="na-chips">
-                {c.strip.map((word, i) => {
-                  // "250+ Passeios feitos" → number on top, caption below.
-                  const [value, ...rest] = word.split(" ");
-                  return (
-                    <div key={i}>
-                      <b>{value}</b>
-                      {rest.length ? <span>{rest.join(" ")}</span> : null}
-                    </div>
-                  );
-                })}
+            {/* The number chips are the "Números" block, so they are edited and
+                removed in that card (clicking a chip opens it). */}
+            {c.stats.length ? (
+              <div className="na-chips" data-edit="premium:stats">
+                {c.stats.map((s, i) => (
+                  <div key={i}>
+                    <b>{s.value}</b>
+                    {s.label ? <span>{s.label}</span> : null}
+                  </div>
+                ))}
               </div>
             ) : null}
           </div>
@@ -246,16 +244,8 @@ export const nautica: SiteRender = (c) => {
           ) : null}
         </div>
       ) : null,
-    stats: c.stats.length ? (
-      <div className={`na-stats n${c.stats.length}`}>
-        {c.stats.map((s, i) => (
-          <div key={i}>
-            <b>{s.value}</b>
-            <span>{s.label}</span>
-          </div>
-        ))}
-      </div>
-    ) : null,
+    // The numbers show in the hero (above), driven by the same "Números" block.
+    stats: null,
     hours:
       c.hours.days.length || c.hours.title ? (
         <div className="na-hours">
