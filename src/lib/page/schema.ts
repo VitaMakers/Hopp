@@ -370,7 +370,7 @@ export const premiumFieldsSchema = z.object({
   hours: z
     .array(
       z.object({
-        label: z.string().max(12).default(""),
+        label: z.string().max(90).default(""),
         time: z.string().max(20).default(""),
         highlight: z.boolean().default(false),
         closed: z.boolean().default(false),

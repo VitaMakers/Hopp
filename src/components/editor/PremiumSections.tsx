@@ -1015,7 +1015,7 @@ function SiteFields({ id, doc, onChange, setPremium }: { id: string; doc: PageDo
         {days.map((day, index) => (
           <div key={index} className="flex flex-col gap-2 rounded-lg bg-stone-50 p-2.5">
             <div className="grid grid-cols-[1fr_1fr_auto] items-end gap-2">
-              <TextField label="Dia ou horário" value={day.label} maxLength={12} onChange={(label) => setDay(index, { label })} />
+              <TextField label="Dia, horário ou texto" value={day.label} maxLength={90} onChange={(label) => setDay(index, { label })} />
               <TextField label="Detalhe" value={day.time} maxLength={20} onChange={(time) => setDay(index, { time })} />
               <button type="button" onClick={() => setPremium({ hours: days.filter((_, i) => i !== index) })} className="pb-2 text-xs text-red-500">
                 ✕
